@@ -11,13 +11,6 @@
  * @version 0.1.0
  */
 
- /**
-  * @todo Follow this list to setup your addon:
-  *
-  * - Change the xxxxx in the various settings functions to your addon's name
-  * - Find all @todo's and fill in the relevant information
-  */
-
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 

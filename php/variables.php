@@ -8,14 +8,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @param string $content The string from various templates including email and results pages
  * @param array $quiz_array An array of the results from the quiz/survey that was completed
  * @return string The string to be used in email, results page, social sharing, etc..
- * @todo Replace your variable with any content
  */
-function qsm_addon_xxxxxx_my_variable( $content, $quiz_array ) {
-  /**
-   * Manipulate the content here
-   * Remember to remove your shortcode from the content using something like:
-   * $content = str_replace( "%My_VARIABLE%" , $my_content, $content);
-   */
+function qsm_addon_qsm_certificate_variable( $content, $quiz_array ) {
+
+  // Cycle through content and replace the variable
+  while( strpos( $content, '%CERTIFICATE_LINK%' ) !== false ) {
+    $content = str_replace( '%CERTIFICATE_LINK%', '', $content );
+  }
 
   // Returns the content
   return $content;

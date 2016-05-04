@@ -51,11 +51,10 @@ class QSM_Certificate {
   	  *
   	  * @since 0.1.0
   	  * @return void
-      * @todo If you are not setting up the addon settings tab, the quiz settings tab, or variables, simply remove the include file below
   	  */
     public function load_dependencies() {
-      include( "php/generate_certificate.php" );
-      include( "php/addon-settings-tab-content.php" );
+      include( "php/generate-certificate.php" );
+      include( "php/results-details-tab-content.php" );
       include( "php/quiz-settings-tab-content.php" );
       include( "php/variables.php" );
     }
@@ -67,12 +66,11 @@ class QSM_Certificate {
   	  *
   	  * @since 0.1.0
   	  * @return void
-      * @todo If you are not setting up the addon settings tab, the quiz settings tab, or variables, simply remove the relevant add_action below
   	  */
     public function add_hooks() {
       add_action( 'admin_init', 'qsm_addon_qsm_certificate_register_quiz_settings_tabs' );
-      add_action( 'admin_init', 'qsm_addon_xxxxx_register_addon_settings_tabs' );
-      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_xxxxxx_my_variable', 10, 2 );
+      add_action( 'admin_init', 'qsm_addon_qsm_certificate_register_results_details_tabs' );
+      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_qsm_certificate_variable', 10, 2 );
     }
 }
 

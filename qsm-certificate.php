@@ -54,6 +54,7 @@ class QSM_Certificate {
       * @todo If you are not setting up the addon settings tab, the quiz settings tab, or variables, simply remove the include file below
   	  */
     public function load_dependencies() {
+      include( "php/generate_certificate.php" );
       include( "php/addon-settings-tab-content.php" );
       include( "php/quiz-settings-tab-content.php" );
       include( "php/variables.php" );

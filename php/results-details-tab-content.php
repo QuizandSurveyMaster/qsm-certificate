@@ -57,7 +57,7 @@ function qsm_addon_qsm_certificate_results_details_tabs_content() {
 		);
 
     // Generate certificate
-    $certificate_file = qsm_addon_qsm_certificate_generate_certificate( array(), $quiz_results, true );
+    $certificate_file = qsm_addon_qsm_certificate_generate_certificate( $quiz_results, true );
 
 		// Display link to certificate
     if ( ! empty( $certificate_file ) && $certificate_file !== false ) {

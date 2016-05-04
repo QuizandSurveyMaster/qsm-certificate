@@ -11,9 +11,25 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function qsm_addon_qsm_certificate_variable( $content, $quiz_array ) {
 
-  // Cycle through content and replace the variable
-  while( strpos( $content, '%CERTIFICATE_LINK%' ) !== false ) {
-    $content = str_replace( '%CERTIFICATE_LINK%', '', $content );
+  // Checks if variable is in content
+  if ( strpos( $content, '%CERTIFICATE_LINK%' ) !== false ) {
+
+    // Generate certificate
+    $certificate_file = qsm_addon_qsm_certificate_generate_certificate( $quiz_array, true );
+
+		// Checks if the file was created
+    if ( ! empty( $certificate_file ) && $certificate_file !== false ) {
+
+      // Prepares url and link to certificate
+      $certificate_url = plugin_dir_url( __FILE__ )."certificates/$certificate_file";
+      $certificate_link = "<a href='$certificate_url' class='qmn_certificate_link'>Download Certificate</a>";
+
+      // Replaces variable with link
+      $content = str_replace( '%CERTIFICATE_LINK%', $certificate_link, $content );
+    } else {
+      // Replaces variable with empty string if file was not created
+      $content = str_replace( '%CERTIFICATE_LINK%', '', $content );
+    }
   }
 
   // Returns the content

@@ -57,7 +57,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
 		);
 
     // Generate certificate
-    $certificate_file = qsm_addon_qsm_certificate_generate_certificate( $quiz_results, true );
+    $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, true );
 
 		// Display link to certificate
     if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
@@ -71,6 +71,5 @@ function qsm_addon_certificate_results_details_tabs_content() {
 		<button class="button-primary">Generate Certificate</button>
 	</form>
 	<?php
-
-
+}
 ?>

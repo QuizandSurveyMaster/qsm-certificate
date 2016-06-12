@@ -17,6 +17,20 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
   // Load the settings
   $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
+  if ( ! is_array( $certificate_settings ) ) {
+    $quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $quiz_results["quiz_id"] ) );
+    //Load Certificate Options Variables
+  	if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
+  		$certificate = @unserialize( $quiz_options->certificate_template );
+      $certificate_settings = array(
+        'enabled' => $certificate[4],
+        'title' => $certificate[0],
+        'content' => $certificate[1],
+        'logo' => $certificate[2],
+        'background' => $certificate[3]
+      );
+  	}
+  }
   $certificate_defaults = array(
     'enabled' => 1,
     'title' => 'Enter your title',

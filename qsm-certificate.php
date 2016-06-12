@@ -68,9 +68,9 @@ class QSM_Certificate {
   	  * @return void
   	  */
     public function add_hooks() {
-      add_action( 'admin_init', 'qsm_addon_qsm_certificate_register_quiz_settings_tabs' );
-      add_action( 'admin_init', 'qsm_addon_qsm_certificate_register_results_details_tabs' );
-      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_qsm_certificate_variable', 10, 2 );
+      add_action( 'admin_init', 'qsm_addon_certificate_register_quiz_settings_tabs' );
+      add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
+      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10, 2 );
     }
 }
 

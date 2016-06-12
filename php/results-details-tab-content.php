@@ -8,9 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 * @return void
 * @since 0.1.0
 */
-function qsm_addon_qsm_certificate_register_results_details_tabs() {
+function qsm_addon_certificate_register_results_details_tabs() {
 	global $mlwQuizMasterNext;
-	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( 'Certificate', "qsm_addon_qsm_certificate_results_details_tabs_content" );
+	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( 'Certificate', "qsm_addon_certificate_results_details_tabs_content" );
 }
 
 /**
@@ -18,7 +18,7 @@ function qsm_addon_qsm_certificate_register_results_details_tabs() {
 *
 * @since 0.1.0
 */
-function qsm_addon_qsm_certificate_results_details_tabs_content() {
+function qsm_addon_certificate_results_details_tabs_content() {
 
   global $wpdb;
 
@@ -27,7 +27,7 @@ function qsm_addon_qsm_certificate_results_details_tabs_content() {
 
     // Retrieve results
     $result_id = intval( $_GET["result_id"] );
-		$results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM ".$wpdb->prefix."mlw_results WHERE result_id=%d", $result_id ) );
+		$results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id=%d", $result_id ) );
 
     // Prepare result data
     if ( is_serialized( $results_data->quiz_results ) && is_array( @unserialize( $results_data->quiz_results ) ) ) {
@@ -60,7 +60,7 @@ function qsm_addon_qsm_certificate_results_details_tabs_content() {
     $certificate_file = qsm_addon_qsm_certificate_generate_certificate( $quiz_results, true );
 
 		// Display link to certificate
-    if ( ! empty( $certificate_file ) && $certificate_file !== false ) {
+    if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
       $certificate_url = plugin_dir_url( __FILE__ )."certificates/$certificate_file";
       echo "<a href='$certificate_url' style='color: blue;'>Download Certificate</a><br />";
     }

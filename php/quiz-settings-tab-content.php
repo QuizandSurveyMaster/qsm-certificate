@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @since 0.1.0
  * @return void
  */
-function qsm_addon_qsm_certificate_register_quiz_settings_tabs() {
+function qsm_addon_certificate_register_quiz_settings_tabs() {
   global $mlwQuizMasterNext;
   if ( ! is_null( $mlwQuizMasterNext ) && ! is_null( $mlwQuizMasterNext->pluginHelper ) && method_exists( $mlwQuizMasterNext->pluginHelper, 'register_quiz_settings_tabs' ) ) {
-    $mlwQuizMasterNext->pluginHelper->register_quiz_settings_tabs( "Certificate", 'qsm_addon_qsm_certificate_quiz_settings_tabs_content' );
+    $mlwQuizMasterNext->pluginHelper->register_quiz_settings_tabs( "Certificate", 'qsm_addon_certificate_quiz_settings_tabs_content' );
   }
 }
 
@@ -20,7 +20,7 @@ function qsm_addon_qsm_certificate_register_quiz_settings_tabs() {
  * @since 0.1.0
  * @return void
  */
-function qsm_addon_qsm_certificate_quiz_settings_tabs_content() {
+function qsm_addon_certificate_quiz_settings_tabs_content() {
 
   // Enqueue your scripts and styles
   wp_enqueue_script( 'qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery' ) );
@@ -117,5 +117,6 @@ function qsm_addon_qsm_certificate_quiz_settings_tabs_content() {
   		<button class="button-primary">Save Settings</button>
 		</form>
 	</div>
+  <?php
 }
 ?>

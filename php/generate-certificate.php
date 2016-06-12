@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @param bool $return_file Whether the function should return the filepath or a boolean
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
-function qsm_addon_qsm_certificate_generate_certificate( $quiz_results, $return_file = false ) {
+function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file = false ) {
 
   global $wpdb;
 	global $mlwQuizMasterNext;
@@ -32,7 +32,7 @@ function qsm_addon_qsm_certificate_generate_certificate( $quiz_results, $return_
     $filename = 'certificate.pdf';
 
     // If the certificate does not already exist
-    if ( ! $file_exists( "../certificates/$filename" ) )
+    if ( ! $file_exists( "../certificates/$filename" ) ) {
 
       // Include Write HTML class
       if ( ! class_exists( 'PDF_HTML' ) ) {
@@ -43,7 +43,7 @@ function qsm_addon_qsm_certificate_generate_certificate( $quiz_results, $return_
       try {
 
         // Creates new PDF, set to Landscape
-        $pdf = new PDF_HTML():
+        $pdf = new PDF_HTML();
         $pdf->AddPage( 'L' );
 
         // Add logo

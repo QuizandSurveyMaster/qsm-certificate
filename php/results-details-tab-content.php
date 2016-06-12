@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 */
 function qsm_addon_certificate_register_results_details_tabs() {
 	global $mlwQuizMasterNext;
-	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( 'Certificate', "qsm_addon_certificate_results_details_tabs_content" );
+	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( 'Certificate Addon', "qsm_addon_certificate_results_details_tabs_content" );
 }
 
 /**
@@ -21,6 +21,7 @@ function qsm_addon_certificate_register_results_details_tabs() {
 function qsm_addon_certificate_results_details_tabs_content() {
 
   global $wpdb;
+	global $mlwQuizMasterNext;
 
   // If nonce is set and correct, save certificate settings
   if ( isset( $_POST["certificate_nonce"] ) && wp_verify_nonce( $_POST['certificate_nonce'], 'certificate') ) {
@@ -56,13 +57,22 @@ function qsm_addon_certificate_results_details_tabs_content() {
 			'question_answers_array' => $results[1]
 		);
 
+		$mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
+
     // Generate certificate
     $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, true );
 
 		// Display link to certificate
     if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
-      $certificate_url = plugin_dir_url( __FILE__ )."certificates/$certificate_file";
-      echo "<a href='$certificate_url' style='color: blue;'>Download Certificate</a><br />";
+      $certificate_url = plugin_dir_url( __FILE__ )."../certificates/$certificate_file";
+			?>
+			<div id="message" class="updated below-h2">
+				<p>
+					<strong>Success! </strong>
+					Your certificate has been created. <a target='_blank' href='<?php echo $certificate_url; ?>' style='color: blue;'>Download Certificate</a>
+				</p>
+			</div>
+			<?php
     }
   }
 	?>

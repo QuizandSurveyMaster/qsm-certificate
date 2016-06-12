@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function qsm_addon_certificate_register_addon_settings_tabs() {
   global $mlwQuizMasterNext;
   if ( ! is_null( $mlwQuizMasterNext ) && ! is_null( $mlwQuizMasterNext->pluginHelper ) && method_exists( $mlwQuizMasterNext->pluginHelper, 'register_quiz_settings_tabs' ) ) {
-    $mlwQuizMasterNext->pluginHelper->register_addon_settings_tab( "certificate", 'qsm_addon_certificate_addon_settings_tabs_content' );
+    $mlwQuizMasterNext->pluginHelper->register_addon_settings_tab( "Certificate", 'qsm_addon_certificate_addon_settings_tabs_content' );
   }
 }
 

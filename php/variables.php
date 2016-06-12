@@ -11,25 +11,43 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function qsm_addon_certificate_variable( $content, $quiz_array ) {
 
-  // Checks if variable is in content
-  if ( false !== strpos( $content, '%CERTIFICATE_LINK%' ) ) {
+  global $mlwQuizMasterNext;
 
-    // Generate certificate
-    $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_array, true );
+  // Load the settings
+  $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
+  $certificate_defaults = array(
+    'enabled' => 1,
+    'title' => 'Enter your title',
+    'content' => 'Enter your content',
+    'logo' => '',
+    'background' => ''
+  );
+  $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
-		// Checks if the file was created
-    if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
+  // If certificate is enabled
+  if ( 0 == $certificate_settings["enabled"] ) {
 
-      // Prepares url and link to certificate
-      $certificate_url = plugin_dir_url( __FILE__ )."certificates/$certificate_file";
-      $certificate_link = "<a href='$certificate_url' class='qmn_certificate_link'>Download Certificate</a>";
+    // Checks if variable is in content
+    if ( false !== strpos( $content, '%CERTIFICATE_LINK%' ) ) {
 
-      // Replaces variable with link
-      $content = str_replace( '%CERTIFICATE_LINK%', $certificate_link, $content );
-    } else {
-      // Replaces variable with empty string if file was not created
-      $content = str_replace( '%CERTIFICATE_LINK%', '', $content );
+      // Generate certificate
+      $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_array, true );
+
+  		// Checks if the file was created
+      if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
+
+        // Prepares url and link to certificate
+        $certificate_url = plugin_dir_url( __FILE__ ) . "../certificates/$certificate_file";
+        $certificate_link = "<a target='_blank' href='$certificate_url' class='qmn_certificate_link'>Download Certificate</a>";
+
+        // Replaces variable with link
+        $content = str_replace( '%CERTIFICATE_LINK%', $certificate_link, $content );
+      } else {
+        // Replaces variable with empty string if file was not created
+        $content = str_replace( '%CERTIFICATE_LINK%', '', $content );
+      }
     }
+
   }
 
   // Returns the content

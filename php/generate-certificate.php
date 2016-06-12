@@ -27,13 +27,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
   $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
   // If certificate is enabled
-  if ( $certificate_settings["enabled"] ) {
+  if ( 0 == $certificate_settings["enabled"] ) {
 
     $encoded_time_taken = urlencode( $quiz_results['time_taken'] );
-    $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
+    $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
 
     // If the certificate does not already exist
-    if ( ! $file_exists( "../certificates/$filename" ) ) {
+    if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
       if ( ! class_exists( 'PDF_HTML' ) ) {
@@ -69,7 +69,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         }
 
         // Generate the pdf
-        $pdf->Output( 'F', "../certificates/$filename" );
+        $pdf->Output( 'F', plugin_dir_path( __FILE__ ) . "../certificates/$filename" );
 
       } catch (Exception $e) {
         // If failed, log error and return false
@@ -80,7 +80,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
     // Returns filename or true based on $return_file parameter
     if ( $return_file ) {
-      return $filename;
+      return urlencode( $filename );
     } else {
       return true;
     }

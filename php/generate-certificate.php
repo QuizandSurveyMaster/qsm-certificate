@@ -61,9 +61,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $pdf = new PDF_HTML();
         $pdf->AddPage( 'L' );
 
-        // Add logo
-        if ( ! empty( $certificate_settings["logo"] ) ) {
-          $pdf->Image( $certificate_settings["logo"], 0, 0, $pdf->w, $pdf->h );
+        // Add background
+        if ( ! empty( $certificate_settings["background"] ) ) {
+          $pdf->Image( $certificate_settings["background"], 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
         }
         $pdf->Ln( 20 );
 
@@ -75,11 +75,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         // Add content
         $pdf->SetFont( 'Arial', '', 16);
         $content = apply_filters( 'mlw_qmn_template_variable_results_page', $certificate_settings["content"], $quiz_results );
+        $content = nl2br( $content, false );
         $pdf->WriteHTML( "<p align='center'>$content</p>" );
 
         // Add background
-        if ( ! empty( $certificate_settings["background"] ) ) {
-          $pdf->Image( $certificate_settings["background"], 110, 130 );
+        if ( ! empty( $certificate_settings["logo"] ) ) {
+          $pdf->Image( $certificate_settings["logo"], 110, 130 );
         }
 
         // Generate the pdf

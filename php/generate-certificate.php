@@ -78,7 +78,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $content = nl2br( $content, false );
         $pdf->WriteHTML( "<p align='center'>$content</p>" );
 
-        // Add background
+        // Add logo
         if ( ! empty( $certificate_settings["logo"] ) ) {
           $pdf->Image( $certificate_settings["logo"], 110, 130 );
         }

@@ -74,7 +74,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
         // Add content
         $pdf->SetFont( 'Arial', '', 16);
-        $content = apply_filters( 'mlw_qmn_template_variable_results_page', $certificate_settings["content"], $quiz_results );
+        $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         $pdf->WriteHTML( "<p align='center'>$content</p>" );
 
@@ -101,4 +101,5 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     }
   }
 }
+
 ?>

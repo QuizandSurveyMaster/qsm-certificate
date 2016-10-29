@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: Frank Corso
  * Author URI: http://quizandsurveymaster.com
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * @author
- * @version 0.1.0
+ * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '0.1.0';
+  	public $version = '1.0.0';
 
     /**
   	  * Main Construct Function
@@ -74,6 +74,20 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_addon_settings_tabs' );
       add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 1, 2 );
+
+      // Needed until the new variable system is finished
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_average_point', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_amount_correct', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_total_questions', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_correct_score', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_quiz_name', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_name', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_business', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_phone', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
     }
 
     /**
@@ -81,7 +95,7 @@ class QSM_Certificate {
      *
      * Checks to see if license is active and, if so, checks for updates
      *
-     * @since 1.3.0
+     * @since 1.0.0
      * @return void
      */
     public function check_license() {

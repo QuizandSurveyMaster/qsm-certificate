@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: Frank Corso
  * Author URI: http://quizandsurveymaster.com
- * Version: 0.1.0
+ * Version: 1.0.0
  *
  * @author
- * @version 0.1.0
+ * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '0.1.0';
+  	public $version = '1.0.0';
 
     /**
   	  * Main Construct Function
@@ -95,7 +95,7 @@ class QSM_Certificate {
      *
      * Checks to see if license is active and, if so, checks for updates
      *
-     * @since 1.3.0
+     * @since 1.0.0
      * @return void
      */
     public function check_license() {

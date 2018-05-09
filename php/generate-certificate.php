@@ -50,16 +50,36 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
-      if ( ! class_exists( 'PDF_HTML' ) ) {
-        include( "fpdf/WriteHTML.php" );
+      if ( ! class_exists( 'TCPDF' ) ) {
+        include( "TCPDF/tcpdf.php" );
       }
 
       // Try to create the PDF
       try {
 
         // Creates new PDF, set to Landscape
-        $pdf = new PDF_HTML();
-        $pdf->AddPage( 'L' );
+		$pdf = new TCPDF( 'L' );
+
+		// set default monospaced font
+		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
+
+		// set margins
+		$pdf->SetMargins( 10, 10, 10 );
+		$pdf->SetHeaderMargin( PDF_MARGIN_HEADER );
+		$pdf->SetFooterMargin( PDF_MARGIN_FOOTER );
+	
+		// set auto page breaks
+		$pdf->SetAutoPageBreak( TRUE, 8 );
+	
+		// set image scale factor
+		$pdf->setImageScale( PDF_IMAGE_SCALE_RATIO );
+	
+		// set font
+		$pdf->SetFont( 'helvetica', '', 9 );
+
+		// remove default header/footer
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(false);
 
         // Add background
         if ( ! empty( $certificate_settings["background"] ) ) {
@@ -68,12 +88,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $pdf->Ln( 20 );
 
         // Add title
-        $pdf->SetFont( 'Arial', 'B', 24);
+        $pdf->SetFont( 'helvetica', 'B', 24);
         $pdf->MultiCell( 280, 20, $certificate_settings["title"], 0, 'C');
         $pdf->Ln( 15 );
 
         // Add content
-        $pdf->SetFont( 'Arial', '', 16);
+        $pdf->SetFont( 'helvetica', '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         $pdf->WriteHTML( "<p align='center'>$content</p>" );
@@ -84,11 +104,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         }
 
         // Generate the pdf
-        $pdf->Output( 'F', plugin_dir_path( __FILE__ ) . "../certificates/$filename" );
+        $pdf->Output( plugin_dir_path( __FILE__ ) . "../certificates/$filename", 'F' );
 
       } catch (Exception $e) {
         // If failed, log error and return false
-        $mlwQuizMasterNext->log_manager->add( "FPDF Error", $e->getMessage(), 0, 'error' );
+        $mlwQuizMasterNext->log_manager->add( "TCPDF Error", $e->getMessage(), 0, 'error' );
         return false;
       }
     }

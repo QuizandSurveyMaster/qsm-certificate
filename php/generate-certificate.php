@@ -81,7 +81,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->setImageScale( PDF_IMAGE_SCALE_RATIO );
 	
 		// set font
-		$pdf->SetFont( 'helvetica', '', 9 );
+		$pdf->SetFont( 'freesans', '', 9 );
 
 		// remove default header/footer
 		$pdf->setPrintHeader(false);
@@ -96,12 +96,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $pdf->Ln( 20 );
 
         // Add title
-		$pdf->SetFont( 'helvetica', 'B', 24);
+		$pdf->SetFont( 'freesans', 'B', 24);
 		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 
         // Add content
-        $pdf->SetFont( 'helvetica', '', 16);
+        $pdf->SetFont( 'freesans', '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
 		$pdf->writeHTML( $content, true, false, true, false, 'C' );

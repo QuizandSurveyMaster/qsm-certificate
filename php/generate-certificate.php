@@ -52,9 +52,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
-      if ( ! class_exists( 'TCPDF' ) ) {
-        include( "TCPDF/tcpdf.php" );
-      }
+		if ( ! class_exists( 'TCPDF' ) ) {
+			include( "TCPDF/tcpdf.php" );
+		}
+
+		if ( ! defined( 'K_TCPDF_THROW_EXCEPTION_ERROR' ) ) {
+			define( 'K_TCPDF_THROW_EXCEPTION_ERROR', true );
+		}
 
       // Try to create the PDF
       try {
@@ -66,12 +70,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
 
 		// set margins
-		$pdf->SetMargins( 10, 10, 10 );
-		$pdf->SetHeaderMargin( PDF_MARGIN_HEADER );
-		$pdf->SetFooterMargin( PDF_MARGIN_FOOTER );
+		$pdf->SetMargins( 0, 0, 0, true );
+		$pdf->SetHeaderMargin( 0 );
+		$pdf->SetFooterMargin( 0 );
 	
 		// set auto page breaks
-		$pdf->SetAutoPageBreak( TRUE, 8 );
+		$pdf->SetAutoPageBreak( false, 0 );
 	
 		// set image scale factor
 		$pdf->setImageScale( PDF_IMAGE_SCALE_RATIO );
@@ -82,6 +86,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		// remove default header/footer
 		$pdf->setPrintHeader(false);
 		$pdf->setPrintFooter(false);
+    
+		$pdf->AddPage();
 
         // Add background
         if ( ! empty( $certificate_settings["background"] ) ) {
@@ -90,19 +96,22 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $pdf->Ln( 20 );
 
         // Add title
-        $pdf->SetFont( 'helvetica', 'B', 24);
-        $pdf->MultiCell( 280, 20, $certificate_settings["title"], 0, 'C');
+		$pdf->SetFont( 'helvetica', 'B', 24);
+		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 
         // Add content
         $pdf->SetFont( 'helvetica', '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
-        $pdf->WriteHTML( "<p align='center'>$content</p>" );
+		$pdf->writeHTML( $content, true, false, true, false, 'C' );
+		
+		$pdf->Ln( 15 );
 
         // Add logo
-        if ( ! empty( $certificate_settings["logo"] ) ) {
-          $pdf->Image( $certificate_settings["logo"], 110, 130 );
+        if ( ! empty( $certificate_settings['logo'] ) ) {
+		//   $pdf->Image( $certificate_settings["logo"], 110, 130 );
+			$pdf->writeHTML( '<div style="text-align:center"><img src="' . $certificate_settings['logo'] . '" /></div>' );
         }
 
         // Generate the pdf

@@ -73,7 +73,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 
 	?>
   <h2>Certificate</h2>
-  <p>After enabling and configuring your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.</p>
+  <p><b>After enabling and configuring your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.</b></p>
   <form action="" method="post">
     <button class="button-primary">Save Settings</button>
 		<table class="form-table">

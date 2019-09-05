@@ -3,7 +3,7 @@
  * Plugin Name: QSM - Certificate
  * Plugin URI: http://quizandsurveymaster.com
  * Description: Adds the ability to give certificates to quiz/survey takers
- * Author: Frank Corso
+ * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
  * Version: 1.0.0
  *

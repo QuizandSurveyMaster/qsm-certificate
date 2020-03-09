@@ -105,6 +105,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         $content = iconv('UTF-8', 'windows-1252', $content);
+        $content = utf8_encode($content);
 		$pdf->writeHTML( $content, true, false, true, false, 'C' );
 		
 		$pdf->Ln( 15 );

@@ -1,14 +1,18 @@
+<h3>1.0.2 (03/17/20)</h3>
+<ul>
+ 	<li>Bug: Certificate content is blank when using name with Spanish Accents</li>
+</ul>
 <h3>1.0.1 (09/30/19)</h3>
 <ul>
- 	<li>Added utf character support
-Changed author name
-Updated the TCPDF plugin in certificate - #19h528</li>
+ 	<li>Feature: Added utf character support</li>
+<li>Feature: Changed author name</li>
+<li>Feature: Updated the TCPDF plugin in certificate</li>
 </ul>
 <h3>1.0.0 (10/28/16)</h3>
 <ul>
  	<li>Fixes template variable bug causing some sites to have issues with the variables</li>
 </ul>
-<h3>0.1.0Â (06/13/16)</h3>
+<h3>0.1.0 (06/13/16)</h3>
 <ul>
  	<li>Initial Release</li>
 </ul>

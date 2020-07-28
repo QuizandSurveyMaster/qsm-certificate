@@ -1,3 +1,8 @@
+<h3>1.0.3 (July 28, 2020)</h3>
+<ul>
+ 	<li>Bug: Fixed the url problem of certificate link.</li>
+        <li>Bug: Fixed %CERTIFICATE_LINK% template variable doesn't generate certificate link in the emails after version 7.0 update issue.</li>
+</ul>
 <h3>1.0.2 (03/17/20)</h3>
 <ul>
  	<li>Bug: Certificate content is blank when using name with Spanish Accents</li>

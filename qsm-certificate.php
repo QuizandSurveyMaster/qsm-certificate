@@ -73,7 +73,7 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_certificate_register_quiz_settings_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_addon_settings_tabs' );
-      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 1, 2 );
+      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10,2 );
 
       // Needed until the new variable system is finished
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );

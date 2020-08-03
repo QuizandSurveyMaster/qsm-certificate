@@ -45,9 +45,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
   // If certificate is enabled
   if ( 0 == $certificate_settings["enabled"] ) {
 
-    $encoded_time_taken = urlencode( $quiz_results['time_taken'] );
-    $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
-
+    $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
+    $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
+    $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
     // If the certificate does not already exist
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 

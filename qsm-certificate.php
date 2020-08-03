@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.0.2
+ * Version: 1.0.3
  *
  * @author
- * @version 1.0.2
+ * @version 1.0.3
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '1.0.2';
+  	public $version = '1.0.3';
 
     /**
   	  * Main Construct Function
@@ -73,7 +73,7 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_certificate_register_quiz_settings_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_addon_settings_tabs' );
-      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 1, 2 );
+      add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10,2 );
 
       // Needed until the new variable system is finished
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );

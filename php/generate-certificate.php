@@ -96,12 +96,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $pdf->Ln( 20 );
 
         // Add title
-		$pdf->SetFont( 'dejavusans', 'B', 24);
+		$certificate_font = isset($certificate_settings['certificate_font']) ? $certificate_settings['certificate_font'] : 'dejavusans';
+		$pdf->SetFont( $certificate_font, 'B', 24);
 		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 
         // Add content
-        $pdf->SetFont( 'dejavusans', '', 16);
+        $pdf->SetFont( $certificate_font, '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         $content = iconv('UTF-8', 'windows-1252', $content);

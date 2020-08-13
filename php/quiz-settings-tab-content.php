@@ -35,8 +35,23 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     // Prepares certificate settings array
     $certificate_settings = array(
       'enabled' => intval( $_POST["enableCertificates"] ),
+      'certificate_font' => sanitize_text_field( $_POST["certificate_font"] ),
       'title' => sanitize_text_field( $_POST["certificate_title"] ),
-      'content' => wp_kses_post( $_POST["certificate_template"] ),
+      //'content' => wp_kses_post( $_POST["certificate_template"] ),
+      'content' =>  wp_kses($_POST["certificate_template"],
+         array(
+           'b' => array(),
+           'i' => array(),
+           'u' => array(),
+           'br' => array(),
+           'p' => array(
+               'style' => array()
+           ),
+           'span' => array(
+               'style' => array()
+           )
+         )
+        ) ,
       'logo' => esc_url_raw( $_POST["certificate_logo"] ),
       'background' => esc_url_raw( $_POST["certificate_background"] )
     );
@@ -64,6 +79,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
   }
   $certificate_defaults = array(
     'enabled' => 1,
+    'certificate_font' => 'dejavusans',
     'title' => 'Enter your title',
     'content' => 'Enter your content',
     'logo' => '',
@@ -82,6 +98,12 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30">Yes</label><br>
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31">No</label><br>
+				</td>
+			</tr>
+      <tr valign="top">
+				<td><label for="enableCertificates">Certificates font family</label></td>
+				<td>
+				    <input type="text" id="certificate_font" name="certificate_font" value='<?php echo $certificate_settings["certificate_font"]; ?>' /><br>
 				</td>
 			</tr>
 			<tr>

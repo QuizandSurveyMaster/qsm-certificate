@@ -101,7 +101,12 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				</td>
 			</tr>
       <tr valign="top">
-				<td><label for="enableCertificates">Certificates font family</label></td>
+				<td>
+          <label for="enableCertificates"><strong>Certificates font family</strong></label>
+          <p>
+            Please make sure the fonts are already added to your WordPress website
+          </p>
+        </td>
 				<td>
 				    <input type="text" id="certificate_font" name="certificate_font" value='<?php echo $certificate_settings["certificate_font"]; ?>' /><br>
 				</td>

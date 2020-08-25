@@ -105,7 +105,10 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
           <label for="enableCertificates"><strong>Certificates font family</strong></label>
           <p>
-            Please add font file (ttf) path
+            Please add font file (ttf) path.
+          </p>
+          <p>
+            Fonts are loading for the first time. This might take some time
           </p>
         </td>
 				<td>

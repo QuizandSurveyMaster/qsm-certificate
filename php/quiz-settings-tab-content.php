@@ -105,7 +105,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
           <label for="enableCertificates"><strong>Certificates font family</strong></label>
           <p>
-            Please make sure the fonts are already added to your WordPress website
+            Please add font file (ttf) path
           </p>
         </td>
 				<td>

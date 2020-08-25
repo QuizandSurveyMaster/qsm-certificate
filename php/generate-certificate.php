@@ -62,9 +62,10 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
       // Try to create the PDF
       try {
-
+				$unicode = true;
+				$format = "UTF-8";
         // Creates new PDF, set to Landscape
-		$pdf = new TCPDF( 'L' );
+		$pdf = new TCPDF( 'L', PDF_UNIT, "letter", $unicode, $format, false );
 
 		// set default monospaced font
 		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
@@ -97,12 +98,17 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
         // Add title
 		$certificate_font = isset($certificate_settings['certificate_font']) ? $certificate_settings['certificate_font'] : 'dejavusans';
-		$pdf->SetFont( $certificate_font, 'B', 24);
+		if($certificate_font != 'dejavusans') {
+			$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
+		}
+		
+		
+		$pdf->SetFont( $fontname, 'B', 24);
 		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 
         // Add content
-        $pdf->SetFont( $certificate_font, '', 16);
+        $pdf->SetFont( $fontname, '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         $content = iconv('UTF-8', 'windows-1252', $content);

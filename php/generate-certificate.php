@@ -98,10 +98,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
         // Add title
 		$certificate_font = isset($certificate_settings['certificate_font']) ? $certificate_settings['certificate_font'] : 'dejavusans';
-		if($certificate_font != 'dejavusans') {
+		if(empty($certificate_font)) {
+			$fontname = 'dejavusans';
+		}else {
 			$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
 		}
-		
 		
 		$pdf->SetFont( $fontname, 'B', 24);
 		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );

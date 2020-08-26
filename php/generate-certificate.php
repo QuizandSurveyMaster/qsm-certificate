@@ -101,7 +101,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		if(empty($certificate_font)) {
 			$fontname = 'dejavusans';
 		}else {
-			$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
+			if(is_numeric($certificate_font)){
+				$certificate_font = get_attached_file($certificate_font);
+				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
+			}else {
+				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
+			}
 		}
 		
 		$pdf->SetFont( $fontname, 'B', 24);

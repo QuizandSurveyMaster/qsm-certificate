@@ -107,9 +107,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
           <p>
             <?php echo __('Please add font file (ttf) path.') ?>
           </p>
-          <p>
-            <?php echo __('Fonts are loading for the first time. This might take some time.') ?>
-          </p>
         </td>
 				<td>
 				    <input type="text" id="certificate_font" name="certificate_font" value='<?php echo $certificate_settings["certificate_font"]; ?>' /><br>

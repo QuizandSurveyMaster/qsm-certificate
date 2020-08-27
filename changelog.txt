@@ -1,3 +1,7 @@
+<h3>1.0.4 (August 27, 2020)</h3>
+<ul>
+ 	<li>Feature: Added custom fonts in certificate.</li>
+</ul>
 <h3>1.0.3 (July 28, 2020)</h3>
 <ul>
  	<li>Bug: Fixed the url problem of certificate link.</li>

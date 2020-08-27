@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '1.0.3';
+  	public $version = '1.0.4';
 
     /**
   	  * Main Construct Function

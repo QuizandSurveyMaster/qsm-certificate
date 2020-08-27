@@ -105,7 +105,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
           <label for="enableCertificates"><strong><?php echo __('Certificates font family'); ?></strong></label>
           <p>
-            <?php echo __('Please add font file (ttf) path.') ?>
+            <?php echo __('Please add font file (ttf) attachment ID or file path.') ?>
           </p>
         </td>
 				<td>

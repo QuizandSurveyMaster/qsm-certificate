@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.0.3
+ * Version: 1.0.4
  *
  * @author
- * @version 1.0.3
+ * @version 1.0.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;

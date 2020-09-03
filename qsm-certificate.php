@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.0.3
+ * Version: 1.0.4
  *
  * @author
- * @version 1.0.3
+ * @version 1.0.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '1.0.3';
+  	public $version = '1.0.4';
 
     /**
   	  * Main Construct Function
@@ -88,6 +88,7 @@ class QSM_Certificate {
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
+      add_filter('upload_mimes', array($this, 'add_ttf_upload_mimes'));
     }
 
     /**
@@ -122,6 +123,11 @@ class QSM_Certificate {
     		'author' 	=> 'Frank Corso'  // author of this plugin
       	)
       );
+    }
+    
+    public function add_ttf_upload_mimes($existing_mimes) {
+      $existing_mimes['ttf'] = 'application/x-font-ttf';
+      return $existing_mimes;
     }
 }
 

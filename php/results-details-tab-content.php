@@ -66,7 +66,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
     if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
       $certificate_url = plugin_dir_url( __FILE__ )."../certificates/$certificate_file";
 			?>
-			<div id="message" class="updated below-h2">
+                        <div id="message" class="updated below-h2" style="margin-top: 20px;">
 				<p>
 					<strong>Success! </strong>
 					Your certificate has been created. <a target='_blank' href='<?php echo $certificate_url; ?>' style='color: blue;'>Download Certificate</a>
@@ -76,7 +76,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
     }
   }
 	?>
-	<form action="" method="post">
+<form style="padding: 50px 0;" action="" method="post">
 		<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary">Generate Certificate</button>
 	</form>

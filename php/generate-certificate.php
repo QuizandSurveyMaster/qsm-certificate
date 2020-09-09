@@ -105,8 +105,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				$certificate_font = get_attached_file($certificate_font);
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
 			}else {
+                            if( file_exists($certificate_font) ) {
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
-			}
+                              }else {
+                                $fontname = $certificate_font;
+                            }
+			} 
 		}
 		
 		$pdf->SetFont( $fontname, 'B', 24);

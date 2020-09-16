@@ -1,3 +1,7 @@
+<h3>1.0.5 (September 16, 2020)</h3>
+<ul>
+ 	<li>Bug: Fixed quiz result was not showing issue when default font family was set.</li>
+</ul>
 <h3>1.0.4 (August 27, 2020)</h3>
 <ul>
  	<li>Feature: Added custom fonts in certificate.</li>

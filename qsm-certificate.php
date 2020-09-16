@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.0.4
+ * Version: 1.0.5
  *
  * @author
- * @version 1.0.4
+ * @version 1.0.5
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '1.0.4';
+  	public $version = '1.0.5';
 
     /**
   	  * Main Construct Function

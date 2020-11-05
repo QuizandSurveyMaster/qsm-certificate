@@ -117,6 +117,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->SetFont( $fontname, 'B', 24);
                 $certificate_title = $certificate_settings["title"];
                 $certificate_title = nl2br( $certificate_title, false );
+                $certificate_title = stripslashes( $certificate_title );
 		$pdf->writeHTML( "<h1>{$certificate_title}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 

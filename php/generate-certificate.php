@@ -113,12 +113,14 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 			} 
 		}
 		
+                ini_set('default_charset', 'UTF-8');
 		$pdf->SetFont( $fontname, 'B', 24);
-		$pdf->writeHTML( "<h1>{$certificate_settings["title"]}</h1>", true, false, true, false, 'C' );
+                $certificate_title = $certificate_settings["title"];
+                $certificate_title = nl2br( $certificate_title, false );
+		$pdf->writeHTML( "<h1>{$certificate_title}</h1>", true, false, true, false, 'C' );
         $pdf->Ln( 15 );
 
-        // Add content
-        ini_set('default_charset', 'UTF-8');
+        // Add content        
         $pdf->SetFont( $fontname, '', 16);
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );

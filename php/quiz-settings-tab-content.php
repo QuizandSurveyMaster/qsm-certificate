@@ -116,7 +116,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td width="30%">
 					<strong><?php echo __('Title'); ?></strong>
 				</td>
-				<td><textarea cols="80" rows="15" id="certificate_title" name="certificate_title"><?php echo $certificate_settings["title"]; ?></textarea>
+                                <td><textarea cols="80" rows="15" id="certificate_title" name="certificate_title"><?php echo stripslashes( $certificate_settings["title"] ); ?></textarea>
 				</td>
 			</tr>
 			<tr>

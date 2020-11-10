@@ -1,3 +1,7 @@
+<h3>1.0.6 (November 10, 2020)</h3>
+<ul>
+ 	<li>Bug: Fixed Arabic & Hebrew language issue in certificate.</li>
+</ul>
 <h3>1.0.5 (September 16, 2020)</h3>
 <ul>
  	<li>Bug: Fixed issues with quiz result when default font family is set.</li>

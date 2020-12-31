@@ -16,7 +16,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
 	global $wpdb;
 	global $mlwQuizMasterNext;
-
 	// Load the settings.
 	$certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
 	if ( ! is_array( $certificate_settings ) ) {

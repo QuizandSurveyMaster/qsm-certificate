@@ -88,6 +88,7 @@ class QSM_Certificate {
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
+	  add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_full_name', 10, 2 );
       add_filter('upload_mimes', array($this, 'add_ttf_upload_mimes'));
     }
 

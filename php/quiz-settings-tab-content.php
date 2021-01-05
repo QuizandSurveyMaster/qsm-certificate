@@ -131,6 +131,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %CORRECT_SCORE%</p>
 					<p style="margin: 2px 0">- %QUIZ_NAME%</p>
 					<p style="margin: 2px 0">- %USER_NAME%</p>
+					<p style="margin: 2px 0">- %FULL_NAME%</p>
 					<p style="margin: 2px 0">- %USER_BUSINESS%</p>
 					<p style="margin: 2px 0">- %USER_PHONE%</p>
 					<p style="margin: 2px 0">- %USER_EMAIL%</p>

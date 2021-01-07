@@ -1,3 +1,8 @@
+<h3>1.0.7 (January 06, 2021)</h3>
+<ul>
+    <li>Bug: Fixed %DATE_TAKEN% variable not working issue while using certificate.</li>
+    <li>Feature: Added %FULL_NAME% variable to display full name in certificate.</li>
+</ul>
 <h3>1.0.6 (November 10, 2020)</h3>
 <ul>
  	<li>Bug: Fixed Arabic & Hebrew language issue in certificate.</li>

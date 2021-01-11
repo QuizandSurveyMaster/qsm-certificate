@@ -1,3 +1,7 @@
+<h3>1.0.8 (January 11, 2021)</h3>
+<ul>
+    <li>Bug: Fixed certificate content is not showing in certificate.</li>    
+</ul>
 <h3>1.0.7 (January 06, 2021)</h3>
 <ul>
     <li>Bug: Fixed %DATE_TAKEN% variable not working issue while using certificate.</li>

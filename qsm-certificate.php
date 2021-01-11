@@ -88,10 +88,32 @@ class QSM_Certificate {
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
-      add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_full_name', 10, 2 );
+      add_filter( 'qsm_addon_certificate_content_filter', array($this, 'mlw_certificate_user_full_name'), 10, 2 );
       add_filter('upload_mimes', array($this, 'add_ttf_upload_mimes'));
     }
-
+    
+    /**
+     * Display full name of user using %FULL_NAME%.
+     * 
+     * @since 1.0.8
+     * @param string $content
+     * @param Arr $mlw_quiz_array
+     * @return type
+     */
+    public function mlw_certificate_user_full_name($content, $mlw_quiz_array){
+        if (false !== strpos($content, '%FULL_NAME%')) { 
+            $current_user = wp_get_current_user(); 
+            $firstname = get_user_meta( $current_user->ID, 'first_name', true );
+            $lastname = get_user_meta( $current_user->ID, 'last_name', true );
+            if(!empty($firstname) && !empty($lastname))
+                    $full_name =  $firstname." ".$lastname;
+            else
+                    $full_name = $current_user->display_name;
+            $content = str_replace("%FULL_NAME%", (isset($full_name) ? $full_name : ''), $content);
+        }
+        return $content;
+    }
+    
     /**
      * Checks license
      *

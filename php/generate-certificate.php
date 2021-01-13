@@ -91,9 +91,15 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->AddPage();
 
         // Add background
-        if ( ! empty( $certificate_settings["background"] ) ) {
-          $pdf->Image( $certificate_settings["background"], 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+		$background = $certificate_settings["background"];
+        if ( ! empty( $background ) ) {
+        	if ( isSVG( $background ) ) {
+        		$pdf->ImageSVG( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+        	} else { 
+        		$pdf->Image( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+          	}
         }
+
         $pdf->Ln( 20 );
 
         // Add title
@@ -132,9 +138,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->Ln( 15 );
 
         // Add logo
-        if ( ! empty( $certificate_settings['logo'] ) ) {
-		//   $pdf->Image( $certificate_settings["logo"], 110, 130 );
-			$pdf->writeHTML( '<div style="text-align:center"><img src="' . $certificate_settings['logo'] . '" /></div>' );
+		$logo = $certificate_settings['logo'];
+		if ( ! empty( $logo ) ) {
+			if ( isSVG( $logo ) ) {
+				$pdf->ImageSVG( $logo, 0, 40 , '', '', '', '', 'C' );
+			} else {
+				$pdf->Image( $logo, 0, 40, '', '', '', '', 'C' );
+			}
         }
 
         // Generate the pdf
@@ -154,6 +164,10 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
       return true;
     }
   }
+
+	function isSVG( $path ) {
+		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
+  	}
 }
 
 ?>

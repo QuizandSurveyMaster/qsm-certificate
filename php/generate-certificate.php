@@ -48,7 +48,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
     $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
     $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
-    // If the certificate does not already exist
+	$isSVG = function ( $path ) {
+		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
+	};
+	
+	// If the certificate does not already exist
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
@@ -93,7 +97,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         // Add background
 		$background = $certificate_settings["background"];
         if ( ! empty( $background ) ) {
-        	if ( isSVG( $background ) ) {
+        	if ( $isSVG( $background ) ) {
         		$pdf->ImageSVG( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
         	} else { 
         		$pdf->Image( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
@@ -140,7 +144,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         // Add logo
 		$logo = $certificate_settings['logo'];
 		if ( ! empty( $logo ) ) {
-			if ( isSVG( $logo ) ) {
+			if ( $isSVG( $logo ) ) {
 				$pdf->ImageSVG( $logo, 0, 40 , '', '', '', '', 'C' );
 			} else {
 				$pdf->Image( $logo, 0, 40, '', '', '', '', 'C' );
@@ -164,10 +168,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
       return true;
     }
   }
-
-	function isSVG( $path ) {
-		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
-  	}
 }
 
 ?>

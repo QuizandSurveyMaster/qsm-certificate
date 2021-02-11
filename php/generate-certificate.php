@@ -71,9 +71,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
 
 		// set margins
-		$pdf->SetMargins( 0, 0, 0, true );
-		$pdf->SetHeaderMargin( 0 );
-		$pdf->SetFooterMargin( 0 );
+//		$pdf->SetMargins( 0, 0, 0, true );
+//		$pdf->SetHeaderMargin( 0 );
+//		$pdf->SetFooterMargin( 0 );
 	
 		// set auto page breaks
 		$pdf->SetAutoPageBreak( false, 0 );

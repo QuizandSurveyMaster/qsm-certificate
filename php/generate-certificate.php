@@ -98,6 +98,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
         // Add title
 		$certificate_font = isset($certificate_settings['certificate_font']) ? $certificate_settings['certificate_font'] : 'dejavusans';
+
+
 		if(empty($certificate_font)) {
 			$fontname = 'dejavusans';
 		}else {
@@ -105,11 +107,17 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				$certificate_font = get_attached_file($certificate_font);
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
 			}else {
-                            if( file_exists($certificate_font) ) {
-				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
-                              }else {
-                                $fontname = $certificate_font;
-                            }
+					if(qsm_does_url_exits($certificate_font))
+					{
+                	$certificate_font = attachment_url_to_postid($certificate_font);
+                	$certificate_font = get_attached_file($certificate_font);
+                	
+					$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
+					}
+					else
+					{
+						$fontname = 'dejavusans';
+					}
 			} 
 		}
 		
@@ -154,6 +162,23 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
       return true;
     }
   }
+}
+
+// Check If URL is Exists or not
+function qsm_does_url_exits($url)
+{
+	$ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if ($code == 200) {
+        $status = true;
+    } else {
+        $status = false;
+    }
+    curl_close($ch);
+    return $status;
 }
 
 ?>

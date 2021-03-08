@@ -82,4 +82,3 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	</form>
 	<?php
 }
-?>

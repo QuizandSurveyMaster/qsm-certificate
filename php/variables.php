@@ -68,5 +68,3 @@ function qsm_addon_certificate_variable( $content, $quiz_array ) {
   // Returns the content
   return $content;
 }
-
-?>

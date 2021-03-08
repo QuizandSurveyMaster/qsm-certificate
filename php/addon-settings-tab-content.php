@@ -96,4 +96,3 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
   </form>
   <?php
 }
-?>

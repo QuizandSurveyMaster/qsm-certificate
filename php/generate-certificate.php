@@ -134,7 +134,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
         $content = nl2br( $content, false );
         //$content = iconv('UTF-8', 'windows-1252', $content);
-        //$content = utf8_encode($content);
+        $content = utf8_encode($content);
+
 		$pdf->writeHTML( $content, true, false, true, false, 'C' );
 		
 		$pdf->Ln( 15 );
@@ -146,7 +147,10 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         }
 
         // Generate the pdf
+        ob_end_clean();
         $pdf->Output( plugin_dir_path( __FILE__ ) . "../certificates/$filename", 'F' );
+
+        
 
       } catch (Exception $e) {
         // If failed, log error and return false
@@ -158,6 +162,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     // Returns filename or true based on $return_file parameter
     if ( $return_file ) {
       return urlencode( $filename );
+       
     } else {
       return true;
     }
@@ -180,5 +185,3 @@ function qsm_does_url_exits($url)
     curl_close($ch);
     return $status;
 }
-
-?>

@@ -1,5 +1,6 @@
 <h3>1.0.10 (March 26, 2021)</h3>
 <ul>
+	<li>Feature: Added SVG format for logo and background.</li>
     <li>Bug: Fixed the issue of line breaks not visible in PDF.</li>
 </ul>
 <h3>1.0.9 (February 23, 2021)</h3>

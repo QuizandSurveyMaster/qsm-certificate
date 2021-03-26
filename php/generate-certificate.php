@@ -48,7 +48,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
     $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
     $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
-    // If the certificate does not already exist
+	$isSVG = function ( $path ) {
+		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
+	};
+	
+	// If the certificate does not already exist
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
@@ -71,9 +75,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
 
 		// set margins
-		$pdf->SetMargins( 0, 0, 0, true );
-		$pdf->SetHeaderMargin( 0 );
-		$pdf->SetFooterMargin( 0 );
+//		$pdf->SetMargins( 0, 0, 0, true );
+//		$pdf->SetHeaderMargin( 0 );
+//		$pdf->SetFooterMargin( 0 );
 	
 		// set auto page breaks
 		$pdf->SetAutoPageBreak( false, 0 );
@@ -91,9 +95,15 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->AddPage();
 
         // Add background
-        if ( ! empty( $certificate_settings["background"] ) ) {
-          $pdf->Image( $certificate_settings["background"], 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+		$background = $certificate_settings["background"];
+        if ( ! empty( $background ) ) {
+        	if ( $isSVG( $background ) ) {
+        		$pdf->ImageSVG( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+        	} else { 
+        		$pdf->Image( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+          	}
         }
+
         $pdf->Ln( 20 );
 
         // Add title
@@ -132,9 +142,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->Ln( 15 );
 
         // Add logo
-        if ( ! empty( $certificate_settings['logo'] ) ) {
-		//   $pdf->Image( $certificate_settings["logo"], 110, 130 );
-			$pdf->writeHTML( '<div style="text-align:center"><img src="' . $certificate_settings['logo'] . '" /></div>' );
+		$logo = $certificate_settings['logo'];
+		if ( ! empty( $logo ) ) {
+			if ( $isSVG( $logo ) ) {
+				$pdf->ImageSVG( $logo, 0, 40 , '', '', '', '', 'C' );
+			} else {
+				$pdf->Image( $logo, 0, 40, '', '', '', '', 'C' );
+			}
         }
 
         // Generate the pdf
@@ -155,5 +169,22 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     }
   }
 }
+// Check If URL is Exists or not
+function qsm_does_url_exits($url)
+{
+	$ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if ($code == 200) {
+        $status = true;
+    } else {
+        $status = false;
+    }
+    curl_close($ch);
+    return $status;
+}
+
 
 ?>

@@ -48,7 +48,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
     $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
     $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
-    // If the certificate does not already exist
+	$isSVG = function ( $path ) {
+		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
+	};
+	
+	// If the certificate does not already exist
     if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
 
       // Include Write HTML class
@@ -91,9 +95,15 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->AddPage();
 
         // Add background
-        if ( ! empty( $certificate_settings["background"] ) ) {
-          $pdf->Image( $certificate_settings["background"], 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+		$background = $certificate_settings["background"];
+        if ( ! empty( $background ) ) {
+        	if ( $isSVG( $background ) ) {
+        		$pdf->ImageSVG( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+        	} else { 
+        		$pdf->Image( $background, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight() );
+          	}
         }
+
         $pdf->Ln( 20 );
 
         // Add title
@@ -132,9 +142,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->Ln( 15 );
 
         // Add logo
-        if ( ! empty( $certificate_settings['logo'] ) ) {
-		//   $pdf->Image( $certificate_settings["logo"], 110, 130 );
-			$pdf->writeHTML( '<div style="text-align:center"><img src="' . $certificate_settings['logo'] . '" /></div>' );
+		$logo = $certificate_settings['logo'];
+		if ( ! empty( $logo ) ) {
+			if ( $isSVG( $logo ) ) {
+				$pdf->ImageSVG( $logo, 0, 40 , '', '', '', '', 'C' );
+			} else {
+				$pdf->Image( $logo, 0, 40, '', '', '', '', 'C' );
+			}
         }
 
         // Generate the pdf

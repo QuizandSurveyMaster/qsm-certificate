@@ -143,14 +143,14 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Logo (Must be JPG, JPEG, PNG or GIF)'); ?></strong>
+					<strong><?php echo __('URL To Logo (Must be JPG, JPEG, PNG, GIF or SVG)'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="15" id="certificate_logo" name="certificate_logo"><?php echo $certificate_settings["logo"]; ?></textarea>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG or GIF)'); ?></strong>
+					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="15" id="certificate_background" name="certificate_background"><?php echo $certificate_settings["background"]; ?></textarea>
 				</td>

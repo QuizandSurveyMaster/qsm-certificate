@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 */
 function qsm_addon_certificate_register_results_details_tabs() {
 	global $mlwQuizMasterNext;
-	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( 'Certificate Addon', "qsm_addon_certificate_results_details_tabs_content" );
+	$mlwQuizMasterNext->pluginHelper->register_results_settings_tab( __('Certificate Addon', 'qsm-certificate'), "qsm_addon_certificate_results_details_tabs_content" );
 }
 
 /**
@@ -68,8 +68,8 @@ function qsm_addon_certificate_results_details_tabs_content() {
 			?>
                         <div id="message" class="updated below-h2" style="margin-top: 20px;">
 				<p>
-					<strong>Success! </strong>
-					Your certificate has been created. <a target='_blank' href='<?php echo $certificate_url; ?>' style='color: blue;'>Download Certificate</a>
+					<strong><?php _e('Success!', 'qsm-certificate'); ?> </strong>
+					<?php _e('Your certificate has been created.', 'qsm-certificate'); ?> <a target='_blank' href='<?php echo $certificate_url; ?>' style='color: blue;'><?php _e('Download Certificate', 'qsm-certificate'); ?></a>
 				</p>
 			</div>
 			<?php
@@ -78,7 +78,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	?>
 <form style="padding: 50px 0;" action="" method="post">
 		<?php wp_nonce_field('certificate','certificate_nonce'); ?>
-		<button class="button-primary">Generate Certificate</button>
+		<button class="button-primary"><?php _e('Generate Certificate', 'qsm-certificate'); ?></button>
 	</form>
 	<?php
 }

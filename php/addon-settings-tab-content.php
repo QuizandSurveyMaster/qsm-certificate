@@ -87,7 +87,7 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
   <form action="" method="post">
     <table class="form-table" style="width: 100%;">
       <tr valign="top">
-        <th scope="row"><label for="license_key">Addon License Key</label></th>
+        <th scope="row"><label for="license_key"><?php _e('Addon License Key', 'qsm-certificate'); ?></label></th>
         <td><input type="text" name="license_key" id="license_key" value="<?php echo $certificate_data["license_key"]; ?>"></td>
       </tr>
     </table>

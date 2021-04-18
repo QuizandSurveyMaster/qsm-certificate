@@ -88,7 +88,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
   $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
 	?>
-  <h2>Certificate</h2>
+  <h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
   <p><b><?php echo __('After enabling and configuring your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
   <p><a href="https://quizandsurveymaster.com/docs/v7/adding-custom-font-to-certificate-addon/" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
   <form action="" method="post">

@@ -1,3 +1,8 @@
+<h3>1.0.11 (April 28, 2021)</h3>
+<ul>
+	<li>Feature: Implemented Translation support.</li>
+	<li>Bug: Fixed the issue of unable to embed font by URL.</li>
+</ul>
 <h3>1.0.10 (March 26, 2021)</h3>
 <ul>
 	<li>Feature: Added SVG format for logo and background.</li>

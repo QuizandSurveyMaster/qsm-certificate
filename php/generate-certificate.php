@@ -35,8 +35,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	}
   $certificate_defaults = array(
     'enabled' => 1,
-    'title' => 'Enter your title',
-    'content' => 'Enter your content',
+    'title' => _e('Enter your title', 'qsm-certificate'),
+    'content' => _e('Enter your content', 'qsm-certificate'),
     'logo' => '',
     'background' => ''
   );
@@ -115,6 +115,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				$certificate_font = get_attached_file($certificate_font);
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
 			}else {
+				$upload = wp_upload_dir();
+				$certificate_font = str_replace($upload['url'], $upload['path'], $certificate_font);
                             if( file_exists($certificate_font) ) {
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
                               }else {

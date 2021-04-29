@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.0.10
+ * Version: 1.0.11
  *
  * @author
- * @version 1.0.10
+ * @version 1.0.11
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -29,7 +29,7 @@ class QSM_Certificate {
   	 * @var string
   	 * @since 0.1.0
   	 */
-  	public $version = '1.0.10';
+  	public $version = '1.0.11';
 
     /**
   	  * Main Construct Function
@@ -73,6 +73,7 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_certificate_register_quiz_settings_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_addon_settings_tabs' );
+      add_action( 'admin_init', 'qsm_addon_qsm_certificate_textdomain');
       add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10,2 );
 
       // Needed until the new variable system is finished
@@ -178,5 +179,9 @@ add_action( 'plugins_loaded', 'qsm_addon_qsm_certificate_load' );
  */
 function qsm_addon_qsm_certificate_missing_qsm() {
   echo '<div class="error"><p>QSM - Certificate requires Quiz And Survey Master. Please install and activate the Quiz And Survey Master plugin.</p></div>';
+}
+
+function qsm_addon_qsm_certificate_textdomain(){
+  load_plugin_textdomain( 'qsm-certificate', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 }
 ?>

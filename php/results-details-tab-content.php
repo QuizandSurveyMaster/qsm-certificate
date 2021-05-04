@@ -64,7 +64,8 @@ function qsm_addon_certificate_results_details_tabs_content() {
 
 		// Display link to certificate
     if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
-      $certificate_url = plugin_dir_url( __FILE__ )."../certificates/$certificate_file";
+		$upload = wp_upload_dir();
+      	$certificate_url = $upload['baseurl']."/qsm-certificates/$certificate_file";
 			?>
                         <div id="message" class="updated below-h2" style="margin-top: 20px;">
 				<p>

@@ -74,6 +74,7 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_certificate_register_results_details_tabs' );
       add_action( 'admin_init', 'qsm_addon_certificate_register_addon_settings_tabs' );
       add_action( 'admin_init', 'qsm_addon_qsm_certificate_textdomain');
+      add_action( 'admin_init', 'qsm_addon_create_upload_dir');
       add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10,2 );
 
       // Needed until the new variable system is finished
@@ -183,5 +184,36 @@ function qsm_addon_qsm_certificate_missing_qsm() {
 
 function qsm_addon_qsm_certificate_textdomain(){
   load_plugin_textdomain( 'qsm-certificate', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
+}
+
+/**
+* Creates qsm-certificates directory under uploads folder
+*/
+function qsm_addon_create_upload_dir(){
+  $upload_dir = wp_upload_dir(); 
+  $certificates_dirname = $upload_dir['basedir'] . '/' . 'qsm-certificates';
+  if(!file_exists($certificates_dirname)) wp_mkdir_p($certificates_dirname);
+
+  migrate_old_certificates($certificates_dirname);
+}
+
+/**
+ * Migration script to bring old certificates into new uploads folder
+ */
+function  migrate_old_certificates($certificates_dirname){
+  $plugins_path =  dirname(plugin_dir_path(__FILE__));
+  $plugins = scandir($plugins_path);
+  foreach($plugins as $plugin){
+    if(strpos($plugin, 'qsm-certificate') === 0 && $plugin != 'qsm-certificate'){
+      $certificates = scandir($plugins_path.'/'.$plugin.'/certificates');
+      foreach($certificates as $certificate){
+        if(strpos($certificate, 'pdf') > 0){
+          $source = $plugins_path.'/'.$plugin.'/certificates/'.$certificate;
+          $destination = $certificates_dirname.'/'.$certificate;
+          rename($source, $destination);
+        }
+      }
+    }
+  }
 }
 ?>

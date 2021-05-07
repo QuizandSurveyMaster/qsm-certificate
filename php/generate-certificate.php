@@ -37,8 +37,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	}
   $certificate_defaults = array(
     'enabled' => 1,
-    'title' => _e('Enter your title', 'qsm-certificate'),
-    'content' => _e('Enter your content', 'qsm-certificate'),
+    'title' => __('Enter your title', 'qsm-certificate'),
+    'content' => __('Enter your content', 'qsm-certificate'),
     'logo' => '',
     'background' => ''
   );

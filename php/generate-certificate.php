@@ -17,6 +17,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	global $wpdb;
 	global $mlwQuizMasterNext;
 
+	$upload = wp_upload_dir();
+
 	// Load the settings.
 	$certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
 	if ( ! is_array( $certificate_settings ) ) {
@@ -35,8 +37,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	}
   $certificate_defaults = array(
     'enabled' => 1,
-    'title' => _e('Enter your title', 'qsm-certificate'),
-    'content' => _e('Enter your content', 'qsm-certificate'),
+    'title' => __('Enter your title', 'qsm-certificate'),
+    'content' => __('Enter your content', 'qsm-certificate'),
     'logo' => '',
     'background' => ''
   );
@@ -53,7 +55,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	};
 	
 	// If the certificate does not already exist
-    if ( ! file_exists( plugin_dir_path( __FILE__ ) . "../certificates/$filename" ) ) {
+    if ( ! file_exists( $upload['basedir']."/qsm-certificates/$filename" ) ) {
 
       // Include Write HTML class
 		if ( ! class_exists( 'TCPDF' ) ) {
@@ -75,9 +77,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		$pdf->SetDefaultMonospacedFont( PDF_FONT_MONOSPACED );
 
 		// set margins
-//		$pdf->SetMargins( 0, 0, 0, true );
-//		$pdf->SetHeaderMargin( 0 );
-//		$pdf->SetFooterMargin( 0 );
+	//		$pdf->SetMargins( 0, 0, 0, true );
+	//		$pdf->SetHeaderMargin( 0 );
+	//		$pdf->SetFooterMargin( 0 );
 	
 		// set auto page breaks
 		$pdf->SetAutoPageBreak( false, 0 );
@@ -115,8 +117,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				$certificate_font = get_attached_file($certificate_font);
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
 			}else {
-				$upload = wp_upload_dir();
-				$certificate_font = str_replace($upload['url'], $upload['path'], $certificate_font);
+				$certificate_font = str_replace($upload['baseurl'], $upload['basedir'], $certificate_font);
                             if( file_exists($certificate_font) ) {
 				$fontname = TCPDF_FONTS::addTTFfont($certificate_font, 'TrueTypeUnicode', '', 96);
                               }else {
@@ -154,7 +155,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         }
 
         // Generate the pdf
-        $pdf->Output( plugin_dir_path( __FILE__ ) . "../certificates/$filename", 'F' );
+        $pdf->Output( $upload['basedir']."/qsm-certificates/$filename", 'F' );
 
       } catch (Exception $e) {
         // If failed, log error and return false

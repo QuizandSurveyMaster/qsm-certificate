@@ -137,7 +137,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %USER_EMAIL%</p>
 					<p style="margin: 2px 0">- %CURRENT_DATE%</p>
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
-          <?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
 				<td><label for="certificate_template"><?php echo __('Allowed tags', 'qsm-certificate'); ?>: &lt;b&gt; - bold, &lt;i&gt;-italics, &lt;u&gt;-underline, &lt;br&gt;-<?php echo __('New Line or start a new line by pressing enter', 'qsm-certificate') ?></label><textarea cols="80" rows="15" id="certificate_template" name="certificate_template"><?php echo $certificate_settings["content"]; ?></textarea>
 				</td>

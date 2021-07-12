@@ -38,6 +38,7 @@ function qsm_addon_certificate_variable( $content, $quiz_array ) {
     'background' => ''
   );
   $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
+  do_action('qsm_certificate_before_generate_pdf', $content, $quiz_array);
   // If certificate is enabled
   if ( 0 == $certificate_settings["enabled"] ) {
 

@@ -76,6 +76,7 @@ class QSM_Certificate {
       add_action( 'admin_init', 'qsm_addon_qsm_certificate_textdomain');
       add_action( 'admin_init', 'qsm_addon_create_upload_dir');
       add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10,2 );
+      add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10,2 );
 
       // Needed until the new variable system is finished
       add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );
@@ -93,18 +94,18 @@ class QSM_Certificate {
       add_filter( 'qsm_addon_certificate_content_filter', array($this, 'mlw_certificate_user_full_name'), 10, 2 );
       add_filter('upload_mimes', array($this, 'add_ttf_upload_mimes'));
     }
-    
+
     /**
      * Display full name of user using %FULL_NAME%.
-     * 
+     *
      * @since 1.0.8
      * @param string $content
      * @param Arr $mlw_quiz_array
      * @return type
      */
     public function mlw_certificate_user_full_name($content, $mlw_quiz_array){
-        if (false !== strpos($content, '%FULL_NAME%')) { 
-            $current_user = wp_get_current_user(); 
+        if (false !== strpos($content, '%FULL_NAME%')) {
+            $current_user = wp_get_current_user();
             $firstname = get_user_meta( $current_user->ID, 'first_name', true );
             $lastname = get_user_meta( $current_user->ID, 'last_name', true );
             if(!empty($firstname) && !empty($lastname))
@@ -115,7 +116,7 @@ class QSM_Certificate {
         }
         return $content;
     }
-    
+
     /**
      * Checks license
      *
@@ -149,7 +150,7 @@ class QSM_Certificate {
       	)
       );
     }
-    
+
     public function add_ttf_upload_mimes($existing_mimes) {
       $existing_mimes['ttf'] = 'application/x-font-ttf';
       return $existing_mimes;
@@ -190,7 +191,7 @@ function qsm_addon_qsm_certificate_textdomain(){
 * Creates qsm-certificates directory under uploads folder
 */
 function qsm_addon_create_upload_dir(){
-  $upload_dir = wp_upload_dir(); 
+  $upload_dir = wp_upload_dir();
   $certificates_dirname = $upload_dir['basedir'] . '/' . 'qsm-certificates';
   if(!file_exists($certificates_dirname)) wp_mkdir_p($certificates_dirname);
 

@@ -133,7 +133,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				$pdf->writeHTML( "<h1>{$certificate_title}</h1>", true, false, true, false, 'C' );
 				$pdf->Ln( 15 );
 
-				// Add content        
+				// Add content
 				$pdf->SetFont( $fontname, '', 16 );
 				$content = apply_filters( 'qsm_addon_certificate_content_filter', $certificate_settings["content"], $quiz_results );
 				$content = nl2br( $content, false );

@@ -57,6 +57,9 @@ function qsm_addon_certificate_variable( $content, $quiz_array ) {
 
 				// Replaces variable with link
 				$content = str_replace( '%CERTIFICATE_LINK%', $certificate_link, $content );
+				if( !empty( $quiz_array['result_id'] ) ){
+					update_option( 'qsm-gererated-certificate-'.$quiz_array['result_id'], $certificate_url );
+				}
 			} else {
 				// Replaces variable with empty string if file was not created
 				$content = str_replace( '%CERTIFICATE_LINK%', '', $content );

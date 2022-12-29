@@ -26,24 +26,24 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 		// Loads the certificate options vVariables.
 		if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
 			$certificate = @unserialize( $quiz_options->certificate_template );
-			$certificate_settings	 = array(
-				'enabled'	 => $certificate[4],
-				'title'		 => $certificate[0],
-				'content'	 => $certificate[1],
-				'logo'		 => $certificate[2],
-				'background' => $certificate[3]
+			$certificate_settings    = array(
+				'enabled'    => $certificate[4],
+				'title'      => $certificate[0],
+				'content'    => $certificate[1],
+				'logo'       => $certificate[2],
+				'background' => $certificate[3],
 			);
 		}
 	}
   $certificate_defaults = array(
-    'enabled' => 1,
-    'certificate_size' => 'Landscape',
-    'certificate_font'=> '',
-    'title' => __('Enter your title', 'qsm-certificate'),
-    'content' => __('Enter your content', 'qsm-certificate'),
-    'logo' => '',
-    'logo_style' => '',
-    'background' => ''
+	  'enabled'          => 1,
+	  'certificate_size' => 'Landscape',
+	  'certificate_font' => '',
+	  'title'            => __('Enter your title', 'qsm-certificate'),
+	  'content'          => __('Enter your content', 'qsm-certificate'),
+	  'logo'             => '',
+	  'logo_style'       => '',
+	  'background'       => '',
   );
  
   $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
@@ -51,14 +51,14 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
   // If certificate is enabled
   if ( 0 == $certificate_settings["enabled"] ) {
     $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
-    $filename =  "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
+    $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
     $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
 	$isSVG = function ( $path ) {
 		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};
 	// If the certificate does not already exist
     $wp_upload = wp_upload_dir();
-	if ( ! file_exists( $wp_upload['basedir'] . "/qsm-certificates/.$filename" )  ) {
+	if ( ! file_exists( $wp_upload['basedir'] . "/qsm-certificates/.$filename" ) ) {
         $pdf_folder = $wp_upload['basedir'] . '/qsm-certificates/';
         if ( ! is_dir($pdf_folder) ) {
             mkdir($pdf_folder, 0755);
@@ -70,7 +70,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         //initialize dompdf
         $dompdf = new Dompdf();
         $certificate_size = "Landscape";
-        if( isset( $certificate_settings['certificate_size'] ) && $certificate_settings['certificate_size'] == 'Portrait' ) {
+        if ( isset( $certificate_settings['certificate_size'] ) && $certificate_settings['certificate_size'] == 'Portrait' ) {
             $certificate_size = "Portrait";
         } else {
             $certificate_size = "Landscape";
@@ -85,7 +85,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         file_put_contents( $pdf_folder.$pdf_file_name, $pdf_output );
         $file_nonce = wp_create_nonce( 'pdf_file' );
         $response = array(
-            'file'       => $pdf_file_name
+            'file' => $pdf_file_name,
         );
     } else {
         $response = array(
@@ -104,52 +104,49 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
 	global $mlwQuizMasterNext;
     $upload_dir   = wp_upload_dir();
     $logo = "";
-    if( !empty( $settings['logo'] ) ){
+    if ( ! empty( $settings['logo'] ) ) {
     $logo_path = str_replace( $upload_dir['url'], $upload_dir['path'], $settings['logo'] );
 	$logo_url     = base64_encode( file_get_contents( $logo_path ) );
     $extension    = pathinfo( $settings['logo'], PATHINFO_EXTENSION );
-	$logo		  = isset( $settings['logo'] ) ? "<img src='data:image/{$extension};base64,{$logo_url}'><br/>" : "";
+	$logo         = isset( $settings['logo'] ) ? "<img src='data:image/{$extension};base64,{$logo_url}'><br/>" : "";
     }
 	if ( isset( $settings['content'] ) ) {
 		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results );
-        //$content = nl2br( $content, false );
-        //$content = htmlentities($content);
-        $content =  htmlspecialchars_decode( $content, ENT_QUOTES ) ;
+        $content = htmlspecialchars_decode( $content, ENT_QUOTES ) ;
 	}
-    $certificate_title	 = $settings["title"];
-    $certificate_title	 = nl2br( $certificate_title, false );
-    $certificate_title	 = stripslashes( $certificate_title );
+    $certificate_title   = $settings["title"];
+    $certificate_title   = nl2br( $certificate_title, false );
+    $certificate_title   = stripslashes( $certificate_title );
     $background = "";
     $background_path = str_replace( $upload_dir['url'], $upload_dir['path'], $settings['background'] );
-    if( !empty($settings['background'] ) ) {
+    if ( ! empty($settings['background'] ) ) {
     $background_url = base64_encode( file_get_contents( $background_path ) );
     $background_extension = pathinfo( $settings["background"], PATHINFO_EXTENSION );
-	$background		     = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
+	$background          = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
     }
     
    
-    $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";;
-	$html_top		 = '<html><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}img{min-width:200px !important;margin-top:30px;}';
-	if( !empty( $settings['certificate_font'] ) ){
+    $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
+	$html_top        = '<html><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}img{min-width:200px !important;margin-top:30px;}';
+	if ( ! empty( $settings['certificate_font'] ) ) {
 		$html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
 	}
-	$html_top		.= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center; ">';
-	$html_bottom	 = '<div style='.$logo_style.'>
+	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center; ">';
+	$html_bottom     = '<div style='.$logo_style.'>
        '.$logo.'
     <div style="text-align:center;">'.$content.'</div></body></html>';
-	$html		     = $html_top . $html . $html_bottom;
+	$html            = $html_top . $html . $html_bottom;
 	return $html;
 }
 
 // Check If URL is Exists or not
-function qsm_does_url_exits($url)
-{
+function qsm_does_url_exits( $url ) {
 	$ch = curl_init($url);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if ($code == 200) {
+    if ( 200 == $code ) {
         $status = true;
     } else {
         $status = false;
@@ -159,4 +156,4 @@ function qsm_does_url_exits($url)
 }
 
 
-?>
+

@@ -144,7 +144,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
           <?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
-				<td><label for="certificate_template"><?php echo __('Allowed tags', 'qsm-certificate'); ?>: &lt;b&gt; - bold, &lt;i&gt;-italics, &lt;u&gt;-underline, &lt;br&gt;-<?php echo __('New Line or start a new line by pressing enter', 'qsm-certificate') ?></label>
+				<td>
 				<?php wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(
 	'editor_height' => 250,
 	'textarea_rows' => 10,

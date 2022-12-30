@@ -22,10 +22,8 @@ function qsm_addon_certificate_register_addon_settings_tabs() {
  */
 function qsm_addon_certificate_addon_settings_tabs_content() {
   global $mlwQuizMasterNext;
-
   //If nonce is correct, update settings from passed input
-  if ( isset( $_POST["certificate_nonce"] ) && wp_verify_nonce( $_POST['certificate_nonce'], 'certificate') ) {
-
+    if ( isset( $_POST["certificate_nonce"] ) && wp_verify_nonce( $_POST['certificate_nonce'], 'certificate') ) {
     // Load previous license key
     $certificate_data = get_option( 'qsm_addon_certificate_settings', '' );
     if ( isset( $certificate_data["license_key"] ) ) {
@@ -33,41 +31,44 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
     } else {
       $license = '';
     }
-
     // Save settings
     $saved_license = sanitize_text_field( $_POST["license_key"] );
     $certificate_data = array(
-      'license_key' => $saved_license
+		'license_key' => $saved_license,
     );
     update_option( 'qsm_addon_certificate_settings', $certificate_data );
-
     // Checks to see if the license key has changed
     if ( $license != $saved_license ) {
-
       // Prepares data to activate the license
       $api_params = array(
-        'edd_action'=> 'activate_license',
-        'license' 	=> $saved_license,
-        'item_name' => urlencode( 'Certificate' ), // the name of our product in EDD
-        'url'       => home_url()
+      'edd_action' => 'activate_license',
+      'license'    => $saved_license,
+      'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
+      'url'        => home_url(),
       );
-
       // Call the custom API.
-      $response = wp_remote_post( 'http://quizandsurveymaster.com', array( 'timeout' => 15, 'sslverify' => false, 'body' => $api_params ) );
+      $response = wp_remote_post( 'http://quizandsurveymaster.com', array(
+		  'timeout'   => 15,
+		  'sslverify' => false,
+		  'body'      => $api_params,
+	  ) );
 
       // If previous license key was entered
       if ( ! empty( $license ) ) {
 
         // Prepares data to deactivate changed license
-        $api_params = array(
-          'edd_action'=> 'deactivate_license',
-          'license' 	=> $license,
-          'item_name' => urlencode( 'Certificate' ), // the name of our product in EDD
-          'url'       => home_url()
-        );
-
-        // Call the custom API.
-        $response = wp_remote_post( 'http://quizandsurveymaster.com', array( 'timeout' => 15, 'sslverify' => false, 'body' => $api_params ) );
+      $api_params = array(
+        'edd_action' => 'deactivate_license',
+        'license'    => $license,
+        'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
+        'url'        => home_url(),
+      );
+      // Call the custom API.
+      $response = wp_remote_post( 'http://quizandsurveymaster.com', array(
+			'timeout'   => 15,
+			'sslverify' => false,
+			'body'      => $api_params,
+      ) );
       }
     }
     $mlwQuizMasterNext->alertManager->newAlert( 'Your settings has been saved successfully! You can now configure certificates when editing your quiz using the Certificate tab.', 'success' );
@@ -76,13 +77,11 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
   // Load settings
   $certificate_data = get_option( 'qsm_addon_certificate_settings', '' );
   $certificate_defaults = array(
-    'license_key' => ''
+	  'license_key' => '',
   );
   $certificate_data = wp_parse_args( $certificate_data, $certificate_defaults );
-
   // Show any alerts from saving
   $mlwQuizMasterNext->alertManager->showAlerts();
-
   ?>
   <form action="" method="post">
     <table class="form-table" style="width: 100%;">

@@ -111,7 +111,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $logo         = isset( $settings['logo'] ) ? "<img src='data:image/{$extension};base64,{$logo_url}'><br/>" : "";
     }
 	if ( isset( $settings['content'] ) ) {
-		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results = "" );
+		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results );
         $content = htmlspecialchars_decode( $content, ENT_QUOTES ) ;
 	}
     $certificate_title   = $settings["title"];

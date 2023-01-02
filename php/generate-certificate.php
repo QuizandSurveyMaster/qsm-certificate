@@ -100,7 +100,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
   }
 }
 
-function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $quiz_results ) {
+function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $quiz_results = array() ) {
 	global $mlwQuizMasterNext;
     $upload_dir   = wp_upload_dir();
     $logo = "";

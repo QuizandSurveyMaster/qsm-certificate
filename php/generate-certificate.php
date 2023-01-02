@@ -35,16 +35,16 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 			);
 		}
 	}
-  $certificate_defaults = array(
-	  'enabled'          => 1,
-	  'certificate_size' => 'Landscape',
-	  'certificate_font' => '',
-	  'title'            => __('Enter your title', 'qsm-certificate'),
-	  'content'          => __('Enter your content', 'qsm-certificate'),
-	  'logo'             => '',
-	  'logo_style'       => '',
-	  'background'       => '',
-  );
+    $certificate_defaults = array(
+        'enabled'          => 1,
+        'certificate_size' => 'Landscape',
+        'certificate_font' => '',
+        'title'            => __('Enter your title', 'qsm-certificate'),
+        'content'          => __('Enter your content', 'qsm-certificate'),
+        'logo'             => '',
+        'logo_style'       => '',
+        'background'       => '',
+    );
  
   $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
@@ -70,7 +70,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         //initialize dompdf
         $dompdf = new Dompdf();
         $certificate_size = "Landscape";
-        if ( isset( $certificate_settings['certificate_size'] ) && $certificate_settings['certificate_size'] == 'Portrait' ) {
+        if ( isset( $certificate_settings['certificate_size'] ) &&  'Portrait' ==  $certificate_settings['certificate_size'] ) {
             $certificate_size = "Portrait";
         } else {
             $certificate_size = "Landscape";
@@ -100,7 +100,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
   }
 }
 
-function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $quiz_results ) {
+function qsm_pdf_html_post_process_certificate( $html, $settings, $quiz_results ) {
 	global $mlwQuizMasterNext;
     $upload_dir   = wp_upload_dir();
     $logo = "";
@@ -111,7 +111,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $logo         = isset( $settings['logo'] ) ? "<img src='data:image/{$extension};base64,{$logo_url}'><br/>" : "";
     }
 	if ( isset( $settings['content'] ) ) {
-		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results );
+		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results = "" );
         $content = htmlspecialchars_decode( $content, ENT_QUOTES ) ;
 	}
     $certificate_title   = $settings["title"];
@@ -125,8 +125,8 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $background          = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
     }
     $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
-	$html_top        = '<html><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
-    if( empty( $settings['certificate_font'] ) || 'dejavusans' == $settings['certificate_font'] ) {
+	$html_top        = '<html style = " margin:0;padding:0; "><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
+    if ( empty( $settings['certificate_font'] ) || 'dejavusans' == $settings['certificate_font'] ) {
         $html_top   .= 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}img{min-width:200px !important;margin-top:30px;}';
     } else {
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );

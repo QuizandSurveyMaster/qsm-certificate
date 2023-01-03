@@ -70,7 +70,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         //initialize dompdf
         $dompdf = new Dompdf();
         $certificate_size = "Landscape";
-        if ( isset( $certificate_settings['certificate_size'] ) &&  'Portrait' ==  $certificate_settings['certificate_size'] ) {
+        if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
             $certificate_size = "Portrait";
         } else {
             $certificate_size = "Landscape";
@@ -125,13 +125,13 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $background          = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
     }
     $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
-	$html_top        = '<html style = " margin:0;padding:0; "><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
+	$html_top        = '<html style = "margin:0;padding:0;"><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
     if ( empty( $settings['certificate_font'] ) || 'dejavusans' == $settings['certificate_font'] ) {
         $html_top   .= 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}img{min-width:200px !important;margin-top:30px;}';
     } else {
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
-	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center; ">';
+	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center;background-size:cover; ">';
 	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;font-size:16px;">'.$content.'</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;

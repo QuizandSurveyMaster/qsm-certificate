@@ -89,5 +89,8 @@ return array (
     'normal' => $fontDir . '/noto_sans_devanagari_normal_f396c01c7a196910b22cb2f53d7cf9d4',
     'bold' => $fontDir . '/noto_sans_devanagari_bold_e90a02628d086f8080fc636f34687d7c',
   ),
+  'im fell english' => array(
+    'normal' => $fontDir . '/im_fell_english_normal_d6c528a4204028e455b417a365efff74',
+  ),
 );
 }; ?>

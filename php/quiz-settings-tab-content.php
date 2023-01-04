@@ -76,33 +76,41 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			);
 		}
 	}
+	$font_family   = 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}';
+	if ( empty( $certificate_settings['certificate_font'] ) || 'dejavusans' == $certificate_settings['certificate_font'] ) {
+        $font_family   = 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}';
+    } 
 	$certificate_defaults = array(
 		'certificate_size' => 'Landscape',
 		'enabled'          => 1,
-		'certificate_font' => '',
+		'certificate_font' => $font_family,
 		'title'            => 'Enter your title',
 		'content'          => 'Enter your content',
 		'logo'             => '',
-		'logo_style'       => '',
+		'logo_style'       => 'text-align:center;',
 		'background'       => '',
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
-	<p><a href="https://quizandsurveymaster.com/docs/v7/adding-custom-font-to-certificate-addon/" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
+	
 	<form action="" method="post">
 	<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 		<table class="form-table">
 			<tr valign="top">
-				<td><label for="enableCertificates"><?php echo __('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></label></td>
+				<td>
+					<strong><?php echo __('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></strong>
+				</td>
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
 			<tr valign="top">
-				<td><label for="certificateSize"><?php echo __('Certificate Orientation', 'qsm-certificate'); ?></label></td>
+				<td>
+					<strong><?php echo __('Certificate Orientation', 'qsm-certificate'); ?></strong>
+				</td>
 				<td>
 				    <input type="radio" id="radio32" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Portrait' ); ?> value='Portrait' /><label for="radio32"><?php _e('Portrait', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio33" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Landscape','Landscape' ); ?> value='Landscape' /><label for="radio33"><?php _e('Landscape', 'qsm-certificate'); ?></label><br>
@@ -110,10 +118,11 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr valign="top">
 				<td>
-					<label for="enableCertificates"><strong><?php echo __('Certificates font family', 'qsm-certificate'); ?></strong></label>
+					<strong><?php echo __('Custom Style', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<textarea cols="50" rows="8" id="certificate_font" name="certificate_font"><?php echo trim( htmlspecialchars_decode( $certificate_settings["certificate_font"], ENT_QUOTES ) ); ?></textarea>
+					<p><a href="https://quizandsurveymaster.com/docs/v7/adding-custom-font-to-certificate-addon/" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -142,7 +151,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %USER_EMAIL%</p>
 					<p style="margin: 2px 0">- %CURRENT_DATE%</p>
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
-          <?php do_action('qsm_certificate_after_variable'); ?>
+          	<?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
 				<td>
 				<?php wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(

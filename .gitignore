@@ -1,2 +1,3 @@
 /php/TCPDF/nbproject/private/
 .DS_Store
+phpcs.xml

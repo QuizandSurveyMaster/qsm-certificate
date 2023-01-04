@@ -46,15 +46,15 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         'background'       => '',
     );
  
-  $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
+    $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
-  // If certificate is enabled
-  if ( 0 == $certificate_settings["enabled"] ) {
-    $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
-    $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
-    $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
-	$isSVG = function ( $path ) {
-		return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
+    // If certificate is enabled
+    if ( 0 == $certificate_settings["enabled"] ) {
+        $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
+        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
+        $isSVG = function ( $path ) {
+        return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};
 	// If the certificate does not already exist
     $wp_upload = wp_upload_dir();
@@ -131,7 +131,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     } else {
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
-	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center;background-size:cover; ">';
+	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size: contain;background-repeat:no-repeat;background-position:center center;background-size:cover;padding:20px; ">';
 	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;font-size:16px;">'.$content.'</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;

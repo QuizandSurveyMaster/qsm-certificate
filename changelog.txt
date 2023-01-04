@@ -3,6 +3,7 @@
 	<li>Feature: Added option to add custom css</li>
 	<li>Feature: Added option to change fonts family</li>
 	<li>Enhancement: Improve regenerate PDF functionality</li>
+	<li>Enhancement: Replaced TCPDF with DOMPDF for PDF generation</li>
 </ul>
 <h3>1.0.13 (December 24, 2021)</h3>
 <ul>

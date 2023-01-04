@@ -1,4 +1,10 @@
-<h3>1.0.13 (Dec 24, 2021)</h3>
+<h3>1.1.0 (January 24, 2021)</h3>
+<ul>
+	<li>Feature: Added option to add custom css</li>
+	<li>Feature: Added option to change fonts family</li>
+	<li>Enhancement: Improve regenerate PDF functionality</li>
+</ul>
+<h3>1.0.13 (December 24, 2021)</h3>
 <ul>
 	<li>Bug: Fixed issue of missing certificates link after removing "%QUESTIONS_ANSWERS_EMAIL%" template variable.</li>
 </ul>
@@ -44,7 +50,7 @@
 <h3>1.0.3 (July 28, 2020)</h3>
 <ul>
  	<li>Bug: Fixed the url problem of certificate link.</li>
-        <li>Bug: Fixed %CERTIFICATE_LINK% template variable doesn't generate certificate link in the emails after version 7.0 update issue.</li>
+    <li>Bug: Fixed %CERTIFICATE_LINK% template variable doesn't generate certificate link in the emails after version 7.0 update issue.</li>
 </ul>
 <h3>1.0.2 (03/17/20)</h3>
 <ul>
@@ -53,8 +59,8 @@
 <h3>1.0.1 (09/30/19)</h3>
 <ul>
  	<li>Feature: Added utf character support</li>
-<li>Feature: Changed author name</li>
-<li>Feature: Updated the TCPDF plugin in certificate</li>
+	<li>Feature: Changed author name</li>
+	<li>Feature: Updated the TCPDF plugin in certificate</li>
 </ul>
 <h3>1.0.0 (10/28/16)</h3>
 <ul>

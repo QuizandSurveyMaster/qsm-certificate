@@ -131,7 +131,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     } else {
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
-	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
+	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
 	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;font-size:16px;">'.$content.'</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;

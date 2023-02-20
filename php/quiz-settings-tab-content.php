@@ -122,7 +122,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				</td>
 				<td>
 					<textarea cols="50" rows="8" id="certificate_font" name="certificate_font"><?php echo trim( htmlspecialchars_decode( $certificate_settings["certificate_font"], ENT_QUOTES ) ); ?></textarea>
-					<p><a href="https://quizandsurveymaster.com/docs/v7/adding-custom-font-to-certificate-addon/" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
+					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/#adding-google-fonts" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>

@@ -1,4 +1,8 @@
-<h3>1.1.0 (January 24, 2021)</h3>
+<h3>1.1.1 (February 21, 2023)</h3>
+<ul>
+	<li>Enhancement: Improve PDF background UI</li>
+</ul>
+<h3>1.1.0 (January 24, 2023)</h3>
 <ul>
 	<li>Feature: Added option to add custom css</li>
 	<li>Feature: Added option to change fonts family</li>

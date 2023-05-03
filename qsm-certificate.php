@@ -122,7 +122,7 @@ class QSM_Certificate {
 				if ( ! empty( $firstname ) && ! empty( $lastname ) ) {
 					$full_name = $firstname . ' ' . $lastname;
 				} else {
-					$full_name = $user->display_name;
+					$full_name = $current_user->display_name;
 				}
 			}
 

@@ -16,11 +16,7 @@ use Dompdf\Options;
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
 function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file = false ) {
-    $classes = get_declared_classes();
-    //echo "<pre>";print_r($classes);exit;
-    if( !class_exists( 'Dompdf\Autoloader' ) ) {
-        require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
-    }
+    require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
 	global $wpdb;
 	global $mlwQuizMasterNext;
 	// Load the settings.

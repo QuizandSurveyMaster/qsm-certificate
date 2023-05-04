@@ -17,7 +17,6 @@ use Dompdf\Options;
  */
 function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file = false ) {
     $classes = get_declared_classes();
-    //echo "<pre>";print_r($classes);exit;
     if( !class_exists( 'Dompdf\Autoloader' ) ) {
         require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
     }

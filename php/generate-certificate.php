@@ -120,7 +120,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     $certificate_title   = nl2br( $certificate_title, false );
     $certificate_title   = stripslashes( $certificate_title );
     $background = "";
-    $background_path = str_replace( $upload_dir['url'], $upload_dir['path'], $settings['background'] );
+    $background_path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['background'] );
     if ( ! empty($settings['background'] ) ) {
         $background_url = base64_encode( file_get_contents( $background_path ) );
         $background_extension = pathinfo( $settings["background"], PATHINFO_EXTENSION );

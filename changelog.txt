@@ -1,3 +1,7 @@
+<h3>1.1.4 (February 12, 2024) </h3>
+<ul>
+	<li>Bug: Fixed issue with certificate fonts layout</li>
+</ul>
 <h3>1.1.3 (October 03, 2023) </h3>
 <ul>
 	<li>Bug: Fixed issue with certificate background image</li>

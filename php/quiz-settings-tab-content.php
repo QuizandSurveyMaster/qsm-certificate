@@ -53,6 +53,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo'             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
 		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
 		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : "",
+		'dpi'       	   => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
     );
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -61,7 +62,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	}
 	// Load the settings
 	$certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
- 
+
 	if ( ! is_array( $certificate_settings ) ) {
 		$quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", intval( $_GET["quiz_id"] ) ) );
 		//Load Certificate Options Variables
@@ -89,6 +90,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo'             => '',
 		'logo_style'       => 'text-align:center;',
 		'background'       => '',
+		'dpi'			   => 100,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	?>
@@ -131,6 +133,21 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				</td>
 				<td>
 				<textarea cols="80" rows="3" id="certificate_title" name="certificate_title"><?php echo stripslashes( $certificate_settings["title"] ); ?></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Select PDF Resolution', 'qsm-certificate'); ?></strong>
+				</td>
+				<td>
+					<select id="certificate_dpi" name="certificate_dpi">
+						<option value="100" <?php selected($certificate_settings["dpi"], 100); ?>><?php esc_html_e('100 DPI (Low Resolution)', 'qsm-certificate'); ?></option>
+						<option value="200" <?php selected($certificate_settings["dpi"], 200); ?>><?php esc_html_e('200 DPI (Standard Resolution)', 'qsm-certificate'); ?></option>
+						<option value="300" <?php selected($certificate_settings["dpi"], 300); ?>><?php esc_html_e('300 DPI (Normal Resolution)', 'qsm-certificate'); ?></option>
+						<option value="400" <?php selected($certificate_settings["dpi"], 400); ?>><?php esc_html_e('400 DPI (Enhanced Resolution)', 'qsm-certificate'); ?></option>
+						<option value="600" <?php selected($certificate_settings["dpi"], 600); ?>><?php esc_html_e('600 DPI (High Resolution)', 'qsm-certificate'); ?></option>
+						<option value="720" <?php selected($certificate_settings["dpi"], 720); ?>><?php esc_html_e('720 DPI (Ultra High Resolution)', 'qsm-certificate'); ?></option>
+					</select>
 				</td>
 			</tr>
 			<tr>

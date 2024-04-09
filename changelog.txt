@@ -1,3 +1,7 @@
+<h3>1.1.5 (April 09, 2024) </h3>
+<ul>
+	<li>Feature: Added an option to set resolution of the PDF</li>
+</ul>
 <h3>1.1.4 (February 12, 2024) </h3>
 <ul>
 	<li>Bug: Fixed issue with certificate fonts layout</li>

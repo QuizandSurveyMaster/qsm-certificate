@@ -46,6 +46,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         'logo'             => '',
         'logo_style'       => '',
         'background'       => '',
+        'dpi'              => 100,
     );
  
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
@@ -81,6 +82,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         $dompdf->set_option( 'isHtml5ParserEnabled', true );
         $dompdf->set_option( 'isFontSubsettingEnabled', true );
         $dompdf->set_option( 'isRemoteEnabled', true );
+        if ( isset( $certificate_settings['dpi'] ) ) {
+            $dompdf->set_option( 'dpi', $certificate_settings['dpi'] );
+        }
         $dompdf->loadHtml( $html );
         $dompdf->render();
         $pdf_output = $dompdf->output();
@@ -134,7 +138,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
 	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
-	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;font-size:16px;">'.nl2br($content).'</div></body></html>';
+	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;">'.nl2br($content).'</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;
 }

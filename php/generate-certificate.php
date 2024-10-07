@@ -16,7 +16,7 @@ use Dompdf\Options;
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
 function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file = false ) {
-    if( !class_exists( 'Dompdf\Autoloader' ) ) {
+    if ( ! class_exists( 'Dompdf\Autoloader' ) ) {
         require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
     }
 	global $wpdb;
@@ -48,13 +48,13 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         'background'       => '',
         'dpi'              => 100,
     );
- 
+
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
     // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
-        $encoded_time_taken = md5( $quiz_results['time_taken'] ); 
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";    
+        $encoded_time_taken = md5( $quiz_results['time_taken'] );
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
         $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
@@ -138,7 +138,10 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
 	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
-	$html_bottom     = '<div style='.$logo_style.'> '.$logo.'<h1 style="text-align:center;margin-top:80px;font-weight:700;">'.$certificate_title.'</h1><div style="text-align:center;vertical-align:middle;justify-content: center;">'.nl2br($content).'</div></body></html>';
+	$html_bottom = '<div style="' . $logo_style . '"> ' . $logo
+    . ( ! empty($certificate_title) ? '<h1 style="text-align:center;margin-top:80px;font-weight:700;">' . $certificate_title . '</h1>' : '')
+    . '<div style="text-align:center;vertical-align:middle;justify-content: center;">' . nl2br($content)
+    . '</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;
 }

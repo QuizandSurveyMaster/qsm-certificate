@@ -80,7 +80,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	$font_family   = 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}';
 	if ( empty( $certificate_settings['certificate_font'] ) || 'dejavusans' == $certificate_settings['certificate_font'] ) {
         $font_family   = 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}';
-    } 
+    }
 	$certificate_defaults = array(
 		'certificate_size' => 'Landscape',
 		'enabled'          => 1,
@@ -96,7 +96,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
-	
+
 	<form action="" method="post">
 	<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 		<table class="form-table">

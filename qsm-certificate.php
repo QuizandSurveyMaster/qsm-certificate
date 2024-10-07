@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.1.5
+ * Version: 1.2.0
  *
  * @author QSM Team
- * @version 1.1.5
+ * @version 1.2.0
  * @package QSM
  */
 
@@ -32,7 +32,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.1.5';
+	public $version = '1.2.0';
 
 	/**
 	 * Main Construct Function
@@ -122,7 +122,7 @@ class QSM_Certificate {
 				if ( ! empty( $firstname ) && ! empty( $lastname ) ) {
 					$full_name = $firstname . ' ' . $lastname;
 				} else {
-					$full_name = $current_user->display_name;
+					$full_name = $user->display_name;
 				}
 			}
 

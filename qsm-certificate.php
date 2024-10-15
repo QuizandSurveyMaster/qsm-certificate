@@ -101,9 +101,9 @@ class QSM_Certificate {
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
-		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_expiry_date', 10, 2 );
-		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_certificate_id', 10, 2 );
-		add_filter( 'qsm_addon_certificate_content_filter', array( $this, 'mlw_certificate_user_full_name' ), 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', 'qsm_certificate_variable_expiry_date', 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', 'qsm_certificate_id_variable', 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', array( $this, 'qsm_certificate_user_full_name' ), 10, 2 );
 		add_filter( 'upload_mimes', array( $this, 'add_ttf_upload_mimes' ) );
 	}
 
@@ -115,7 +115,7 @@ class QSM_Certificate {
 	 * @param array  $mlw_quiz_array Quiz Array.
 	 * @return string
 	 */
-	public function mlw_certificate_user_full_name( $content, $mlw_quiz_array ) {
+	public function qsm_certificate_user_full_name( $content, $mlw_quiz_array ) {
 		if ( false !== strpos( $content, '%FULL_NAME%' ) ) {
 			$full_name = '';
 			$user_id = isset( $mlw_quiz_array['user_id'] ) ? $mlw_quiz_array['user_id'] : 0;

@@ -162,7 +162,7 @@ function qsm_does_url_exits( $url ) {
     return $status;
 }
 
-function mlw_qmn_variable_expiry_date( $content, $mlw_quiz_array ) {
+function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
     global $mlwQuizMasterNext;
 
     $quiz_options      = $mlwQuizMasterNext->quiz_settings->get_quiz_options();
@@ -190,7 +190,7 @@ function mlw_qmn_variable_expiry_date( $content, $mlw_quiz_array ) {
     return $content;
 }
 
-function mlw_qmn_variable_certificate_id( $content, $mlw_quiz_array ) {
+function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
 	global $mlwQuizMasterNext;
     global $wpdb;
 
@@ -212,7 +212,7 @@ function mlw_qmn_variable_certificate_id( $content, $mlw_quiz_array ) {
 	return $content;
 }
 
-function load_qsm_certificate_scripts() {
+function qsm_certificate_scripts_load() {
     wp_enqueue_script( 
         'qsm_certificate_js', 
         QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
@@ -231,9 +231,9 @@ function load_qsm_certificate_scripts() {
     );
 }
 
-add_action( 'wp_enqueue_scripts', 'load_qsm_certificate_scripts' );
+add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
 
-function quiz_expiry_check_form( $settings, $cert_id ) {
+function qsm_certificate_expiry_check_form( $settings, $cert_id ) {
     ob_start(); 
     ?>
     <form action="" method="post" id="qsm-certificate-expiry-check-form">
@@ -246,6 +246,6 @@ function quiz_expiry_check_form( $settings, $cert_id ) {
     return ob_get_clean(); 
 }
 
-add_shortcode( 'quiz_expiry_check', 'quiz_expiry_check_form' );
+add_shortcode( 'quiz_expiry_check', 'qsm_certificate_expiry_check_form' );
 
 

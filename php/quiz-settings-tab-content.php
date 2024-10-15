@@ -54,6 +54,11 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
 		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : "",
 		'dpi'       	   => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
+		'expiry_date'      => $_POST["expiry_date"] && $_POST["enable_expiry"] == 1 ? $_POST["expiry_date"] : "",
+		'expiry_days'	   => $_POST["expiry_days"] && $_POST["enable_expiry"] != 1 ? $_POST["expiry_days"] : "",
+		'prefix'		   => isset( $_POST["prefix"] ) ? $_POST["prefix"] : "",
+		'certificate_id'   => $_POST["enable_expiry"] != 1 ? str_replace(' ', '', $_POST["prefix"]) . str_replace('-','', (new DateTime())->modify('+' . intval( $_POST["expiry_days"] ) . ' days')->format('Y-m-d')) : str_replace(' ', '', $_POST["prefix"]) . str_replace('-','', $_POST["expiry_date"]),
+		'enable_expiry'    =>  $_POST["enable_expiry"] == 1 ? 1 : 0,
     );
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -168,6 +173,9 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %USER_EMAIL%</p>
 					<p style="margin: 2px 0">- %CURRENT_DATE%</p>
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
+					<p style="margin: 2px 0">- %EXPIRY_DATE%</p>
+					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
+					<p style="margin: 2px 0">- %CERTIFICATE_ID%</p>
           	<?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
 				<td>
@@ -196,6 +204,53 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="3" id="certificate_background" name="certificate_background"><?php echo $certificate_settings["background"]; ?></textarea>
+				</td>
+			</tr>
+			<tr>
+			<td width="30%">
+    				<strong><?php echo __('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
+			</td>
+				<td>
+			<label>
+        		<input id="enable_expiry" type="radio" name="enable_expiry" value="1" <?php checked( $certificate_settings["enable_expiry"], '1' )  ?>>
+        		<?php echo __('Expiry Date', 'qsm-certificate'); ?>
+    		</label>
+    			<br>
+    		<label>
+        		<input id="enable_expiry" type="radio" name="enable_expiry" value="0" <?php checked( $certificate_settings["enable_expiry"], '0' ) ?>>
+        		<?php echo __('Expiry Days', 'qsm-certificate'); ?>
+    		</label>
+    			<p style="font-style: italic; color: #666; margin-top: 5px;">
+    				<?php echo __('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
+				</p>
+				</td>
+			</tr>
+			<tr class = "qsm-certificate-expiry-date">
+				<td width="30%">
+					<strong><?php echo __('Set expiry date', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="date" id="expiry_date" name="expiry_date" value="<?php echo isset($certificate_settings["expiry_date"])? esc_attr($certificate_settings["expiry_date"]): ""; ?>">
+				</td>
+			</tr>
+			<tr class = "qsm-certificate-expiry-days">
+				<td width="30%">
+					<strong><?php echo __('Set expiry date in X days', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="number" id="expiry_days" name="expiry_days" value="<?php echo isset($certificate_settings["expiry_days"])? esc_attr($certificate_settings["expiry_days"]): ""; ?>">
+				</td>
+			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"])? esc_attr($certificate_settings["prefix"]): ""; ?>">
+				</td>
+			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 		</table>

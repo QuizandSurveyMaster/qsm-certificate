@@ -211,14 +211,20 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     				<strong><?php echo __('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
-        			<input id="enable_expiry" type="radio" name="enable_expiry" value="1" <?php checked( $certificate_settings["enable_expiry"], '1' ); ?>>
-					<label>	<?php echo __('Expiry Date', 'qsm-certificate'); ?></label>
+   					 <input id="enable_expiry" type="radio" name="enable_expiry" value="1" 
+   				 	<?php if ( isset( $certificate_settings["enable_expiry"] ) ) { 
+        			checked( $certificate_settings["enable_expiry"], '1' ); 
+    			} ?>>
+    				<label><?php echo __('Expiry Date', 'qsm-certificate'); ?></label>
     			<br>
-        			<input id="enable_expiry" type="radio" name="enable_expiry" value="0" <?php checked( $certificate_settings["enable_expiry"], '0' ); ?> >
-					<label>	<?php echo __('Expiry Days', 'qsm-certificate'); ?></label>
-    			<p style="font-style: italic; color: #666; margin-top: 5px;">
-    				<?php echo __('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
-				</p>
+    				<input id="enable_expiry" type="radio" name="enable_expiry" value="0" 
+    				<?php if ( isset( $certificate_settings["enable_expiry"] ) ) { 
+        			checked( $certificate_settings["enable_expiry"], '0' ); 
+    			} ?>>
+    				<label><?php echo __('Expiry Days', 'qsm-certificate'); ?></label>
+    				<p style="font-style: italic; color: #666; margin-top: 5px;">
+        			<?php echo __('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
+    			</p>
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-date">

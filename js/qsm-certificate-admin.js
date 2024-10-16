@@ -32,5 +32,6 @@ jQuery(function ($) {
             $('.qsm-certificate-expiry-days').hide();
         }
     }
+    updateExpiryFields();
     
 });

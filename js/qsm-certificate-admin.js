@@ -1,7 +1,7 @@
 jQuery(function ($) {
     
     $('input[name="enable_expiry"]').change(function() {
-        updateExpiryFields();
+        qsmUpdateExpiryFields();
     });
 
     jQuery(document).on('submit', '#qsm-certificate-expiry-check-form', function (event) {
@@ -22,7 +22,7 @@ jQuery(function ($) {
             }
         });  
     });
-    function updateExpiryFields() {
+    function qsmUpdateExpiryFields() {
         let enableExpiry = $('input[name="enable_expiry"]:checked').val();
         if (enableExpiry === '0') {
             $('.qsm-certificate-expiry-date').hide();
@@ -32,6 +32,6 @@ jQuery(function ($) {
             $('.qsm-certificate-expiry-days').hide();
         }
     }
-    updateExpiryFields();
+    qsmUpdateExpiryFields();
     
 });

@@ -83,33 +83,26 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	<?php
 }
 function qsm_enqueue_datatables_scripts() {
-    // Enqueue DataTables CSS
     wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css');
 
-    // Enqueue DataTables JS
     wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js', array('jquery'), null, true);
 
-    // Enqueue your custom admin script (if not already done)
     wp_enqueue_script('qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery', 'datatables-js' ), null, true);
 }
 add_action('admin_enqueue_scripts', 'qsm_enqueue_datatables_scripts');
 
 function qsm_addon_certificate_details_tabs_content() {
-    // Enqueue necessary scripts and styles
     wp_enqueue_script('qsm_certificate_admin_script', plugins_url('../js/qsm-certificate-admin.js', __FILE__), array('jquery'));
     wp_enqueue_style('qsm_certificate_admin_style', plugins_url('../css/qsm-certificate-admin.css', __FILE__));
 
-    // Get the upload directory path
     $upload_dir = wp_upload_dir();
     $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
 
-    // Check if the directory exists
     if (!is_dir($certificate_dir)) {
         echo '<div class="notice notice-error"><p>Certificate folder not found.</p></div>';
         return;
     }
 
-    // Open the directory and get files
     $files = glob($certificate_dir . '*.pdf');
 
     if (empty($files)) {
@@ -117,14 +110,11 @@ function qsm_addon_certificate_details_tabs_content() {
         return;
     }
 
-    // Start form and add nonce field for security
     echo '<form method="post" id="certificate-form">';
     wp_nonce_field('bulk_delete_certificates_action', 'bulk_delete_certificates_nonce');
 
-    // Bulk delete button
     echo '<input type="submit" name="bulk_delete" value="Bulk Delete" class="button action" style="margin: 20px 0;">';
 
-    // Create the table structure
     echo '<table id="certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
             <tr>
@@ -139,28 +129,20 @@ function qsm_addon_certificate_details_tabs_content() {
 
     foreach ($files as $file) {
         $file_name = basename($file);
-
-        // Build the URL to the uploaded file
-        $file_url = $upload_dir['baseurl'] . '/qsm-certificates/' . $file_name;
-        
-        // Get the last modified date of the file
-        $generated_date = date('d-m-Y H:i:s', filemtime($file));
-        
-        // Remove the last 8 characters, assuming this is to strip off a file extension like ".pdf"
+        $file_url = $upload_dir['baseurl'] . '/qsm-certificates/' . $file_name;        
+        $generated_date = date('d-m-Y H:i:s', filemtime($file));        
         $resultant_string = substr($file_name, 0, -8);
         $formatted_date = '';
         
-        // Extract the last 8 characters before the extension
         if (strlen($file_name) > 45) {
             $last_eight_characters = substr($file_name, -12, 10);
-            $day = substr($last_eight_characters, 0, 2);    // Get the first 2 characters (DD)
-            $month = substr($last_eight_characters, 2, 2);  // Get the next 2 characters (MM)
-            $year = substr($last_eight_characters, 4, 4);   // Get the last 4 characters (YYYY)
+            $day = substr($last_eight_characters, 0, 2);
+            $month = substr($last_eight_characters, 2, 2); 
+            $year = substr($last_eight_characters, 4, 4);  
 
-            // Combine them with dashes
             $formatted_date = $day . '-' . $month . '-' . $year;
         } else {
-            $formatted_date = 'Never Expire'; // Fallback if filename is too short
+            $formatted_date = 'Never Expire'; 
         }
 
         echo '<tr data-filename="' . esc_attr($file_name) . '">';
@@ -177,12 +159,9 @@ function qsm_addon_certificate_details_tabs_content() {
 
     echo '</tbody>';
     echo '</table>';
-
-    // Close the form
     echo '</form>';
 }
 
-// AJAX handler for single file deletion
 add_action('wp_ajax_delete_certificate', 'delete_certificate');
 function delete_certificate() {
     $upload_dir = wp_upload_dir();
@@ -202,10 +181,8 @@ function delete_certificate() {
     }
 }
 
-// AJAX handler for bulk deletion
 add_action('wp_ajax_bulk_delete_certificates', 'bulk_delete_certificates');
 function bulk_delete_certificates() {
-    // Check nonce for security
     if (!isset($_POST['bulk_delete_certificates_nonce']) || !wp_verify_nonce($_POST['bulk_delete_certificates_nonce'], 'bulk_delete_certificates_action')) {
         wp_send_json_error('Nonce verification failed.');
         return;
@@ -218,7 +195,7 @@ function bulk_delete_certificates() {
         foreach ($_POST['certificates'] as $certificate_name) {
             $file_to_delete = $certificate_dir . basename(urldecode($certificate_name));
             if (file_exists($file_to_delete)) {
-                unlink($file_to_delete); // Delete the file
+                unlink($file_to_delete); 
             }
         }
         wp_send_json_success('Selected certificates deleted successfully.');

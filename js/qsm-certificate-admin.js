@@ -1,10 +1,10 @@
 jQuery(document).ready(function($) {
     $('#certificate-table').DataTable({
-        "pageLength": 10, // Set the default page length (number of rows per page)
-        "lengthChange": true, // Allow users to change the page length
-        "searching": true,   // Enable search functionality
-        "ordering": true,    // Enable column sorting
-        "autoWidth": false,  // Disable auto-width
+        "pageLength": 10, 
+        "lengthChange": true, 
+        "searching": true,   
+        "ordering": true,    
+        "autoWidth": false,  
         "language": {
             "paginate": {
                 "first": "First",
@@ -28,7 +28,7 @@ jQuery(document).ready(function($) {
             }, function(response) {
                 if (response.success) {
                     row.fadeOut(function() {
-                        $(this).remove(); // Remove the row from the table
+                        $(this).remove(); 
                     });
                 } else {
                     alert(response.data);

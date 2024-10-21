@@ -53,9 +53,17 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
     // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
+        if($certificate_settings['never_expiry'] == 1){
+            $exp_date = "";
+        } else{
+            $expire_time = $certificate_settings['expiry_days']
+            ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
+            : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
+            $exp_date = str_replace('-', '', $expire_time);
+        }
         $encoded_time_taken = md5( $quiz_results['time_taken'] );
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
-        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};
@@ -178,11 +186,13 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
     $expiry_date_input = isset( $certificate_settings['expiry_date'] ) 
         ? $certificate_settings['expiry_date'] 
         : '';
-
+        $expire_time = "";
+    if($certificate_settings['never_expiry'] != 1){
     if ( is_numeric( $expiry_days_input ) ) {
         $expiry_date = (new DateTime())->modify('+' . intval( $expiry_days_input ) . ' days')->format('F j, Y');
     } else {
-        $expiry_date = (new DateTime($expiry_date_input))->format('F j, Y');;
+        $expiry_date = (new DateTime($expiry_date_input))->format('F j, Y');
+    }
     }
 
     $content = str_replace( '%EXPIRY_DATE%', $expiry_date, $content );

@@ -1,0 +1,51 @@
+
+#qsm-certificate-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.qsm-certificate-table-container .paginate_button {
+    padding: 5px 10px;
+    margin: 0 3px;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+    border-radius: 3px;
+}
+
+.qsm-certificate-table-container .paginate_button:hover {
+    background-color: #007cba;
+    color: white;
+}
+
+.qsm-certificate-table-container .dataTables_length {
+    margin: 20px 0 0;
+}
+
+.qsm-certificate-table-container .dataTables_length label {
+    font-weight: bold;
+}
+
+.qsm-certificate-table-container .dataTables_filter {
+    margin: 10px 0;
+    float: right;
+}
+
+.qsm-certificate-table-container .qsm-check-column {
+    width: 40px;  
+    padding: 0;  
+    text-align: center;
+}
+
+.qsm-certificate-table-container .qsm-check-column input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+.qsm-certificate-table-container table.dataTable thead th, table.dataTable thead td {
+    padding: 10px;  
+}
+
+.qsm-certificate-table-container .dataTables_length select {
+    padding: 0px 20px;
+}

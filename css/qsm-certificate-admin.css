@@ -29,11 +29,11 @@
 .dataTables_wrapper .dataTables_filter input[type="search"] {
     margin: 15px 2px;
 }
-th.check-column {
+th.qsm-check-column {
     width: 50px; 
     text-align: center;
 }
-td.check-column {
+td.qsm-check-column {
     text-align: center;
 }
 .widefat th input{

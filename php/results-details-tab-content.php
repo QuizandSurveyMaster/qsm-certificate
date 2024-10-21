@@ -118,14 +118,14 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
             <tr>
-                <th class="manage-column check-column"><input type="checkbox" id="qsm-select-all"></th>
-                <th class="manage-column">Certificate Name</th>
-                <th class="manage-column">Generated Date</th>
-                <th class="manage-column">Expiration Date</th>
-                <th class="manage-column">Action</th>
+                <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all"></th>
+                <th class="qsm-manage-column">Certificate Name</th>
+                <th class="qsm-manage-column">Generated Date</th>
+                <th class="qsm-manage-column">Expiration Date</th>
+                <th class="qsm-manage-column">Action</th>
             </tr>
           </thead>';
-    echo '<tbody id="certificate-list">';
+    echo '<tbody id="qsm-certificate-list">';
 
     foreach ($files as $file) {
         $file_name = basename($file);
@@ -146,7 +146,7 @@ function qsm_addon_certificate_details_tabs_content() {
         }
 
         echo '<tr data-filename="' . esc_attr($file_name) . '">';
-        echo '<th scope="row" class="check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr($file_name) . '"></th>';
+        echo '<th scope="row" class="qsm-check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr($file_name) . '"></th>';
         echo '<td>' . esc_html($file_name) . '</td>';
         echo '<td>' . esc_html($generated_date) . '</td>';
         echo '<td>' . esc_html($formatted_date) . '</td>';

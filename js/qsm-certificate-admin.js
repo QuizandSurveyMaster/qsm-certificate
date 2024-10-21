@@ -38,7 +38,7 @@ jQuery(document).ready(function($) {
     });
 
         // Handle select all functionality
-        $('#qsm-select-all').click(function() {
+        $('#qsm-select-all-certificate').click(function() {
             $('input[name="certificates[]"]').prop('checked', this.checked);
         });
     

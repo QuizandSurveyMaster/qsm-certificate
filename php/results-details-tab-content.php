@@ -109,16 +109,16 @@ function qsm_addon_certificate_details_tabs_content() {
         echo '<div class="notice notice-info"><p>No PDF certificates found.</p></div>';
         return;
     }
-
+    echo "<div class='qsm-certificate-table-container'>";
     echo '<form method="post" id="qsm-certificate-form">';
     wp_nonce_field('bulk_delete_certificates_action', 'bulk_delete_certificates_nonce');
 
-    echo '<input type="submit" name="bulk_delete" value="Bulk Delete" class="button action" style="margin: 20px 0;">';
+    echo '<input type="submit" name="bulk_delete" value="Bulk Delete" class="button action" style="margin: 20px 0 0;">';
 
     echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
             <tr>
-                <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all"></th>
+                <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
                 <th class="qsm-manage-column">Certificate Name</th>
                 <th class="qsm-manage-column">Generated Date</th>
                 <th class="qsm-manage-column">Expiration Date</th>
@@ -160,6 +160,8 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '</tbody>';
     echo '</table>';
     echo '</form>';
+    echo "</div>";
+
 }
 
 add_action('wp_ajax_delete_certificate', 'qsm_delete_certificate');

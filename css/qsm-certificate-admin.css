@@ -1,4 +1,3 @@
-/* Add this CSS to your admin stylesheet or inline in your PHP code */
 .dataTables_wrapper .dataTables_paginate {
     float: right;
     margin-top: 10px;
@@ -30,9 +29,8 @@
 .dataTables_wrapper .dataTables_filter input[type="search"] {
     margin: 15px 2px;
 }
-/* Align table header and content cells */
 th.check-column {
-    width: 50px; /* Adjust the width as needed */
+    width: 50px; 
     text-align: center;
 }
 td.check-column {

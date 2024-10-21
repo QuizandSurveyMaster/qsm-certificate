@@ -1,5 +1,5 @@
 jQuery(document).ready(function($) {
-    $('#certificate-table').DataTable({
+    $('#qsm-certificate-table').DataTable({
         "pageLength": 10, 
         "lengthChange": true, 
         "searching": true,   
@@ -18,7 +18,7 @@ jQuery(document).ready(function($) {
         }
     });
     // Handle single file deletion
-    $('.delete-file').on('click', function() {
+    $('.qsm-delete-file').on('click', function() {
         var filename = $(this).data('filename');
         if (confirm('Are you sure you want to delete this file?')) {
             var row = $(this).closest('tr');
@@ -38,12 +38,12 @@ jQuery(document).ready(function($) {
     });
 
         // Handle select all functionality
-        $('#select-all').click(function() {
+        $('#qsm-select-all').click(function() {
             $('input[name="certificates[]"]').prop('checked', this.checked);
         });
     
         // Handle bulk delete submission
-        $('#certificate-form').on('submit', function(e) {
+        $('#qsm-certificate-form').on('submit', function(e) {
             e.preventDefault();
     
             var certificates = [];

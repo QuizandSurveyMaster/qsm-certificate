@@ -110,15 +110,15 @@ function qsm_addon_certificate_details_tabs_content() {
         return;
     }
 
-    echo '<form method="post" id="certificate-form">';
+    echo '<form method="post" id="qsm-certificate-form">';
     wp_nonce_field('bulk_delete_certificates_action', 'bulk_delete_certificates_nonce');
 
     echo '<input type="submit" name="bulk_delete" value="Bulk Delete" class="button action" style="margin: 20px 0;">';
 
-    echo '<table id="certificate-table" class="wp-list-table widefat fixed striped">';
+    echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
             <tr>
-                <th class="manage-column check-column"><input type="checkbox" id="select-all"></th>
+                <th class="manage-column check-column"><input type="checkbox" id="qsm-select-all"></th>
                 <th class="manage-column">Certificate Name</th>
                 <th class="manage-column">Generated Date</th>
                 <th class="manage-column">Expiration Date</th>
@@ -152,7 +152,7 @@ function qsm_addon_certificate_details_tabs_content() {
         echo '<td>' . esc_html($formatted_date) . '</td>';
         echo '<td>
                 <a href="' . esc_url($file_url) . '" target="_blank" class="button">View</a> 
-                <button type="button" class="button button-danger delete-file" data-filename="' . esc_attr($file_name) . '">Delete</button>
+                <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">Delete</button>
               </td>';
         echo '</tr>';
     }
@@ -162,8 +162,8 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '</form>';
 }
 
-add_action('wp_ajax_delete_certificate', 'delete_certificate');
-function delete_certificate() {
+add_action('wp_ajax_delete_certificate', 'qsm_delete_certificate');
+function qsm_delete_certificate() {
     $upload_dir = wp_upload_dir();
     $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
 
@@ -181,8 +181,8 @@ function delete_certificate() {
     }
 }
 
-add_action('wp_ajax_bulk_delete_certificates', 'bulk_delete_certificates');
-function bulk_delete_certificates() {
+add_action('wp_ajax_bulk_delete_certificates', 'qsm_bulk_delete_certificates');
+function qsm_bulk_delete_certificates() {
     if (!isset($_POST['bulk_delete_certificates_nonce']) || !wp_verify_nonce($_POST['bulk_delete_certificates_nonce'], 'bulk_delete_certificates_action')) {
         wp_send_json_error('Nonce verification failed.');
         return;

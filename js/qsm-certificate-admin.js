@@ -1,4 +1,78 @@
-jQuery(function ($) {
+jQuery(document).ready(function($) {
+    $('#certificate-table').DataTable({
+        "pageLength": 10, // Set the default page length (number of rows per page)
+        "lengthChange": true, // Allow users to change the page length
+        "searching": true,   // Enable search functionality
+        "ordering": true,    // Enable column sorting
+        "autoWidth": false,  // Disable auto-width
+        "language": {
+            "paginate": {
+                "first": "First",
+                "last": "Last",
+                "next": "Next",
+                "previous": "Previous"
+            },
+            "lengthMenu": "Entries per page _MENU_ ",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "No entries available"
+        }
+    });
+    // Handle single file deletion
+    $('.delete-file').on('click', function() {
+        var filename = $(this).data('filename');
+        if (confirm('Are you sure you want to delete this file?')) {
+            var row = $(this).closest('tr');
+            $.post(ajaxurl, {
+                action: 'delete_certificate',
+                file_name: filename
+            }, function(response) {
+                if (response.success) {
+                    row.fadeOut(function() {
+                        $(this).remove(); // Remove the row from the table
+                    });
+                } else {
+                    alert(response.data);
+                }
+            });
+        }
+    });
+
+        // Handle select all functionality
+        $('#select-all').click(function() {
+            $('input[name="certificates[]"]').prop('checked', this.checked);
+        });
+    
+        // Handle bulk delete submission
+        $('#certificate-form').on('submit', function(e) {
+            e.preventDefault();
+    
+            var certificates = [];
+            $('input[name="certificates[]"]:checked').each(function() {
+                certificates.push($(this).val());
+            });
+    
+            if (certificates.length === 0) {
+                alert('No certificates selected.');
+                return;
+            }
+            if(confirm("Are you sure you want to delete certificates")){
+                var data = {
+                action: 'bulk_delete_certificates',
+                certificates: certificates,
+                bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
+            };
+        }
+    
+            $.post(ajaxurl, data, function(response) {
+                if (response.success) {
+                    alert(response.data);
+                    location.reload(); 
+                } else {
+                    alert(response.data);
+                }
+            });
+        });
+
     
     $('input[name="enable_expiry"]').change(function() {
         qsmUpdateExpiryFields();
@@ -30,8 +104,12 @@ jQuery(function ($) {
         } else if (enableExpiry === '1') {
             $('.qsm-certificate-expiry-date').show();
             $('.qsm-certificate-expiry-days').hide();
+        } else if (enableExpiry === '2') {
+            $('.qsm-certificate-expiry-date').hide();
+            $('.qsm-certificate-expiry-days').hide();
         }
     }
     qsmUpdateExpiryFields();
     
 });
+

@@ -1,0 +1,46 @@
+/* Add this CSS to your admin stylesheet or inline in your PHP code */
+.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    margin-top: 10px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.5em 1em;
+    margin: 0 2px;
+    border: 1px solid #0073aa;
+    background: #f7f7f7;
+    color: #0073aa;
+    border-radius: 3px;
+    transition: background 0.3s, color 0.3s;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #0073aa;
+    color: white;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #0073aa;
+    color: white !important;
+}
+.dataTables_wrapper .dataTables_length select {
+    padding: 0 15px;
+    margin: 0;
+}
+.dataTables_wrapper .dataTables_filter input[type="search"] {
+    margin: 15px 2px;
+}
+/* Align table header and content cells */
+th.check-column {
+    width: 50px; /* Adjust the width as needed */
+    text-align: center;
+}
+td.check-column {
+    text-align: center;
+}
+.widefat th input{
+    margin: 0 8px;
+}
+table.dataTable thead .sorting_asc{
+    padding: 10px;
+}

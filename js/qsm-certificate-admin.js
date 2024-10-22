@@ -2,17 +2,17 @@ jQuery(document).ready(function($) {
     if ($.fn.DataTable) {
         $('#qsm-certificate-table').DataTable({
             paging: true,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],
             language: {
                 paginate: { previous: "<", next: ">" },
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ certificates",
-                search: "Search Certificates:"
+                lengthMenu: qsm_certificate_obj.lengthMenu,
+                info: qsm_certificate_obj.info,
+                search: qsm_certificate_obj.search
             },
-            order: [[1, "asc"]],
+            order: [[2, "asc"]],
             columnDefs: [
-                { targets: [1, 2], orderable: true, type: 'date-eu' },
-                { targets: [0, 3, 4], orderable: false }
+                { targets: [2, 3], orderable: true, type: 'date-eu' },
+                { targets: [0, 1, 4], orderable: false }
             ]
         });
     }
@@ -53,7 +53,7 @@ jQuery(document).ready(function($) {
             });
     
             if (certificates.length === 0) {
-                alert('No certificates selected.');
+                alert(qsm_certificate_obj.no_certificate_selected);
                 return;
             }
             if(confirm(qsm_certificate_obj.bulk_delete_confirm)){

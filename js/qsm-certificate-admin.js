@@ -1,26 +1,27 @@
 jQuery(document).ready(function($) {
-    $('#qsm-certificate-table').DataTable({
-        "pageLength": 10, 
-        "lengthChange": true, 
-        "searching": true,   
-        "ordering": true,    
-        "autoWidth": false,  
-        "language": {
-            "paginate": {
-                "first": "First",
-                "last": "Last",
-                "next": "Next",
-                "previous": "Previous"
+    if ($.fn.DataTable) {
+        $('#qsm-certificate-table').DataTable({
+            paging: true,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],
+            language: {
+                paginate: { previous: "<", next: ">" },
+                lengthMenu: qsm_certificate_obj.lengthMenu,
+                info: qsm_certificate_obj.info,
+                search: qsm_certificate_obj.search
             },
-            "lengthMenu": "Entries per page _MENU_ ",
-            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-            "infoEmpty": "No entries available"
-        }
-    });
+            order: [[2, "asc"]],
+            columnDefs: [
+                { targets: [2, 3], orderable: true, type: 'date-eu' },
+                { targets: [0, 1, 4], orderable: false }
+            ]
+        });
+    }
+                  
+        
     // Handle single file deletion
     $('.qsm-delete-file').on('click', function() {
         var filename = $(this).data('filename');
-        if (confirm('Are you sure you want to delete this file?')) {
+        if (confirm(qsm_certificate_obj.delete_confirm)) {
             var row = $(this).closest('tr');
             $.post(ajaxurl, {
                 action: 'delete_certificate',
@@ -52,10 +53,10 @@ jQuery(document).ready(function($) {
             });
     
             if (certificates.length === 0) {
-                alert('No certificates selected.');
+                alert(qsm_certificate_obj.no_certificate_selected);
                 return;
             }
-            if(confirm("Are you sure you want to delete certificates")){
+            if(confirm(qsm_certificate_obj.bulk_delete_confirm)){
                 var data = {
                 action: 'bulk_delete_certificates',
                 certificates: certificates,

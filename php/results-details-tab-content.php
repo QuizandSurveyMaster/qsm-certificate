@@ -82,49 +82,55 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	</form>
 	<?php
 }
-function qsm_enqueue_datatables_scripts() {
-    wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css');
-
-    wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js', array('jquery'), null, true);
-
-    wp_enqueue_script('qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery', 'datatables-js' ), null, true);
-}
-add_action('admin_enqueue_scripts', 'qsm_enqueue_datatables_scripts');
 
 function qsm_addon_certificate_details_tabs_content() {
-    wp_enqueue_script('qsm_certificate_admin_script', plugins_url('../js/qsm-certificate-admin.js', __FILE__), array('jquery'));
-    wp_enqueue_style('qsm_certificate_admin_style', plugins_url('../css/qsm-certificate-admin.css', __FILE__));
 
+    wp_enqueue_script( 'certificate-datatable-js', QSM_CERTIFICATE_URL . 'js/datatables.min.js', array('jquery'), '2.1.8', true ); 
+    wp_enqueue_script('qsm_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array('jquery'), QSM_CERTIFICATE_VERSION, true ); 
+    wp_enqueue_style('qsm_certificate_admin_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION ); 
+    wp_enqueue_style( 'certificate-datatable-css', QSM_CERTIFICATE_URL . 'css/datatables.min.css', array(), '2.1.8' ); 
+    wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_obj', array(
+        'delete_confirm'     => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),
+        'bulk_delete_confirm'=> esc_html__( 'Are you sure you want to delete certificates?', 'qsm-certificate' ),
+        'no_certificate_selected'=> esc_html__( 'Please select the certificates.', 'qsm-certificate' ),
+        'info'=> esc_html__( 'Showing _START_ to _END_ of _TOTAL_ certificates', 'qsm-certificate' ),
+        'search'=> esc_html__( 'Search Certificates:', 'qsm-certificate' ),
+        'lengthMenu'=> esc_html__( 'Show _MENU_ entries', 'qsm-certificate' ),
+        'length_menu'=> esc_html__( 'All', 'qsm-certificate' ),
+    ));
+    
     $upload_dir = wp_upload_dir();
     $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
 
     if (!is_dir($certificate_dir)) {
-        echo '<div class="notice notice-error"><p>Certificate folder not found.</p></div>';
+        echo '<div class="notice notice-error"><p>' . __("Certificate folder not found.", 'qsm-certificate') . '</p></div>';
         return;
     }
 
     $files = glob($certificate_dir . '*.pdf');
 
     if (empty($files)) {
-        echo '<div class="notice notice-info"><p>No PDF certificates found.</p></div>';
+        echo '<div class="notice notice-info"><p>' . __("No PDF certificates found.", 'qsm-certificate') . '</p></div>';
         return;
     }
+
     echo "<div class='qsm-certificate-table-container'>";
     echo '<form method="post" id="qsm-certificate-form">';
     wp_nonce_field('bulk_delete_certificates_action', 'bulk_delete_certificates_nonce');
 
-    echo '<input type="submit" name="bulk_delete" value="Bulk Delete" class="button action" style="margin: 20px 0 0;">';
+    echo '<input type="submit" name="bulk_delete" value="' . esc_attr__('Bulk Delete', 'qsm-certificate') . '" class="button action" style="margin: 20px 0 0;">';
 
     echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
-            <tr>
-                <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
-                <th class="qsm-manage-column">Certificate Name</th>
-                <th class="qsm-manage-column">Generated Date</th>
-                <th class="qsm-manage-column">Expiration Date</th>
-                <th class="qsm-manage-column">Action</th>
-            </tr>
-          </thead>';
+        <tr>
+            <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
+            <th class="qsm-manage-column">' . __('Certificate Name', 'qsm-certificate') . '</th>
+            <th class="qsm-manage-column">' . __('Generated Date', 'qsm-certificate') . '</th>
+            <th class="qsm-manage-column">' . __('Expiry Date', 'qsm-certificate') . '</th>
+            <th class="qsm-manage-column">' . __('Action', 'qsm-certificate') . '</th>
+        </tr>
+      </thead>';
+          
     echo '<tbody id="qsm-certificate-list">';
 
     foreach ($files as $file) {
@@ -142,7 +148,7 @@ function qsm_addon_certificate_details_tabs_content() {
 
             $formatted_date = $day . '-' . $month . '-' . $year;
         } else {
-            $formatted_date = 'Never Expire'; 
+            $formatted_date = __('Never Expire', 'qsm-certificate'); 
         }
 
         echo '<tr data-filename="' . esc_attr($file_name) . '">';
@@ -151,8 +157,8 @@ function qsm_addon_certificate_details_tabs_content() {
         echo '<td>' . esc_html($generated_date) . '</td>';
         echo '<td>' . esc_html($formatted_date) . '</td>';
         echo '<td>
-                <a href="' . esc_url($file_url) . '" target="_blank" class="button">View</a> 
-                <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">Delete</button>
+                <a href="' . esc_url($file_url) . '" target="_blank" class="button">' . __('View', 'qsm-certificate') . '</a> 
+                <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">' . __('Delete', 'qsm-certificate') . '</button>
               </td>';
         echo '</tr>';
     }
@@ -161,7 +167,6 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '</table>';
     echo '</form>';
     echo "</div>";
-
 }
 
 add_action('wp_ajax_delete_certificate', 'qsm_delete_certificate');
@@ -174,19 +179,19 @@ function qsm_delete_certificate() {
 
         if (file_exists($file_to_delete)) {
             unlink($file_to_delete);
-            wp_send_json_success('File deleted successfully.');
+            wp_send_json_success(__('File deleted successfully.', 'qsm-certificate'));
         } else {
-            wp_send_json_error('File not found.');
+            wp_send_json_error(__('File not found.', 'qsm-certificate'));
         }
     } else {
-        wp_send_json_error('Invalid file name.');
+        wp_send_json_error(__('Invalid file name.', 'qsm-certificate'));
     }
 }
 
 add_action('wp_ajax_bulk_delete_certificates', 'qsm_bulk_delete_certificates');
 function qsm_bulk_delete_certificates() {
     if (!isset($_POST['bulk_delete_certificates_nonce']) || !wp_verify_nonce($_POST['bulk_delete_certificates_nonce'], 'bulk_delete_certificates_action')) {
-        wp_send_json_error('Nonce verification failed.');
+        wp_send_json_error(__('Nonce verification failed.', 'qsm-certificate'));
         return;
     }
 
@@ -200,9 +205,9 @@ function qsm_bulk_delete_certificates() {
                 unlink($file_to_delete); 
             }
         }
-        wp_send_json_success('Selected certificates deleted successfully.');
+        wp_send_json_success(__('Selected certificates deleted successfully.', 'qsm-certificate'));
     } else {
-        wp_send_json_error('No certificates selected for deletion.');
+        wp_send_json_error(__('No certificates selected for deletion.', 'qsm-certificate'));
     }
 }
 

@@ -51,6 +51,7 @@ class QSM_Certificate {
 		define( 'QSM_CERTIFICATE_VERSION', $this->version );
 		define( 'QSM_CERTIFICATE_URL', plugin_dir_url( __FILE__ ) );
 		define( 'QSM_CERTIFICATE_JS_URL', QSM_CERTIFICATE_URL . 'js' );
+		define( 'QSM_CERTIFICATE_CSS_URL', QSM_CERTIFICATE_URL . 'css' );
 	}
 
 	/**

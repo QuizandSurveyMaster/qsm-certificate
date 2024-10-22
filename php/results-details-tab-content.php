@@ -83,17 +83,21 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	<?php
 }
 function qsm_enqueue_datatables_scripts() {
-    wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css');
-
-    wp_enqueue_script('datatables-js', 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js', array('jquery'), null, true);
-
-    wp_enqueue_script('qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery', 'datatables-js' ), null, true);
+    $plugin_url = QSM_CERTIFICATE_URL;
+    wp_enqueue_script( 'bootstrap-min-js', $plugin_url . 'js/datatables.js', array(), '2.1.8', true ); 
+    wp_enqueue_script( 'bootstrap-datatable-js', $plugin_url . 'js/datatables.min.js', array('jquery'), '2.1.8', true ); 
+    wp_enqueue_script('qsm_certificate_admin_script', $plugin_url . 'js/qsm-certificate-admin.js', array('jquery'), QSM_CERTIFICATE_VERSION, true ); 
+    wp_enqueue_style('qsm_certificate_admin_style', $plugin_url . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION ); 
+    wp_enqueue_style( 'bootstrap-datatable-css', $plugin_url . 'css/datatables.css', array(), '2.1.8' ); 
+    wp_enqueue_style( 'bootstrap-datatable-css', $plugin_url . 'css/datatables.min.css', array(), '2.1.8' ); 
+    wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_obj', array(
+        'delete_confirm'     => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),
+        'bulk_delete_confirm'=> esc_html__( 'Are you sure you want to delete certificates?', 'qsm-certificate' ),
+    ));
 }
 add_action('admin_enqueue_scripts', 'qsm_enqueue_datatables_scripts');
 
 function qsm_addon_certificate_details_tabs_content() {
-    wp_enqueue_script('qsm_certificate_admin_script', plugins_url('../js/qsm-certificate-admin.js', __FILE__), array('jquery'));
-    wp_enqueue_style('qsm_certificate_admin_style', plugins_url('../css/qsm-certificate-admin.css', __FILE__));
 
     $upload_dir = wp_upload_dir();
     $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
@@ -121,7 +125,7 @@ function qsm_addon_certificate_details_tabs_content() {
                 <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
                 <th class="qsm-manage-column">Certificate Name</th>
                 <th class="qsm-manage-column">Generated Date</th>
-                <th class="qsm-manage-column">Expiration Date</th>
+                <th class="qsm-manage-column">Expiry Date</th>
                 <th class="qsm-manage-column">Action</th>
             </tr>
           </thead>';
@@ -142,7 +146,7 @@ function qsm_addon_certificate_details_tabs_content() {
 
             $formatted_date = $day . '-' . $month . '-' . $year;
         } else {
-            $formatted_date = 'Never Expire'; 
+            $formatted_date = __('Never Expire', 'qsm-certificate' ); 
         }
 
         echo '<tr data-filename="' . esc_attr($file_name) . '">';

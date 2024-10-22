@@ -1,26 +1,27 @@
 jQuery(document).ready(function($) {
-    $('#qsm-certificate-table').DataTable({
-        "pageLength": 10, 
-        "lengthChange": true, 
-        "searching": true,   
-        "ordering": true,    
-        "autoWidth": false,  
-        "language": {
-            "paginate": {
-                "first": "First",
-                "last": "Last",
-                "next": "Next",
-                "previous": "Previous"
+    if ($.fn.DataTable) {
+        $('#qsm-certificate-table').DataTable({
+            paging: true,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+            language: {
+                paginate: { previous: "<", next: ">" },
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ certificates",
+                search: "Search Certificates:"
             },
-            "lengthMenu": "Entries per page _MENU_ ",
-            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-            "infoEmpty": "No entries available"
-        }
-    });
+            order: [[1, "asc"]],
+            columnDefs: [
+                { targets: [1, 2], orderable: true, type: 'date-eu' },
+                { targets: [0, 3, 4], orderable: false }
+            ]
+        });
+    }
+                  
+        
     // Handle single file deletion
     $('.qsm-delete-file').on('click', function() {
         var filename = $(this).data('filename');
-        if (confirm('Are you sure you want to delete this file?')) {
+        if (confirm(qsm_certificate_obj.delete_confirm)) {
             var row = $(this).closest('tr');
             $.post(ajaxurl, {
                 action: 'delete_certificate',
@@ -55,7 +56,7 @@ jQuery(document).ready(function($) {
                 alert('No certificates selected.');
                 return;
             }
-            if(confirm("Are you sure you want to delete certificates")){
+            if(confirm(qsm_certificate_obj.bulk_delete_confirm)){
                 var data = {
                 action: 'bulk_delete_certificates',
                 certificates: certificates,

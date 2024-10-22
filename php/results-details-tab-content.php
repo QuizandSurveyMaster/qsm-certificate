@@ -138,7 +138,8 @@ function qsm_addon_certificate_details_tabs_content() {
         $file_url = $upload_dir['baseurl'] . '/qsm-certificates/' . $file_name;        
         $generated_date = date('d-m-Y H:i:s', filemtime($file));        
         $resultant_string = substr($file_name, 0, -8);
-        $formatted_date = '';
+        $expiration_date = '';
+        $current_date = date('d-m-Y');
         
         if (strlen($file_name) >= 53) {
             $last_eight_characters = substr($file_name, -12, 10);
@@ -146,16 +147,20 @@ function qsm_addon_certificate_details_tabs_content() {
             $month = substr($last_eight_characters, 2, 2); 
             $year = substr($last_eight_characters, 4, 4);  
 
-            $formatted_date = $day . '-' . $month . '-' . $year;
+            $expiration_date = $day . '-' . $month . '-' . $year;
         } else {
-            $formatted_date = __('Never Expire', 'qsm-certificate'); 
+            $expiration_date = __('Never Expire', 'qsm-certificate'); 
         }
 
         echo '<tr data-filename="' . esc_attr($file_name) . '">';
         echo '<th scope="row" class="qsm-check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr($file_name) . '"></th>';
         echo '<td>' . esc_html($file_name) . '</td>';
         echo '<td>' . esc_html($generated_date) . '</td>';
-        echo '<td>' . esc_html($formatted_date) . '</td>';
+        if($current_date == $expiration_date){
+            echo '<td style="color: red;">' . esc_html($expiration_date) . '</td>';
+        } else {
+            echo '<td>' . esc_html($expiration_date) . '</td>';
+        }
         echo '<td>
                 <a href="' . esc_url($file_url) . '" target="_blank" class="button">' . __('View', 'qsm-certificate') . '</a> 
                 <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">' . __('Delete', 'qsm-certificate') . '</button>

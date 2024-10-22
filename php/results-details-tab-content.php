@@ -140,7 +140,7 @@ function qsm_addon_certificate_details_tabs_content() {
         $resultant_string = substr($file_name, 0, -8);
         $formatted_date = '';
         
-        if (strlen($file_name) > 45) {
+        if (strlen($file_name) >= 53) {
             $last_eight_characters = substr($file_name, -12, 10);
             $day = substr($last_eight_characters, 0, 2);
             $month = substr($last_eight_characters, 2, 2); 

@@ -156,7 +156,7 @@ function qsm_addon_certificate_details_tabs_content() {
         echo '<th scope="row" class="qsm-check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr($file_name) . '"></th>';
         echo '<td>' . esc_html($file_name) . '</td>';
         echo '<td>' . esc_html($generated_date) . '</td>';
-        if($current_date == $expiration_date){
+        if($current_date >= $expiration_date){
             echo '<td style="color: red;">' . esc_html($expiration_date) . '</td>';
         } else {
             echo '<td>' . esc_html($expiration_date) . '</td>';

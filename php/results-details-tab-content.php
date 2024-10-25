@@ -139,28 +139,30 @@ function qsm_addon_certificate_details_tabs_content() {
         $generated_date = date('d-m-Y H:i:s', filemtime($file));        
         $resultant_string = substr($file_name, 0, -8);
         $expiration_date = '';
-        $current_date = date('d-m-Y');
+        $current_date = new DateTime(); 
         
         if (strlen($file_name) >= 53) {
             $last_eight_characters = substr($file_name, -12, 10);
             $day = substr($last_eight_characters, 0, 2);
             $month = substr($last_eight_characters, 2, 2); 
             $year = substr($last_eight_characters, 4, 4);  
-
-            $expiration_date = $day . '-' . $month . '-' . $year;
+    
+            $expiration_date = DateTime::createFromFormat('d-m-Y', $day . '-' . $month . '-' . $year);
         } else {
-            $expiration_date = __('Never Expire', 'qsm-certificate'); 
+            $expiration_date = null; 
         }
-
+    
         echo '<tr data-filename="' . esc_attr($file_name) . '">';
         echo '<th scope="row" class="qsm-check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr($file_name) . '"></th>';
         echo '<td>' . esc_html($file_name) . '</td>';
         echo '<td>' . esc_html($generated_date) . '</td>';
-        if($current_date >= $expiration_date){
-            echo '<td style="color: red;">' . esc_html($expiration_date) . '</td>';
+    
+        // Check expiration status
+        if ($expiration_date !== null && $current_date >= $expiration_date) {
+            echo '<td style="color: red;">' . esc_html($expiration_date->format('d-m-Y')) . '</td>';
         } else {
-            echo '<td>' . esc_html($expiration_date) . '</td>';
-        }
+            echo '<td>' . esc_html($expiration_date ? $expiration_date->format('d-m-Y') : __('Never Expire', 'qsm-certificate')) . '</td>';
+        }    
         echo '<td>
                 <a href="' . esc_url($file_url) . '" target="_blank" class="button">' . __('View', 'qsm-certificate') . '</a> 
                 <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">' . __('Delete', 'qsm-certificate') . '</button>

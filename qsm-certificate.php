@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.2.0
+ * Version: 1.3.0
  *
  * @author QSM Team
- * @version 1.2.0
+ * @version 1.3.0
  * @package QSM
  */
 
@@ -32,7 +32,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.2.0';
+	public $version = '1.3.0';
 
 	/**
 	 * Main Construct Function
@@ -48,6 +48,10 @@ class QSM_Certificate {
 		$this->load_dependencies();
 		$this->add_hooks();
 		$this->check_license();
+		define( 'QSM_CERTIFICATE_VERSION', $this->version );
+		define( 'QSM_CERTIFICATE_URL', plugin_dir_url( __FILE__ ) );
+		define( 'QSM_CERTIFICATE_JS_URL', QSM_CERTIFICATE_URL . 'js' );
+		define( 'QSM_CERTIFICATE_CSS_URL', QSM_CERTIFICATE_URL . 'css' );
 	}
 
 	/**
@@ -80,6 +84,10 @@ class QSM_Certificate {
 		add_action( 'admin_init', 'qsm_addon_create_upload_dir' );
 		add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10, 2 );
 		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
+		add_action( 'wp_ajax_qsm_addon_certificate_expiry_check', 'qsm_addon_certificate_expiry_check' );
+		add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10, 2 );
+		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
+
 
 		// Needed until the new variable system is finished.
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );
@@ -94,7 +102,9 @@ class QSM_Certificate {
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_user_email', 10, 2 );
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date', 10, 2 );
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_date_taken', 10, 2 );
-		add_filter( 'qsm_addon_certificate_content_filter', array( $this, 'mlw_certificate_user_full_name' ), 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', 'qsm_certificate_variable_expiry_date', 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', 'qsm_certificate_id_variable', 10, 2 );
+		add_filter( 'qsm_addon_certificate_content_filter', array( $this, 'qsm_certificate_user_full_name' ), 10, 2 );
 		add_filter( 'upload_mimes', array( $this, 'add_ttf_upload_mimes' ) );
 	}
 
@@ -106,19 +116,22 @@ class QSM_Certificate {
 	 * @param array  $mlw_quiz_array Quiz Array.
 	 * @return string
 	 */
-	public function mlw_certificate_user_full_name( $content, $mlw_quiz_array ) {
+	public function qsm_certificate_user_full_name( $content, $mlw_quiz_array ) {
 		if ( false !== strpos( $content, '%FULL_NAME%' ) ) {
-			$full_name       = '';
-			$user_id         = isset( $mlw_quiz_array['user_id'] ) ? $mlw_quiz_array['user_id'] : 0;
+			$full_name = '';
+			$user_id = isset( $mlw_quiz_array['user_id'] ) ? $mlw_quiz_array['user_id'] : 0;
 			$current_user_id = get_current_user_id();
+
 			if ( is_admin() && $user_id != $current_user_id ) {
 				$current_user_id = $user_id;
 			}
 
 			$user = get_user_by( 'ID', $current_user_id );
+
 			if ( $user ) {
-				$firstname   = get_user_meta( $user->ID, 'first_name', true );
-				$lastname    = get_user_meta( $user->ID, 'last_name', true );
+				$firstname = get_user_meta( $user->ID, 'first_name', true );
+				$lastname = get_user_meta( $user->ID, 'last_name', true );
+
 				if ( ! empty( $firstname ) && ! empty( $lastname ) ) {
 					$full_name = $firstname . ' ' . $lastname;
 				} else {
@@ -126,7 +139,7 @@ class QSM_Certificate {
 				}
 			}
 
-			$content = str_replace( '%FULL_NAME%', ( isset( $full_name ) ? $full_name : '' ), $content );
+			$content = str_replace( '%FULL_NAME%', $full_name, $content );
 		}
 		return $content;
 	}
@@ -228,19 +241,67 @@ function qsm_addon_create_upload_dir() {
  * @param string $certificates_dirname certificates dirname.
  */
 function migrate_old_certificates( $certificates_dirname ) {
-	$plugins_path = dirname( plugin_dir_path( __FILE__ ) );
-	$plugins      = scandir( $plugins_path );
-	foreach ( $plugins as $plugin ) {
-		if ( 0 === strpos( $plugin, 'qsm-certificate' ) && 'qsm-certificate' !== $plugin ) {
-			$certificates = scandir( $plugins_path . '/' . $plugin . '/certificates' );
-			foreach ( $certificates as $certificate ) {
-				if ( strpos( $certificate, 'pdf' ) > 0 ) {
-					$source      = $plugins_path . '/' . $plugin . '/certificates/' . $certificate;
-					$destination = $certificates_dirname . '/' . $certificate;
-					rename( $source, $destination );
-				}
-			}
-		}
-	}
+    $plugins_path = dirname( plugin_dir_path( __FILE__ ) );
+
+    $plugins = scandir( $plugins_path );
+
+    foreach ( $plugins as $plugin ) {
+        if (in_array($plugin, array('.', '..'))) {
+            continue;
+        }
+        if ( 0 === strpos( $plugin, 'qsm-certificate' ) && 'qsm-certificate' !== $plugin ) {
+            $certificates_path = $plugins_path . '/' . $plugin . '/certificates';
+
+            if (is_dir($certificates_path)) {
+                $certificates = scandir( $certificates_path );
+
+                foreach ( $certificates as $certificate ) {
+                    if (in_array($certificate, array('.', '..'))) {
+                        continue;
+                    }
+                    if (strpos($certificate, 'pdf') !== false) {
+                        $source      = $certificates_path . '/' . $certificate;
+                        $destination = $certificates_dirname . '/' . $certificate;
+
+                        if (file_exists($source)) {
+                            rename( $source, $destination );
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
+function qsm_addon_certificate_expiry_check() {
+    global $mlwQuizMasterNext;
+
+    $certificate_id = isset($_POST['certificate_id']) ? sanitize_text_field($_POST['certificate_id']) : '';
+    $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+
+    $response = array();
+
+    if (!empty($certificate_id)) {
+        $unique_key = $certificate_id;
+        $resultant_string = substr($unique_key, 0, -13);
+        $last_eight_characters = substr($resultant_string, -8);
+		$last_characters = intval($last_eight_characters);
+
+        $date = date('Y-m-d');
+        $current = str_replace('-', '', $date);
+		$current_date = intval($current);
+
+        if ($current_date <= $last_characters) {
+            $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('Valid License', 'qsm-certificate');
+            wp_send_json_success($response);
+        } else {
+            $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('Invalid License', 'qsm-certificate');
+            wp_send_json_success($response);
+        }
+    } else {
+        $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('Certificate ID is missing', 'qsm-certificate');
+        wp_send_json_error($response);
+    }
+
+    wp_die();
+}

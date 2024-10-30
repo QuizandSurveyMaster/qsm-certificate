@@ -1,0 +1,13 @@
+.qsm-certificate-table-container .qsm-check-column {
+    width: 40px;  
+    padding: 0;  
+    text-align: center;
+}
+
+.qsm-certificate-table-container div.dt-container select.dt-input{
+    padding: 0px 23px 0 11px ;
+}
+.qsm-certificate-table-container div.dt-container .dt-search input{
+    padding: 0;
+}
+

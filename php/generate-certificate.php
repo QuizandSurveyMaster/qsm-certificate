@@ -53,9 +53,17 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
     // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
+        if($certificate_settings['never_expiry'] == 1){
+            $exp_date = "";
+        } else{
+            $expire_time = $certificate_settings['expiry_days']
+            ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
+            : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
+            $exp_date = str_replace('-', '', $expire_time);
+        }
         $encoded_time_taken = md5( $quiz_results['time_taken'] );
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}.pdf";
-        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points']);
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};
@@ -162,5 +170,92 @@ function qsm_does_url_exits( $url ) {
     return $status;
 }
 
+function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
+    global $mlwQuizMasterNext;
+
+    $quiz_options      = $mlwQuizMasterNext->quiz_settings->get_quiz_options();
+    $qsm_quiz_settings = maybe_unserialize( $quiz_options->quiz_settings );
+
+    $certificate_settings = isset( $qsm_quiz_settings['certificate_settings'] ) 
+        ? maybe_unserialize( $qsm_quiz_settings['certificate_settings'] ) 
+        : [];
+
+    $expiry_days_input = isset( $certificate_settings['expiry_days'] ) 
+        ? $certificate_settings['expiry_days'] 
+        : '';
+    $expiry_date_input = isset( $certificate_settings['expiry_date'] ) 
+        ? $certificate_settings['expiry_date'] 
+        : '';
+        $expire_time = "";
+    if($certificate_settings['never_expiry'] != 1){
+    if ( is_numeric( $expiry_days_input ) ) {
+        $expiry_date = (new DateTime())->modify('+' . intval( $expiry_days_input ) . ' days')->format('F j, Y');
+    } else {
+        $expiry_date = (new DateTime($expiry_date_input))->format('F j, Y');
+    }
+    }
+
+    $content = str_replace( '%EXPIRY_DATE%', $expiry_date, $content );
+
+    return $content;
+}
+
+function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
+	global $mlwQuizMasterNext;
+    global $wpdb;
+
+    if ( isset( $mlw_quiz_array['quiz_id'] ) && ! empty( $mlw_quiz_array['quiz_id'] ) ) {
+        $quiz_id = intval( $mlw_quiz_array['quiz_id'] );
+
+        $unique_id = $wpdb->get_row( $wpdb->prepare(
+            "SELECT unique_id FROM {$wpdb->prefix}mlw_results WHERE quiz_id = %d ORDER BY result_id DESC LIMIT 1",
+            $quiz_id
+        ) );
+   
+	$quiz_options        = $mlwQuizMasterNext->quiz_settings->get_quiz_options();
+	$qsm_quiz_settings   = maybe_unserialize( $quiz_options->quiz_settings );
+
+    $certificate_settings = isset($qsm_quiz_settings['certificate_settings'])? maybe_unserialize($qsm_quiz_settings['certificate_settings'] ) : [];
+	$certificate_id = isset($certificate_settings['certificate_id'])? $certificate_settings['certificate_id'] . $unique_id->unique_id : "";
+	$content = str_replace( '%CERTIFICATE_ID%', $certificate_id, $content );
+    }
+	return $content;
+}
+
+function qsm_certificate_scripts_load() {
+    wp_enqueue_script( 
+        'qsm_certificate_js', 
+        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
+        array( 'jquery' ), 
+        QSM_CERTIFICATE_VERSION, 
+        true
+    );
+
+    wp_localize_script(
+        'qsm_certificate_js',
+        'qmn_ajax_object',
+        array(
+            'site_url'  => site_url(),
+            'ajaxurl'   => admin_url( 'admin-ajax.php' ),
+        )
+    );
+}
+
+add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
+
+function qsm_certificate_expiry_check_form( $settings, $cert_id ) {
+    ob_start(); 
+    ?>
+    <form action="" method="post" id="qsm-certificate-expiry-check-form">
+        <label for="certificate_id">Certificate ID:</label>
+        <input type="text" id="certificate_id" name="certificate_id" style="margin-bottom: 10px">
+        <input type="submit" value="Check Expiry" class="qsm-certificate-expiry-check-button qmn_btn">
+    </form>
+    <span id="validation_message"></span>
+    <?php
+    return ob_get_clean(); 
+}
+
+add_shortcode( 'quiz_expiry_check', 'qsm_certificate_expiry_check_form' );
 
 

@@ -1,3 +1,9 @@
+<h3>1.3.0 (October 30, 2024) </h3>
+<ul>
+	<li>Feature: Added the %EXPIRY_DATE% variable to display the expiration date on certificates</li>
+	<li>Feature: Added an option to set an expiration date or days on certificates</li>
+	<li>Feature: Added options to view and delete certificates</li>
+</ul>
 <h3>1.2.0 (October 07, 2024) </h3>
 <ul>
 	<li>Bug: Fixed PHP warning with username</li>

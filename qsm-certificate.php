@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.2.0
+ * Version: 1.3.0
  *
  * @author QSM Team
- * @version 1.2.0
+ * @version 1.3.0
  * @package QSM
  */
 
@@ -32,7 +32,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.2.0';
+	public $version = '1.3.0';
 
 	/**
 	 * Main Construct Function
@@ -121,24 +121,24 @@ class QSM_Certificate {
 			$full_name = '';
 			$user_id = isset( $mlw_quiz_array['user_id'] ) ? $mlw_quiz_array['user_id'] : 0;
 			$current_user_id = get_current_user_id();
-	
+
 			if ( is_admin() && $user_id != $current_user_id ) {
 				$current_user_id = $user_id;
 			}
-	
+
 			$user = get_user_by( 'ID', $current_user_id );
-	
+
 			if ( $user ) {
 				$firstname = get_user_meta( $user->ID, 'first_name', true );
 				$lastname = get_user_meta( $user->ID, 'last_name', true );
-	
+
 				if ( ! empty( $firstname ) && ! empty( $lastname ) ) {
 					$full_name = $firstname . ' ' . $lastname;
 				} else {
 					$full_name = $user->display_name;
 				}
 			}
-	
+
 			$content = str_replace( '%FULL_NAME%', $full_name, $content );
 		}
 		return $content;
@@ -244,17 +244,17 @@ function migrate_old_certificates( $certificates_dirname ) {
     $plugins_path = dirname( plugin_dir_path( __FILE__ ) );
 
     $plugins = scandir( $plugins_path );
-    
+
     foreach ( $plugins as $plugin ) {
         if (in_array($plugin, array('.', '..'))) {
             continue;
         }
         if ( 0 === strpos( $plugin, 'qsm-certificate' ) && 'qsm-certificate' !== $plugin ) {
             $certificates_path = $plugins_path . '/' . $plugin . '/certificates';
-            
+
             if (is_dir($certificates_path)) {
                 $certificates = scandir( $certificates_path );
-                
+
                 foreach ( $certificates as $certificate ) {
                     if (in_array($certificate, array('.', '..'))) {
                         continue;
@@ -262,7 +262,7 @@ function migrate_old_certificates( $certificates_dirname ) {
                     if (strpos($certificate, 'pdf') !== false) {
                         $source      = $certificates_path . '/' . $certificate;
                         $destination = $certificates_dirname . '/' . $certificate;
-                        
+
                         if (file_exists($source)) {
                             rename( $source, $destination );
                         }
@@ -293,14 +293,14 @@ function qsm_addon_certificate_expiry_check() {
 
         if ($current_date <= $last_characters) {
             $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('Valid License', 'qsm-certificate');
-            wp_send_json_success($response); 
+            wp_send_json_success($response);
         } else {
             $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('Invalid License', 'qsm-certificate');
-            wp_send_json_success($response); 
+            wp_send_json_success($response);
         }
     } else {
         $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('Certificate ID is missing', 'qsm-certificate');
-        wp_send_json_error($response); 
+        wp_send_json_error($response);
     }
 
     wp_die();

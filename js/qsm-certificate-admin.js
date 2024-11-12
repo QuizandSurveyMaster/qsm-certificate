@@ -79,21 +79,20 @@ jQuery(document).ready(function($) {
         qsmUpdateExpiryFields();
     });
 
-    jQuery(document).on('submit', '#qsm-certificate-expiry-check-form', function (event) {
+    jQuery(document).on('click', '.qsm-certificate-expiry-check-button', function (event) {
         event.preventDefault();
 
-        let certificate_id = jQuery('#qsm-certificate-expiry-check-form').find('#certificate_id').val();
-        let Email = jQuery('#qsm-certificate-expiry-check-form').find('#email').val();
-
+        let certificate_id = jQuery(document).find('#certificate_id').val();
         var data = {
             action: 'qsm_addon_certificate_expiry_check',
             certificate_id: certificate_id,
-            email: Email,
         };
 
         jQuery.post(qmn_ajax_object.ajaxurl, data, function (response) {
             if (response.success) {
-                jQuery('#validation_message').html('<p>' + response.data.message + '</p>');
+                jQuery(document).find('#validation_message').html( response.data.message );
+            } else {
+                jQuery(document).find('#validation_message').html(response.data.message);
             }
         });  
     });

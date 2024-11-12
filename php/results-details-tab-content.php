@@ -158,11 +158,11 @@ function qsm_addon_certificate_details_tabs_content() {
         echo '<td>' . esc_html($generated_date) . '</td>';
     
         // Check expiration status
-        if ($expiration_date !== null && $current_date >= $expiration_date) {
+        if ($expiration_date instanceof DateTime && $current_date >= $expiration_date) {
             echo '<td style="color: red;">' . esc_html($expiration_date->format('d-m-Y')) . '</td>';
         } else {
-            echo '<td>' . esc_html($expiration_date ? $expiration_date->format('d-m-Y') : __('Never Expire', 'qsm-certificate')) . '</td>';
-        }    
+            echo '<td>' . esc_html($expiration_date instanceof DateTime ? $expiration_date->format('d-m-Y') : __('Never Expire', 'qsm-certificate')) . '</td>';
+        }
         echo '<td>
                 <a href="' . esc_url($file_url) . '" target="_blank" class="button">' . __('View', 'qsm-certificate') . '</a> 
                 <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">' . __('Delete', 'qsm-certificate') . '</button>

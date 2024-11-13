@@ -5,10 +5,10 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.3.0
+ * Version: 1.3.1
  *
  * @author QSM Team
- * @version 1.3.0
+ * @version 1.3.1
  * @package QSM
  */
 
@@ -32,7 +32,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.3.0';
+	public $version = '1.3.1';
 
 	/**
 	 * Main Construct Function
@@ -246,24 +246,24 @@ function migrate_old_certificates( $certificates_dirname ) {
     $plugins = scandir( $plugins_path );
 
     foreach ( $plugins as $plugin ) {
-        if (in_array($plugin, array('.', '..'))) {
+        if ( in_array($plugin, array( '.', '..' )) ) {
             continue;
         }
         if ( 0 === strpos( $plugin, 'qsm-certificate' ) && 'qsm-certificate' !== $plugin ) {
             $certificates_path = $plugins_path . '/' . $plugin . '/certificates';
 
-            if (is_dir($certificates_path)) {
+            if ( is_dir($certificates_path) ) {
                 $certificates = scandir( $certificates_path );
 
                 foreach ( $certificates as $certificate ) {
-                    if (in_array($certificate, array('.', '..'))) {
+                    if ( in_array($certificate, array( '.', '..' )) ) {
                         continue;
                     }
-                    if (strpos($certificate, 'pdf') !== false) {
+                    if ( strpos($certificate, 'pdf') !== false ) {
                         $source      = $certificates_path . '/' . $certificate;
                         $destination = $certificates_dirname . '/' . $certificate;
 
-                        if (file_exists($source)) {
+                        if ( file_exists($source) ) {
                             rename( $source, $destination );
                         }
                     }
@@ -281,7 +281,7 @@ function qsm_addon_certificate_expiry_check() {
 
     $response = array();
 
-    if (!empty($certificate_id)) {
+    if ( ! empty($certificate_id) ) {
         $unique_key = $certificate_id;
         $resultant_string = substr($unique_key, 0, -13);
         $last_eight_characters = substr($resultant_string, -8);
@@ -291,7 +291,7 @@ function qsm_addon_certificate_expiry_check() {
         $current = str_replace('-', '', $date);
 		$current_date = intval($current);
 
-        if ($current_date <= $last_characters) {
+        if ( $current_date <= $last_characters ) {
             $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('Valid License', 'qsm-certificate');
             wp_send_json_success($response);
         } else {

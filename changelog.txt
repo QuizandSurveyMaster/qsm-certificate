@@ -1,3 +1,7 @@
+<h3>1.3.1 (November 13, 2024) </h3>
+<ul>
+	<li>Bug: Fixed issue with certificate expiry date</li>
+</ul>
 <h3>1.3.0 (October 30, 2024) </h3>
 <ul>
 	<li>Feature: Added the %EXPIRY_DATE% variable to display the expiration date on certificates</li>

@@ -53,9 +53,9 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
     // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
-        if($certificate_settings['never_expiry'] == 1){
+        if ( $certificate_settings['never_expiry'] == 1 ) {
             $exp_date = "";
-        } else{
+        } else {
             $expire_time = $certificate_settings['expiry_days']
             ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
             : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
@@ -187,7 +187,7 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
         ? $certificate_settings['expiry_date'] 
         : '';
         $expire_time = "";
-    if($certificate_settings['never_expiry'] != 1){
+    if ( $certificate_settings['never_expiry'] != 1 ) {
     if ( is_numeric( $expiry_days_input ) ) {
         $expiry_date = (new DateTime())->modify('+' . intval( $expiry_days_input ) . ' days')->format('F j, Y');
     } else {
@@ -215,8 +215,8 @@ function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
 	$quiz_options        = $mlwQuizMasterNext->quiz_settings->get_quiz_options();
 	$qsm_quiz_settings   = maybe_unserialize( $quiz_options->quiz_settings );
 
-    $certificate_settings = isset($qsm_quiz_settings['certificate_settings'])? maybe_unserialize($qsm_quiz_settings['certificate_settings'] ) : [];
-	$certificate_id = isset($certificate_settings['certificate_id'])? $certificate_settings['certificate_id'] . $unique_id->unique_id : "";
+    $certificate_settings = isset($qsm_quiz_settings['certificate_settings']) ? maybe_unserialize($qsm_quiz_settings['certificate_settings'] ) : [];
+	$certificate_id = isset($certificate_settings['certificate_id']) ? $certificate_settings['certificate_id'] . $unique_id->unique_id : "";
 	$content = str_replace( '%CERTIFICATE_ID%', $certificate_id, $content );
     }
 	return $content;
@@ -235,8 +235,8 @@ function qsm_certificate_scripts_load() {
         'qsm_certificate_js',
         'qmn_ajax_object',
         array(
-            'site_url'  => site_url(),
-            'ajaxurl'   => admin_url( 'admin-ajax.php' ),
+            'site_url' => site_url(),
+            'ajaxurl'  => admin_url( 'admin-ajax.php' ),
         )
     );
 }

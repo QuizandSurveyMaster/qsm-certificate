@@ -41,10 +41,10 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
     if ( $license != $saved_license ) {
       // Prepares data to activate the license
       $api_params = array(
-      'edd_action' => 'activate_license',
-      'license'    => $saved_license,
-      'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
-      'url'        => home_url(),
+		  'edd_action' => 'activate_license',
+		  'license'    => $saved_license,
+		  'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
+		  'url'        => home_url(),
       );
       // Call the custom API.
       $response = wp_remote_post( 'http://quizandsurveymaster.com', array(
@@ -58,16 +58,16 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
 
         // Prepares data to deactivate changed license
       $api_params = array(
-        'edd_action' => 'deactivate_license',
-        'license'    => $license,
-        'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
-        'url'        => home_url(),
+		  'edd_action' => 'deactivate_license',
+		  'license'    => $license,
+		  'item_name'  => urlencode( 'Certificate' ), // the name of our product in EDD
+		  'url'        => home_url(),
       );
       // Call the custom API.
       $response = wp_remote_post( 'http://quizandsurveymaster.com', array(
-			'timeout'   => 15,
-			'sslverify' => false,
-			'body'      => $api_params,
+		  'timeout'   => 15,
+		  'sslverify' => false,
+		  'body'      => $api_params,
       ) );
       }
     }

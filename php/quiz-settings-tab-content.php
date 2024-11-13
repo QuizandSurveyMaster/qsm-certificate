@@ -53,7 +53,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo'             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
 		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
 		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : "",
-		'dpi'       	   => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
+		'dpi'              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
 		'expiry_date'      => (isset($_POST["expiry_date"]) && $_POST["enable_expiry"] == 1) ? $_POST["expiry_date"] : "",
 		'expiry_days'      => (isset($_POST["expiry_days"]) && $_POST["enable_expiry"] == 0) ? $_POST["expiry_days"] : "",
 		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
@@ -96,7 +96,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo'             => '',
 		'logo_style'       => 'text-align:center;',
 		'background'       => '',
-		'dpi'			   => 100,
+		'dpi'              => 100,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	?>
@@ -234,21 +234,21 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td width="30%">
 					<strong><?php echo __('Set expiry date', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><input type="date" id="expiry_date" name="expiry_date" value="<?php echo isset($certificate_settings["expiry_date"])? esc_attr($certificate_settings["expiry_date"]): ""; ?>">
+				<td><input type="date" id="expiry_date" name="expiry_date" value="<?php echo isset($certificate_settings["expiry_date"]) ? esc_attr($certificate_settings["expiry_date"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-days">
 				<td width="30%">
 					<strong><?php echo __('Set expiry date in X days', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><input type="number" id="expiry_days" name="expiry_days" value="<?php echo isset($certificate_settings["expiry_days"])? esc_attr($certificate_settings["expiry_days"]): ""; ?>">
+				<td><input type="number" id="expiry_days" name="expiry_days" value="<?php echo isset($certificate_settings["expiry_days"]) ? esc_attr($certificate_settings["expiry_days"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
 					<strong><?php echo __('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"])? esc_attr($certificate_settings["prefix"]): ""; ?>">
+				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"]) ? esc_attr($certificate_settings["prefix"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>

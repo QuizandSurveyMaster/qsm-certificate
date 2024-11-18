@@ -164,9 +164,16 @@ function qsm_addon_certificate_details_tabs_content() {
             echo '<td>' . esc_html($expiration_date instanceof DateTime ? $expiration_date->format('d-m-Y') : __('Never Expire', 'qsm-certificate')) . '</td>';
         }
         echo '<td>
-                <a href="' . esc_url($file_url) . '" target="_blank" class="button">' . __('View', 'qsm-certificate') . '</a> 
-                <button type="button" class="button button-danger qsm-delete-file" data-filename="' . esc_attr($file_name) . '">' . __('Delete', 'qsm-certificate') . '</button>
-              </td>';
+        <div class="qsm-table-icons">
+        <a href="' . esc_url($file_url) . '" target="_blank" class="qsm-view-file">
+            <img src="' . esc_url(plugins_url('../assets/eye-line.png', __FILE__)) . '" alt="' . __('View Icon', 'qsm-certificate') . '">
+        </a> 
+        <button type="button" class="qsm-delete-file" data-filename="' . esc_attr($file_name) . '">
+            <img src="' . esc_url(plugins_url('../assets/trash.png', __FILE__)) . '" alt="' . __('Delete Icon', 'qsm-certificate') . '">
+        </button>
+        </div>
+      </td>';
+
         echo '</tr>';
     }
 

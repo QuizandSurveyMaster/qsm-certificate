@@ -111,5 +111,15 @@ jQuery(document).ready(function($) {
     }
     qsmUpdateExpiryFields();
     
+    jQuery(document).on('change', '.qsm-certificate-background', function () {
+        var imageUrl = jQuery(this).val();
+    
+        if (imageUrl) {
+            jQuery('#qsm-certificate-image').attr('src', imageUrl);
+        } else {
+            jQuery('#qsm-certificate-image').attr('src', imageUrl);
+        }
+    });
+    
 });
 

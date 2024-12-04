@@ -52,14 +52,14 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		),
 		'logo'             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
 		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
-		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : "",
+		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
 		'dpi'              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
-		'expiry_date'      => (isset($_POST["expiry_date"]) && $_POST["enable_expiry"] == 1) ? $_POST["expiry_date"] : "",
-		'expiry_days'      => (isset($_POST["expiry_days"]) && $_POST["enable_expiry"] == 0) ? $_POST["expiry_days"] : "",
+		'expiry_date'      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
+		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) == 0) ? $_POST["expiry_days"] : "",
 		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
-		'certificate_id'   => ($_POST["enable_expiry"] == 2) ? str_replace(' ', '', $_POST["prefix"]) : ($_POST["enable_expiry"] == 0 ? str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', (new DateTime())->modify('+' . intval($_POST["expiry_days"]) . ' days')->format('Y-m-d')) : str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', $_POST["expiry_date"])),
+		'certificate_id'   => (isset($_POST["enable_expiry"]) == 2) ? str_replace(' ', '', $_POST["prefix"]) : (isset($_POST["enable_expiry"]) == 0 ? str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', (new DateTime())->modify('+' . intval($_POST["expiry_days"]) . ' days')->format('Y-m-d')) : str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', $_POST["expiry_date"])),
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
-		'never_expiry'     => ($_POST["enable_expiry"] == 2) ? true : false,
+		'never_expiry'     => (isset($_POST["enable_expiry"]) == 2) ? true : false,
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -203,8 +203,15 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			<tr>
 				<td width="30%">
 					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
+					<p style="font-style: italic; color: #666; margin-top: 5px;">
+    				<?php echo __('If no background image is provided, the default certificate background will be used automatically.', 'qsm-certificate'); ?>
+					</p>
 				</td>
-				<td><textarea cols="80" rows="3" id="certificate_background" name="certificate_background"><?php echo $certificate_settings["background"]; ?></textarea>
+				<td>
+					<textarea cols="80" rows="3" id="certificate_background" name="certificate_background"><?php echo empty($certificate_settings["background"]) ? plugins_url( '../assets/default-certificate-background.png', __FILE__ ) : $certificate_settings["background"]; ?></textarea>
+				</td>
+				<td width="30%">
+					<img src="<?php echo ! empty($certificate_settings["background"]) ? $certificate_settings["background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ); ?>" id="certificate_image" style="width: 100px; height: 100px;">
 				</td>
 			</tr>
 			<tr>

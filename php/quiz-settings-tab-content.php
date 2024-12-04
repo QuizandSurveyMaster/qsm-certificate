@@ -208,10 +208,10 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					</p>
 				</td>
 				<td>
-					<textarea cols="80" rows="3" id="certificate_background" name="certificate_background"><?php echo empty($certificate_settings["background"]) ? plugins_url( '../assets/default-certificate-background.png', __FILE__ ) : $certificate_settings["background"]; ?></textarea>
+					<textarea cols="80" rows="3" class="qsm-certificate-background" id="certificate_background" name="certificate_background"><?php echo empty($certificate_settings["background"]) ? plugins_url( '../assets/default-certificate-background.png', __FILE__ ) : $certificate_settings["background"]; ?></textarea>
 				</td>
 				<td width="30%">
-					<img src="<?php echo ! empty($certificate_settings["background"]) ? $certificate_settings["background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ); ?>" id="certificate_image" style="width: 100px; height: 100px;">
+					<img src="<?php echo ! empty($certificate_settings["background"]) ? $certificate_settings["background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ); ?>" id="qsm-certificate-image" style="width: 100px; height: 100px;">
 				</td>
 			</tr>
 			<tr>

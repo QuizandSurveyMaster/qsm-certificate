@@ -20,7 +20,7 @@
 #certificate_dpi,
 #certificate_logo,
 #certificate_logo_style,
-#certificate_background{
+#qsm_certificate_background{
     border-radius: 5px;
     border-color: #ccc;
     padding-top: 3px;

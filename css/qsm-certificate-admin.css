@@ -6,8 +6,51 @@
 
 .qsm-certificate-table-container div.dt-container select.dt-input{
     padding: 0px 23px 0 11px ;
+    background-color: #fff;
 }
 .qsm-certificate-table-container div.dt-container .dt-search input{
     padding: 0;
+    background-color: #fff;
 }
-
+.qsm-certificate-expiry-days #expiry_days,
+.qsm-certificate-expiry-date #expiry_date,
+#prefix,
+#certificate_font,
+#certificate_title,
+#certificate_dpi,
+#certificate_logo,
+#certificate_logo_style,
+#qsm_certificate_background{
+    border-radius: 5px;
+    border-color: #ccc;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+.qsm-delete-file{
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-left: 1px solid #ccc;
+    padding-top: 5px;
+    padding-bottom: 3px;
+}
+.qsm-view-file{
+    margin-right: 2px;
+}
+.qsm-table-icons{
+    display: inline-flex;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    width: fit-content;
+    border-radius: 5px;
+}
+.qsm-table-icons .qsm-view-file img{
+    width: 20px;
+    padding: 9px 3px 4px 7px;
+}
+.qsm-table-icons a.qsm-view-file:focus, 
+.qsm-table-icons a.qsm-view-file:active {
+    outline: none; 
+    border: none;
+    box-shadow: none;
+}

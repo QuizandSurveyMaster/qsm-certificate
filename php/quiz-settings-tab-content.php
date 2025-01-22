@@ -55,7 +55,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
 		'dpi'              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
 		'expiry_date'      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
-		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) == 0) ? $_POST["expiry_days"] : "",
+		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
 		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
 		'certificate_id'   => (isset($_POST["enable_expiry"]) == 2) ? str_replace(' ', '', $_POST["prefix"]) : (isset($_POST["enable_expiry"]) == 0 ? str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', (new DateTime())->modify('+' . intval($_POST["expiry_days"]) . ' days')->format('Y-m-d')) : str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', $_POST["expiry_date"])),
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
@@ -180,7 +180,8 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
           	<?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
 				<td>
-				<?php wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(
+				<?php 
+				wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(
 	'editor_height' => 250,
 	'textarea_rows' => 10,
 ) ); ?>

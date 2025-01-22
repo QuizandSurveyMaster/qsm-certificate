@@ -175,7 +175,7 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
 
     $quiz_options      = $mlwQuizMasterNext->quiz_settings->get_quiz_options();
     $qsm_quiz_settings = maybe_unserialize( $quiz_options->quiz_settings );
-
+    $expiry_date = '';
     $certificate_settings = isset( $qsm_quiz_settings['certificate_settings'] ) 
         ? maybe_unserialize( $qsm_quiz_settings['certificate_settings'] ) 
         : [];

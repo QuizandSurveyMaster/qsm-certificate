@@ -97,6 +97,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'logo_style'       => 'text-align:center;',
 		'background'       => '',
 		'dpi'              => 100,
+		'enable_expiry'    => 2,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	?>

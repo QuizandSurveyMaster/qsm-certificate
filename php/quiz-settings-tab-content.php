@@ -76,7 +76,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
 		'certificate_id'   => $certificate_id,
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
-		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"]== 2) ? true : false,
+		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -117,7 +117,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'enable_expiry'    => 2,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
-	
+
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>

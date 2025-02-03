@@ -117,8 +117,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'enable_expiry'    => 2,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
-	// echo "<pre>";
-	// print_r($certificate_settings);
+	
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>

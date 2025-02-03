@@ -191,7 +191,7 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
         ? $certificate_settings['expiry_date'] 
         : '';
         $expire_time = "";
-    if ( $certificate_settings['never_expiry'] == 1 ) {
+    if ( $certificate_settings['never_expiry'] != 1 ) {
     if ( is_numeric( $expiry_days_input ) ) {
         $expiry_date = (new DateTime())->modify('+' . intval( $expiry_days_input ) . ' days')->format('F j, Y');
     } else {

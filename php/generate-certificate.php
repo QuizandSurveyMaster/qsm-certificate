@@ -134,9 +134,13 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     $background = "";
     $background_path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['background'] );
     if ( ! empty($settings['background'] ) ) {
+        if ( file_exists( $background_path ) ) {
         $background_url = base64_encode( file_get_contents( $background_path ) );
         $background_extension = pathinfo( $settings["background"], PATHINFO_EXTENSION );
         $background          = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
+    } else {
+        $background = $background_path;
+    }
     }
     $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
 	$html_top        = '<html style = "margin:0;padding:0;"><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
@@ -187,7 +191,7 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
         ? $certificate_settings['expiry_date'] 
         : '';
         $expire_time = "";
-    if ( $certificate_settings['never_expiry'] != 1 ) {
+    if ( $certificate_settings['never_expiry'] == 1 ) {
     if ( is_numeric( $expiry_days_input ) ) {
         $expiry_date = (new DateTime())->modify('+' . intval( $expiry_days_input ) . ' days')->format('F j, Y');
     } else {

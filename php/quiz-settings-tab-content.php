@@ -29,7 +29,24 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 
 	// If nonce is set and correct, save certificate settings
 	if ( isset( $_POST["certificate_nonce"] ) && wp_verify_nonce( $_POST['certificate_nonce'], 'certificate') ) {
-    // Prepares certificate settings array
+	
+	$enable_expiry = isset($_POST['enable_expiry']) ? intval($_POST['enable_expiry']) : 0;
+	$prefix = isset($_POST['prefix']) ? str_replace(' ', '', $_POST['prefix']) : '';
+	$certificate_id = '';
+
+	if ($enable_expiry == 2) {
+		$certificate_id = $prefix;
+	} elseif ($enable_expiry == 0) {
+		$expiry_days = isset($_POST['expiry_days']) ? intval($_POST['expiry_days']) : 0;
+		$future_date = (new DateTime())->modify('+' . $expiry_days . ' days')->format('Y-m-d');
+		$future_date_without_hyphens = str_replace('-', '', $future_date);
+		$certificate_id = $prefix . $future_date_without_hyphens;
+	} else {
+		$expiry_date = isset($_POST['expiry_date']) ? str_replace('-', '', $_POST['expiry_date']) : '';
+		$certificate_id = $prefix . $expiry_date;
+	}
+
+    // Prepares certificate settings array	
     $certificate_settings = array(
 		'enabled'          => intval( $_POST["enableCertificates"] ),
 		'certificate_size' => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
@@ -57,7 +74,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'expiry_date'      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
 		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
 		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
-		'certificate_id'   => (isset($_POST["enable_expiry"]) == 2) ? str_replace(' ', '', $_POST["prefix"]) : (isset($_POST["enable_expiry"]) == 0 ? str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', (new DateTime())->modify('+' . intval($_POST["expiry_days"]) . ' days')->format('Y-m-d')) : str_replace(' ', '', $_POST["prefix"]) . str_replace('-', '', $_POST["expiry_date"])),
+		'certificate_id'   => $certificate_id,
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
 		'never_expiry'     => (isset($_POST["enable_expiry"]) == 2) ? true : false,
 	);

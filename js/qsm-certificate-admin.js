@@ -1,4 +1,21 @@
 jQuery(document).ready(function($) {
+    if ($('.qsm-preview-btn').length === 0){
+    jQuery('#wp-certificate_template-media-buttons').append(`<button class="button qsm-certificate-preview-btn"><span class="dashicons dashicons-visibility"></span>${qsm_certificate_pro_obj.preview}</button>`);
+    jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-preview-btn"></span>${qsm_certificate_pro_obj.import_template}</button>`);
+    jQuery(document).on('click', '.qsm-certificate-preview-btn', function (event) {
+        event.preventDefault();
+        jQuery('#qsm-popup-certificate').show();
+    });
+    jQuery(document).on('click', '.qsm-certificate-template-preview-btn', function (event) {
+        event.preventDefault();
+        jQuery('#qsm-popup-certificate').show();
+    });
+    jQuery(document).on('click', '.qsm-popup-certificate-close', function (event) {
+        event.preventDefault();
+        jQuery('#qsm-popup-certificate').hide();
+    });
+    }
+    
     if ($.fn.DataTable) {
         $('#qsm-certificate-table').DataTable({
             paging: true,

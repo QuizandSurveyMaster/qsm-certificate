@@ -24,6 +24,12 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	// Enqueue your scripts and styles
 	wp_enqueue_script( 'qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery' ) );
 	wp_enqueue_style( 'qsm_certificate_admin_style', plugins_url( '../css/qsm-certificate-admin.css' , __FILE__ ) );
+
+	wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_pro_obj', array(
+        'preview'                 => esc_html__( 'Preview', 'qsm-certificate' ),
+        'import_template'         => esc_html__( 'Import Template', 'qsm-certificate' ),
+    ));
+
 	global $wpdb;
 	global $mlwQuizMasterNext;
 
@@ -49,6 +55,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     // Prepares certificate settings array	
     $certificate_settings = array(
 		'enabled'          => intval( $_POST["enableCertificates"] ),
+		'email_enable'     => intval( $_POST["certificateEmail"] ),
 		'certificate_size' => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
 		'certificate_font' => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
 		'title'            => sanitize_text_field( $_POST["certificate_title"] ),
@@ -97,6 +104,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				'content'    => $certificate[1],
 				'logo'       => $certificate[2],
 				'background' => $certificate[3],
+				'email_enable' => $certificate[5],
 			);
 		}
 	}
@@ -115,6 +123,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'background'       => '',
 		'dpi'              => 100,
 		'enable_expiry'    => 2,
+		'email_enable'     => 1,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
@@ -132,6 +141,15 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
+				</td>
+			</tr>
+			<tr valign="top" id="qsm_certificate_enable" style="display: none;">
+				<td>
+					<strong><?php echo __('Enable Email for this quiz/survey?', 'qsm-certificate'); ?></strong>
+				</td>
+				<td>
+				    <input type="radio" id="radio34" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '0' ); ?> value='0' /><label for="radio34"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
+				    <input type="radio" id="radio35" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '1' ); ?> value='1' /><label for="radio35"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
 			<tr valign="top">
@@ -289,6 +307,30 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
+	<div class="qsm-popup qsm-popup-slide qsm-standard-popup qsm-popup-certificate" id="qsm-popup-certificate" aria-hidden="false"  style="display:none">
+		<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+			<div class="qsm-popup__container" role="dialog" aria-modal="true">
+				<header class="qsm-popup__header qsm-question-bank-header">
+					<div class="qsm-popup__title qsm-certificate-box-title" id="modal-2-title">
+						<img src="<?php echo esc_url( QSM_CERTIFICATE_URL . '/assets/qsm-upgrade.png' ); ?>" alt="read">
+						<?php echo __('Ultimate Features', 'qsm-certificate'); ?>
+					</div>
+					<a class="qsm-popup__close qsm-popup-certificate-close" aria-label="Close modal" data-micromodal-close></a>
+				</header>
+				<main class="qsm-popup__content" id="modal-2-content">
+					<p class="qsm-certificate-popup-content"> <?php echo __('Effortlessly transfer your quizzes and surveys between websites with the QSM Certificate Addon. In just a few clicks, export your quizzes and surveys, including questions and settings, from one site and import them into another. The intuitive process lets you select the quiz, hit the export button, and choose from three types of import/export for seamless data migration.', 'qsm-certificate'); ?> </p>
+					<span class="qsm-certificate-read-icon">
+				<a href="<?php echo qsm_get_plugin_link( 'docs/add-ons/certificate', 'quiz-documentation', 'plugin', 'qsm-certificate', 'qsm_plugin_upsell' ); ?>" target="_blank" rel="noopener" >
+					<?php esc_html_e( 'Visit website for more details', 'quiz-master-next' ); ?><span class="dashicons dashicons-arrow-right-alt qsm-certificate-right-arrow" ></span>
+				</a>
+			</span>
+			<div class="qsm-certificate-buttons qsm-certificate-certificate-buttons">
+			<a href="<?php echo esc_url( qsm_get_plugin_link( 'pricing', 'quiz-documentation', 'plugin', 'certificate', 'qsm_plugin_upsell' ) ); ?>" target="_blank" class="button button-hero qsm_bundle" rel="noopener"><?php esc_html_e( 'Grab the QSM Bundle & Save 90%', 'quiz-master-next' ); ?></a>
+		</div>
+		</main>
+			</div>
+		</div>
+	</div>
   <?php
 }
 ?>

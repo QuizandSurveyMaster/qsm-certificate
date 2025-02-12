@@ -34,6 +34,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				'content'    => $certificate[1],
 				'logo'       => $certificate[2],
 				'background' => $certificate[3],
+				'email_enable' => $certificate[5],
 			);
 		}
 	}
@@ -47,6 +48,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         'logo_style'       => '',
         'background'       => '',
         'dpi'              => 100,
+		'email_enable'     => 1,
     );
 
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );

@@ -245,6 +245,14 @@ function qsm_certificate_scripts_load() {
             'ajaxurl'  => admin_url( 'admin-ajax.php' ),
         )
     );
+    wp_localize_script(
+        'qsm_certificate_js',
+        'qsm_certificate_pro_obj',
+        array(
+            'preview' => esc_html__('Preview', 'qsm-certificate'),
+            'import_template'  => esc_html__('Import Template', 'qsm-certificate'),
+        )
+    );
 }
 
 add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );

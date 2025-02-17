@@ -25,11 +25,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	wp_enqueue_script( 'qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery' ) );
 	wp_enqueue_style( 'qsm_certificate_admin_style', plugins_url( '../css/qsm-certificate-admin.css' , __FILE__ ) );
 
-	wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_pro_obj', array(
-        'preview'                 => esc_html__( 'Preview', 'qsm-certificate' ),
-        'import_template'         => esc_html__( 'Import Template', 'qsm-certificate' ),
-    ));
-
 	global $wpdb;
 	global $mlwQuizMasterNext;
 

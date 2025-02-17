@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.3.3
+ * Version: 1.3.4
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.3.3';
+	public $version = '1.3.4';
 
 	/**
 	 * Main Construct Function
@@ -292,7 +292,7 @@ function qsm_addon_certificate_expiry_check() {
 		$current_date = intval($current);
 
 		$expiry_date = DateTime::createFromFormat('Ymd', $last_characters);
-		$expiry_date_formatted = $expiry_date->format('d F Y'); 
+		$expiry_date_formatted = $expiry_date->format('d F Y');
 
         if ( $current_date <= $last_characters ) {
             $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('License Valid upto ', 'qsm-certificate') . $expiry_date_formatted;

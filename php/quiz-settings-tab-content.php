@@ -138,7 +138,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
-			<tr valign="top" id="qsm_certificate_enable" style="display: none;">
+			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
 				<td>
 					<strong><?php echo __('Enable Email for this quiz/survey?', 'qsm-certificate'); ?></strong>
 				</td>
@@ -296,6 +296,47 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
+				</td>
+			</tr>
+			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
+				<td width="30%">
+					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
+				</td>
+				<td>
+					<div class="advance-certificate-options-notloop">
+						<div class="advance-certificate-options-field active">
+							<div class="advance-certificate-options-group leaderboard-options-inputs">
+								<input class="qsm-advance-certificate-shortcode-print" disabled type="text" value="[qsm_certificate_share]" style="width: 280px; background: #f5f5f5;" />
+							</div>
+							<div class="advance-certificate-options-group advance-certificate-options-switch">
+								<button class="button advance-certificate-generate-shortcode-button" title="<?php echo esc_attr__('Copy Shortcode', 'qsm-advance-certificate'); ?>">
+									<span class="dashicons dashicons-admin-page"></span>
+								</button>
+							</div>
+							<div class="advance-certificate-options-group advance-certificate-options-actions">
+								<a href="javascript:void(0)" class="settings-field" title="<?php echo esc_attr__('Customize', 'qsm-advance-certificate'); ?>">
+									<span class="dashicons dashicons-edit"></span>
+								</a>
+							</div>
+							<div class="advance-certificate-options-field-settings arrow-left" style="display:none;">
+								<div class="advance-certificate-options-group">
+									<label class="advance-certificate-options-label"><?php esc_html_e("Select Quizzes", "qsm-advance-certificate"); ?></label>
+									<select id="qsm-certificate-share" name="qsm-certificate-share[]" multiple class="select2-multiselect">
+										<?php 
+										$social_media = [
+											'Facebook' => '2',
+											'Twitter' => '1',
+											'Linkedin' => '0',
+										];
+										foreach ($social_media as $name => $value): ?>
+											<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($name); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+								<button class="button-primary qsm-save-quizzes"><?php esc_html_e('Save Changes', 'qsm-advance-certificate'); ?></button>
+							</div>
+						</div>
+					</div>
 				</td>
 			</tr>
 		</table>

@@ -245,6 +245,19 @@ function qsm_certificate_scripts_load() {
             'ajaxurl'  => admin_url( 'admin-ajax.php' ),
         )
     );
+}
+
+add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
+
+function qsm_certificate_localize_script_load() {
+    wp_enqueue_script( 
+        'qsm_certificate_js', 
+        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
+        array( 'jquery' ), 
+        QSM_CERTIFICATE_VERSION, 
+        true
+    );
+
     wp_localize_script(
         'qsm_certificate_js',
         'qsm_certificate_pro_obj',
@@ -255,7 +268,8 @@ function qsm_certificate_scripts_load() {
     );
 }
 
-add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
+add_action( 'admin_enqueue_scripts', 'qsm_certificate_localize_script_load' );
+
 
 function qsm_certificate_expiry_check_form( $settings, $cert_id ) {
     ob_start(); 

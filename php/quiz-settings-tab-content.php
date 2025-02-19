@@ -324,9 +324,10 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 									<select id="qsm-certificate-share" name="qsm-certificate-share[]" multiple class="select2-multiselect">
 										<?php 
 										$social_media = [
+											'Linkedin' => '1',
 											'Facebook' => '2',
-											'Twitter' => '1',
-											'Linkedin' => '0',
+											'Twitter' => '3',
+											'Instagram' => '4',
 										];
 										foreach ($social_media as $name => $value): ?>
 											<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($name); ?></option>

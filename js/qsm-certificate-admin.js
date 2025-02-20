@@ -9,17 +9,17 @@ jQuery(document).ready(function($) {
 
         jQuery(document).on('click', '.qsm-certificate-preview-btn', function (event) {
             event.preventDefault();
-            jQuery('#qsm-popup-certificate').show();
+            jQuery('#modal-advance-certificate').show();
         });
     
         jQuery(document).on('click', '.qsm-certificate-template-preview-btn', function (event) {
             event.preventDefault();
-            jQuery('#qsm-popup-certificate').show();
+            jQuery('#modal-advance-certificate').show();
         });
     
-        jQuery(document).on('click', '.qsm-popup-certificate-close', function (event) {
+        jQuery(document).on('click', '.qsm-popup-upgrade-close', function (event) {
             event.preventDefault();
-            jQuery('#qsm-popup-certificate').hide();
+            jQuery('#modal-advance-certificate').hide();
         });
     }
     

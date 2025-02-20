@@ -344,30 +344,19 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
-	<div class="qsm-popup qsm-popup-slide qsm-standard-popup qsm-popup-certificate" id="qsm-popup-certificate" aria-hidden="false" style="display:none">
-		<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
-			<div class="qsm-popup__container" role="dialog" aria-modal="true">
-				<header class="qsm-popup__header qsm-question-bank-header">
-					<div class="qsm-popup__title qsm-certificate-box-title" id="modal-2-title">
-						<img src="<?php echo esc_url( QSM_CERTIFICATE_URL . '/assets/qsm-upgrade.png' ); ?>" alt="read">
-						<?php echo __('Advance Certificate Features', 'qsm-certificate'); ?>
-					</div>
-					<a class="qsm-popup__close qsm-popup-certificate-close" aria-label="Close modal" data-micromodal-close></a>
-				</header>
-				<main class="qsm-popup__content" id="modal-2-content">
-					<p class="qsm-certificate-popup-content"> <?php echo __('Experience the advanced features of the QSM Advance Certificate Addon, including a preview button to review your certificate before generation. Utilize the certificate template features and shortcodes to create a unique and personalized certificate for your users.', 'qsm-certificate'); ?> </p>
-					<span class="qsm-certificate-read-icon">
-						<a href="<?php echo qsm_get_plugin_link( 'docs/add-ons/certificate', 'quiz-documentation', 'plugin', 'qsm-certificate', 'qsm_plugin_upsell' ); ?>" target="_blank" rel="noopener" >
-							<?php esc_html_e( 'Visit website for more details', 'quiz-master-next' ); ?><span class="dashicons dashicons-arrow-right-alt qsm-certificate-right-arrow" ></span>
-						</a>
-					</span>
-					<div class="qsm-certificate-buttons qsm-certificate-certificate-buttons">
-						<a href="<?php echo esc_url( qsm_get_plugin_link( 'pricing', 'quiz-documentation', 'plugin', 'certificate', 'qsm_plugin_upsell' ) ); ?>" target="_blank" class="button button-hero qsm_bundle" rel="noopener"><?php esc_html_e( 'Grab the QSM Bundle & Save 90%', 'quiz-master-next' ); ?></a>
-					</div>
-				</main>
-			</div>
-		</div>
-	</div>
-  <?php
+	<?php
+    if (isset($_GET['page'], $_GET['tab']) && $_GET['page'] === 'mlw_quiz_options' && $_GET['tab'] === 'certificate'){
+	$qsm_pop_up_arguments = array(
+		"id"           => 'modal-advance-certificate',
+		"title"        => __('Advance Certificate', 'qsm-certificate'),
+		"description"  => __('Enhance your certificate experience with powerful new features: preview certificates before finalizing, choose from a variety of customizable certificate templates, easily send certificates via email in multiple formats, and Share directly on social media with a shortcode. Upgrade now to streamline your certificate management!.', 'qsm-certificate'),
+		"information"  => __('QSM Addon Bundle is the best way to get all our add-ons at a discount. Upgrade to save 95% today OR you can buy Advanced Question Addon separately.', 'qsm-certificate'),
+		"buy_btn_text" => __('Buy Advance Certificate Addon', 'qsm-certificate'),
+		"doc_link"     => qsm_get_plugin_link( 'docs/certificate', 'qsm_list', 'certificate', 'certificate-upsell_read_documentation', 'qsm_plugin_upsell' ),
+		"upgrade_link" => qsm_get_plugin_link( 'pricing', 'qsm_list', 'certificate', 'certificate-upsell_upgrade', 'qsm_plugin_upsell' ),
+		"addon_link"   => qsm_get_plugin_link( 'downloads/certificate', 'qsm_list', 'certificate', 'certificate-upsell_buy_addon', 'qsm_plugin_upsell' ),
+	);
+	qsm_admin_upgrade_popup($qsm_pop_up_arguments);
+}
 }
 ?>

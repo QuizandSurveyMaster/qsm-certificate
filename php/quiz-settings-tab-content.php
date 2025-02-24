@@ -79,6 +79,8 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'certificate_id'   => $certificate_id,
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
 		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
+		'certificate_id_err_msg_wrong_txt' 		=>	(isset($_POST["certificate_id_err_msg_wrong_txt"]) && !empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
+		'certificate_id_err_msg_blank_txt' 		=>	(isset($_POST["certificate_id_err_msg_blank_txt"]) && !empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -121,7 +123,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'email_enable'     => 1,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
-
+	update_option( 'certificate_settings', $certificate_settings ,true );
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
@@ -298,9 +300,23 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="text" id="certificate_id_err_msg_blank_txt" name="certificate_id_err_msg_blank_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_blank_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_blank_txt"]) : __("Please enter a valid Certificate ID.", 'qsm-certificate'); ?>">
+				</td>
+			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
+				</td>
+			</tr>
 			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
 				<td width="30%">
-					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
+					<strong><?php echo __('Make shortcode for share certificate on social media', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<div class="advance-certificate-options-notloop">

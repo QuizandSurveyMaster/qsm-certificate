@@ -274,36 +274,47 @@ function migrate_old_certificates( $certificates_dirname ) {
 }
 
 function qsm_addon_certificate_expiry_check() {
-    global $mlwQuizMasterNext;
+    global $mlwQuizMasterNext, $wpdb;
 
     $certificate_id = isset($_POST['certificate_id']) ? sanitize_text_field($_POST['certificate_id']) : '';
     $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+	$unique_key = $certificate_id;
+	$certificate_last_13_chars = substr($unique_key, -13);
+	
+	$certificate_settings = get_option('certificate_settings');
+	$certificate_wrong_txt = $certificate_settings['certificate_id_err_msg_wrong_txt'];
+	$certificate_blank_txt = $certificate_settings['certificate_id_err_msg_blank_txt'];
 
+	$unique_id = $wpdb->get_row( $wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}mlw_results WHERE unique_id = %d ORDER BY result_id DESC LIMIT 1",
+		$certificate_last_13_chars
+	) );
+	if(empty($unique_id->unique_id) && !empty($certificate_id)){
+		$response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . $certificate_wrong_txt;
+        wp_send_json_error($response);
+	} else if (empty($certificate_id)){
+		$response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . $certificate_blank_txt;
+        wp_send_json_error($response);
+	}
     $response = array();
 
-    if ( ! empty($certificate_id) ) {
-        $unique_key = $certificate_id;
-        $resultant_string = substr($unique_key, 0, -13);
-        $last_eight_characters = substr($resultant_string, -8);
-		$last_characters = intval($last_eight_characters);
+    $resultant_string = substr($unique_key, 0, -13);
+    $last_eight_characters = substr($resultant_string, -8);
+	$last_characters = intval($last_eight_characters);
 
-        $date = date('Y-m-d');
-        $current = str_replace('-', '', $date);
-		$current_date = intval($current);
+    $date = date('Y-m-d');
+    $current = str_replace('-', '', $date);
+	$current_date = intval($current);
 
-		$expiry_date = DateTime::createFromFormat('Ymd', $last_characters);
-		$expiry_date_formatted = $expiry_date->format('d F Y');
+	$expiry_date = DateTime::createFromFormat('Ymd', $last_characters);
+	$expiry_date_formatted = $expiry_date->format('d F Y');
 
-        if ( $current_date <= $last_characters ) {
-            $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('License Valid upto ', 'qsm-certificate') . $expiry_date_formatted;
-            wp_send_json_success($response);
-        } else {
-            $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('License Expired on ', 'qsm-certificate') . $expiry_date_formatted;
-            wp_send_json_success($response);
-        }
+    if ( $current_date <= $last_characters ) {
+        $response['message'] = '<span style="color: green;"><span class="dashicons dashicons-yes" style="vertical-align: middle;"></span> ' . __('License Valid upto ', 'qsm-certificate') . $expiry_date_formatted;
+        wp_send_json_success($response);
     } else {
-        $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('Certificate ID is missing', 'qsm-certificate');
-        wp_send_json_error($response);
+        $response['message'] = '<span style="color: red;"><span class="dashicons dashicons-no" style="vertical-align: middle;"></span> ' . __('License Expired on ', 'qsm-certificate') . $expiry_date_formatted;
+        wp_send_json_success($response);
     }
 
     wp_die();

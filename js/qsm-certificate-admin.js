@@ -24,6 +24,10 @@ jQuery(document).ready(function($) {
     }
 
     if ($.fn.DataTable) {
+        var table = $('#qsm-certificate-table').DataTable();
+        if (table) { 
+            table.destroy();
+        }
         $('#qsm-certificate-table').DataTable({
             paging: true,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],

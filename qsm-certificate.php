@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.3.4
+ * Version: 1.3.5
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.3.4';
+	public $version = '1.3.5';
 
 	/**
 	 * Main Construct Function
@@ -280,7 +280,7 @@ function qsm_addon_certificate_expiry_check() {
     $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
 	$unique_key = $certificate_id;
 	$certificate_last_13_chars = substr($unique_key, -13);
-	
+
 	$certificate_settings = get_option('certificate_settings');
 	$certificate_wrong_txt = $certificate_settings['certificate_id_err_msg_wrong_txt'];
 	$certificate_blank_txt = $certificate_settings['certificate_id_err_msg_blank_txt'];

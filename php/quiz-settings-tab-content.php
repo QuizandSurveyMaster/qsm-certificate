@@ -79,6 +79,8 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'certificate_id'   => $certificate_id,
 		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
 		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
+		'certificate_id_err_msg_wrong_txt' 		=>	(isset($_POST["certificate_id_err_msg_wrong_txt"]) && !empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
+		'certificate_id_err_msg_blank_txt' 		=>	(isset($_POST["certificate_id_err_msg_blank_txt"]) && !empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -121,7 +123,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'email_enable'     => 1,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
-
+	update_option( 'certificate_settings', $certificate_settings ,true );
 	?>
 	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
 	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
@@ -138,7 +140,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
-			<tr valign="top" id="qsm_certificate_enable" style="display: none;">
+			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
 				<td>
 					<strong><?php echo __('Enable Email for this quiz/survey?', 'qsm-certificate'); ?></strong>
 				</td>
@@ -298,34 +300,79 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="text" id="certificate_id_err_msg_blank_txt" name="certificate_id_err_msg_blank_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_blank_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_blank_txt"]) : __("Please enter a valid Certificate ID.", 'qsm-certificate'); ?>">
+				</td>
+			</tr>
+			<tr>
+				<td width="30%">
+					<strong><?php echo __('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
+				</td>
+				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
+				</td>
+			</tr>
+			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
+				<td width="30%">
+					<strong><?php echo __('Make shortcode for share certificate on social media', 'qsm-certificate'); ?></strong>
+				</td>
+				<td>
+					<div class="advance-certificate-options-notloop">
+						<div class="advance-certificate-options-field active">
+							<div class="advance-certificate-options-group leaderboard-options-inputs">
+								<input class="qsm-advance-certificate-shortcode-print" disabled type="text" value="[qsm_certificate_share]" style="width: 280px; background: #f5f5f5;" />
+							</div>
+							<div class="advance-certificate-options-group advance-certificate-options-switch">
+								<button class="button advance-certificate-generate-shortcode-button" title="<?php echo esc_attr__('Copy Shortcode', 'qsm-advance-certificate'); ?>">
+									<span class="dashicons dashicons-admin-page"></span>
+								</button>
+							</div>
+							<div class="advance-certificate-options-group advance-certificate-options-actions">
+								<a href="javascript:void(0)" class="settings-field" title="<?php echo esc_attr__('Customize', 'qsm-advance-certificate'); ?>">
+									<span class="dashicons dashicons-edit"></span>
+								</a>
+							</div>
+							<div class="advance-certificate-options-field-settings arrow-left" style="display:none;">
+								<div class="advance-certificate-options-group">
+									<label class="advance-certificate-options-label"><?php esc_html_e("Select Quizzes", "qsm-advance-certificate"); ?></label>
+									<select id="qsm-certificate-share" name="qsm-certificate-share[]" multiple class="select2-multiselect">
+										<?php 
+										$social_media = [
+											'Linkedin' => '1',
+											'Facebook' => '2',
+											'Twitter' => '3',
+											'Instagram' => '4',
+										];
+										foreach ($social_media as $name => $value): ?>
+											<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($name); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+								<button class="button-primary qsm-save-quizzes"><?php esc_html_e('Save Changes', 'qsm-advance-certificate'); ?></button>
+							</div>
+						</div>
+					</div>
+				</td>
+			</tr>
 		</table>
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
-	<div class="qsm-popup qsm-popup-slide qsm-standard-popup qsm-popup-certificate" id="qsm-popup-certificate" aria-hidden="false" style="display:none">
-		<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
-			<div class="qsm-popup__container" role="dialog" aria-modal="true">
-				<header class="qsm-popup__header qsm-question-bank-header">
-					<div class="qsm-popup__title qsm-certificate-box-title" id="modal-2-title">
-						<img src="<?php echo esc_url( QSM_CERTIFICATE_URL . '/assets/qsm-upgrade.png' ); ?>" alt="read">
-						<?php echo __('Advance Certificate Features', 'qsm-certificate'); ?>
-					</div>
-					<a class="qsm-popup__close qsm-popup-certificate-close" aria-label="Close modal" data-micromodal-close></a>
-				</header>
-				<main class="qsm-popup__content" id="modal-2-content">
-					<p class="qsm-certificate-popup-content"> <?php echo __('Experience the advanced features of the QSM Advance Certificate Addon, including a preview button to review your certificate before generation. Utilize the certificate template features and shortcodes to create a unique and personalized certificate for your users.', 'qsm-certificate'); ?> </p>
-					<span class="qsm-certificate-read-icon">
-						<a href="<?php echo qsm_get_plugin_link( 'docs/add-ons/certificate', 'quiz-documentation', 'plugin', 'qsm-certificate', 'qsm_plugin_upsell' ); ?>" target="_blank" rel="noopener" >
-							<?php esc_html_e( 'Visit website for more details', 'quiz-master-next' ); ?><span class="dashicons dashicons-arrow-right-alt qsm-certificate-right-arrow" ></span>
-						</a>
-					</span>
-					<div class="qsm-certificate-buttons qsm-certificate-certificate-buttons">
-						<a href="<?php echo esc_url( qsm_get_plugin_link( 'pricing', 'quiz-documentation', 'plugin', 'certificate', 'qsm_plugin_upsell' ) ); ?>" target="_blank" class="button button-hero qsm_bundle" rel="noopener"><?php esc_html_e( 'Grab the QSM Bundle & Save 90%', 'quiz-master-next' ); ?></a>
-					</div>
-				</main>
-			</div>
-		</div>
-	</div>
-  <?php
+	<?php
+    if (isset($_GET['page'], $_GET['tab']) && $_GET['page'] === 'mlw_quiz_options' && $_GET['tab'] === 'certificate'){
+	$qsm_pop_up_arguments = array(
+		"id"           => 'modal-advance-certificate',
+		"title"        => __('Advance Certificate', 'qsm-certificate'),
+		"description"  => __('Enhance your certificate experience with powerful new features: preview certificates before finalizing, choose from a variety of customizable certificate templates, easily send certificates via email in multiple formats, and Share directly on social media with a shortcode. Upgrade now to streamline your certificate management!.', 'qsm-certificate'),
+		"information"  => __('QSM Addon Bundle is the best way to get all our add-ons at a discount. Upgrade to save 95% today OR you can buy Advanced Question Addon separately.', 'qsm-certificate'),
+		"buy_btn_text" => __('Buy Advance Certificate Addon', 'qsm-certificate'),
+		"doc_link"     => qsm_get_plugin_link( 'docs/certificate', 'qsm_list', 'certificate', 'certificate-upsell_read_documentation', 'qsm_plugin_upsell' ),
+		"upgrade_link" => qsm_get_plugin_link( 'pricing', 'qsm_list', 'certificate', 'certificate-upsell_upgrade', 'qsm_plugin_upsell' ),
+		"addon_link"   => qsm_get_plugin_link( 'downloads/certificate', 'qsm_list', 'certificate', 'certificate-upsell_buy_addon', 'qsm_plugin_upsell' ),
+	);
+	qsm_admin_upgrade_popup($qsm_pop_up_arguments);
+}
 }
 ?>

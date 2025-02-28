@@ -1,22 +1,33 @@
 jQuery(document).ready(function($) {
-    if ($('.qsm-preview-btn').length === 0){
-    jQuery('#wp-certificate_template-media-buttons').append(`<button class="button qsm-certificate-preview-btn"><span class="dashicons dashicons-visibility"></span>${qsm_certificate_pro_obj.preview}</button>`);
-    jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-preview-btn"></span>${qsm_certificate_pro_obj.import_template}</button>`);
-    jQuery(document).on('click', '.qsm-certificate-preview-btn', function (event) {
-        event.preventDefault();
-        jQuery('#qsm-popup-certificate').show();
-    });
-    jQuery(document).on('click', '.qsm-certificate-template-preview-btn', function (event) {
-        event.preventDefault();
-        jQuery('#qsm-popup-certificate').show();
-    });
-    jQuery(document).on('click', '.qsm-popup-certificate-close', function (event) {
-        event.preventDefault();
-        jQuery('#qsm-popup-certificate').hide();
-    });
-    }
+    if (jQuery('.qsm-preview-btn').length === 0) {
+        if (jQuery('.qsm-certificate-preview-btn').length === 0) {
+            jQuery('#wp-certificate_template-media-buttons').append(`<button class="button qsm-certificate-preview-btn"><span class="dashicons dashicons-visibility"></span>${qsm_certificate_pro_obj.preview}</button>`);
+        }
+        if (jQuery('.qsm-certificate-template-preview-btn').length === 0) {
+            jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-preview-btn"></span>${qsm_certificate_pro_obj.import_template}</button>`);
+        }
+
+        jQuery(document).on('click', '.qsm-certificate-preview-btn', function (event) {
+            event.preventDefault();
+            jQuery('#modal-advance-certificate').show();
+        });
     
+        jQuery(document).on('click', '.qsm-certificate-template-preview-btn', function (event) {
+            event.preventDefault();
+            jQuery('#modal-advance-certificate').show();
+        });
+    
+        jQuery(document).on('click', '.qsm-popup-upgrade-close', function (event) {
+            event.preventDefault();
+            jQuery('#modal-advance-certificate').hide();
+        });
+    }
+
     if ($.fn.DataTable) {
+        var table = $('#qsm-certificate-table').DataTable();
+        if (table) { 
+            table.destroy();
+        }
         $('#qsm-certificate-table').DataTable({
             paging: true,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],
@@ -33,8 +44,8 @@ jQuery(document).ready(function($) {
             ]
         });
     }
-                  
-        
+
+
     // Handle single file deletion
     $('.qsm-delete-file').on('click', function() {
         var filename = $(this).data('filename');
@@ -46,7 +57,7 @@ jQuery(document).ready(function($) {
             }, function(response) {
                 if (response.success) {
                     row.fadeOut(function() {
-                        $(this).remove(); 
+                        $(this).remove();
                     });
                 } else {
                     alert(response.data);
@@ -59,16 +70,16 @@ jQuery(document).ready(function($) {
         $('#qsm-select-all-certificate').click(function() {
             $('input[name="certificates[]"]').prop('checked', this.checked);
         });
-    
+
         // Handle bulk delete submission
         $('#qsm-certificate-form').on('submit', function(e) {
             e.preventDefault();
-    
+
             var certificates = [];
             $('input[name="certificates[]"]:checked').each(function() {
                 certificates.push($(this).val());
             });
-    
+
             if (certificates.length === 0) {
                 alert(qsm_certificate_obj.no_certificate_selected);
                 return;
@@ -80,18 +91,18 @@ jQuery(document).ready(function($) {
                 bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
             };
         }
-    
+
             $.post(ajaxurl, data, function(response) {
                 if (response.success) {
                     alert(response.data);
-                    location.reload(); 
+                    location.reload();
                 } else {
                     alert(response.data);
                 }
             });
         });
 
-    
+
     $('input[name="enable_expiry"]').change(function() {
         qsmUpdateExpiryFields();
     });
@@ -105,13 +116,13 @@ jQuery(document).ready(function($) {
             certificate_id: certificate_id,
         };
 
-        jQuery.post(qmn_ajax_object.ajaxurl, data, function (response) {
+        jQuery.post(qsm_certificate_ajax_object.ajaxurl, data, function (response) {
             if (response.success) {
                 jQuery(document).find('#validation_message').html( response.data.message );
             } else {
                 jQuery(document).find('#validation_message').html(response.data.message);
             }
-        });  
+        });
     });
     function qsmUpdateExpiryFields() {
         let enableExpiry = $('input[name="enable_expiry"]:checked').val();
@@ -127,16 +138,16 @@ jQuery(document).ready(function($) {
         }
     }
     qsmUpdateExpiryFields();
-    
+
     jQuery(document).on('change', '.qsm-certificate-background', function () {
         var imageUrl = jQuery(this).val();
-    
+
         if (imageUrl) {
             jQuery('#qsm-certificate-image').attr('src', imageUrl);
         } else {
             jQuery('#qsm-certificate-image').attr('src', imageUrl);
         }
     });
-    
+
 });
 

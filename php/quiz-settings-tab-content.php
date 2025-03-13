@@ -50,7 +50,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     // Prepares certificate settings array	
     $certificate_settings = array(
 		'enabled'          => intval( $_POST["enableCertificates"] ),
-		'email_enable'     => intval( $_POST["certificateEmail"] ),
 		'certificate_size' => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
 		'certificate_font' => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
 		'title'            => sanitize_text_field( $_POST["certificate_title"] ),
@@ -101,7 +100,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				'content'    => $certificate[1],
 				'logo'       => $certificate[2],
 				'background' => $certificate[3],
-				'email_enable' => $certificate[5],
 			);
 		}
 	}
@@ -120,7 +118,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'background'       => '',
 		'dpi'              => 100,
 		'enable_expiry'    => 2,
-		'email_enable'     => 1,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	update_option( 'certificate_settings', $certificate_settings ,true );
@@ -138,15 +135,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
-				</td>
-			</tr>
-			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
-				<td>
-					<strong><?php echo __('Enable Email for this quiz/survey?', 'qsm-certificate'); ?></strong>
-				</td>
-				<td>
-				    <input type="radio" id="radio34" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '0' ); ?> value='0' /><label for="radio34"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
-				    <input type="radio" id="radio35" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '1' ); ?> value='1' /><label for="radio35"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
 			<tr valign="top">

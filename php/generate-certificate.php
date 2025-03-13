@@ -34,7 +34,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 				'content'    => $certificate[1],
 				'logo'       => $certificate[2],
 				'background' => $certificate[3],
-				'email_enable' => $certificate[5],
 			);
 		}
 	}
@@ -48,7 +47,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
         'logo_style'       => '',
         'background'       => '',
         'dpi'              => 100,
-		'email_enable'     => 1,
     );
 
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
@@ -71,13 +69,15 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 	};
 	// If the certificate does not already exist
     $wp_upload = wp_upload_dir();
+    $pdf_file_name = $filename;
+
 	if ( ! file_exists( $wp_upload['basedir'] . "/qsm-certificates/.$filename" ) ) {
         $pdf_folder = $wp_upload['basedir'] . '/qsm-certificates/';
         if ( ! is_dir($pdf_folder) ) {
             mkdir($pdf_folder, 0755);
         }
         $pdf_url = $wp_upload['baseurl']  . '/qsm-certificates/';
-        $pdf_file_name = $filename;
+
         //generate result page html
         $html = qsm_pdf_html_post_process_certificate( $html = "", $certificate_settings, $quiz_results );
         //initialize dompdf

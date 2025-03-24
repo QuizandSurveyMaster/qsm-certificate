@@ -302,48 +302,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
 				</td>
 			</tr>
-			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
-				<td width="30%">
-					<strong><?php echo __('Make shortcode for share certificate on social media', 'qsm-certificate'); ?></strong>
-				</td>
-				<td>
-					<div class="advance-certificate-options-notloop">
-						<div class="advance-certificate-options-field active">
-							<div class="advance-certificate-options-group leaderboard-options-inputs">
-								<input class="qsm-advance-certificate-shortcode-print" disabled type="text" value="[qsm_certificate_share]" style="width: 280px; background: #f5f5f5;" />
-							</div>
-							<div class="advance-certificate-options-group advance-certificate-options-switch">
-								<button class="button advance-certificate-generate-shortcode-button" title="<?php echo esc_attr__('Copy Shortcode', 'qsm-advance-certificate'); ?>">
-									<span class="dashicons dashicons-admin-page"></span>
-								</button>
-							</div>
-							<div class="advance-certificate-options-group advance-certificate-options-actions">
-								<a href="javascript:void(0)" class="settings-field" title="<?php echo esc_attr__('Customize', 'qsm-advance-certificate'); ?>">
-									<span class="dashicons dashicons-edit"></span>
-								</a>
-							</div>
-							<div class="advance-certificate-options-field-settings arrow-left" style="display:none;">
-								<div class="advance-certificate-options-group">
-									<label class="advance-certificate-options-label"><?php esc_html_e("Select Quizzes", "qsm-advance-certificate"); ?></label>
-									<select id="qsm-certificate-share" name="qsm-certificate-share[]" multiple class="select2-multiselect">
-										<?php 
-										$social_media = [
-											'Linkedin' => '1',
-											'Facebook' => '2',
-											'Twitter' => '3',
-											'Instagram' => '4',
-										];
-										foreach ($social_media as $name => $value): ?>
-											<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($name); ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-								<button class="button-primary qsm-save-quizzes"><?php esc_html_e('Save Changes', 'qsm-advance-certificate'); ?></button>
-							</div>
-						</div>
-					</div>
-				</td>
-			</tr>
 		</table>
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>

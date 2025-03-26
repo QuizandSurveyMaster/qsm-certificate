@@ -236,6 +236,7 @@ function qsm_certificate_scripts_load() {
         QSM_CERTIFICATE_VERSION,
         true
     );
+    wp_enqueue_style('qsm_certificate_admin_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION ); 
 
     wp_localize_script(
         'qsm_certificate_js',

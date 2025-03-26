@@ -83,7 +83,8 @@ function qsm_addon_certificate_results_details_tabs_content() {
 	<?php
 }
 
-function qsm_certificate_load_datatables_js(){
+function qsm_addon_certificate_details_tabs_content() {
+
     wp_enqueue_script( 'certificate-datatable-js', QSM_CERTIFICATE_URL . 'js/datatables.min.js', array( 'jquery' ), '2.1.8', true ); 
     wp_enqueue_script('qsm_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true ); 
     wp_enqueue_style('qsm_certificate_admin_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION ); 
@@ -98,11 +99,6 @@ function qsm_certificate_load_datatables_js(){
         'length_menu'             => esc_html__( 'All', 'qsm-certificate' ),
     ));
     
-}
-add_action( 'wp_enqueue_scripts', 'qsm_certificate_load_datatables_js' );
-add_action( 'admin_enqueue_scripts', 'qsm_certificate_load_datatables_js' );
-
-function qsm_addon_certificate_details_tabs_content() {
     $upload_dir = wp_upload_dir();
     $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
 

@@ -273,46 +273,68 @@ function migrate_old_certificates( $certificates_dirname ) {
     }
 }
 
+/**
+ * Checks certificate expiry and returns certificate details.
+ *
+ * @return void
+ */
 function qsm_addon_certificate_expiry_check() {
-    global $mlwQuizMasterNext, $wpdb;
+	global $mlwQuizMasterNext, $wpdb;
 
-    $certificate_id = sanitize_text_field($_POST['certificate_id'] ?? '');
-    $unique_key = $certificate_id;
-    $last_13_chars = substr($unique_key, -13);
+	$certificate_id = isset( $_POST['certificate_id'] ) ? sanitize_text_field( wp_unslash( $_POST['certificate_id'] ) ) : '';
+	$unique_key     = $certificate_id;
+	$last_13_chars  = substr( $unique_key, -13 );
 
-    $settings = get_option('certificate_settings');
-    $err_blank = $settings['certificate_id_err_msg_blank_txt'] ?? __('Certificate ID cannot be blank', 'qsm-certificate');
-    $err_wrong = $settings['certificate_id_err_msg_wrong_txt'] ?? __('Invalid certificate ID', 'qsm-certificate');
+	$settings    = get_option( 'certificate_settings' );
+	$err_blank   = $settings['certificate_id_err_msg_blank_txt'] ?? __( 'Certificate ID cannot be blank', 'qsm-certificate' );
+	$err_wrong   = $settings['certificate_id_err_msg_wrong_txt'] ?? __( 'Invalid certificate ID', 'qsm-certificate' );
+	$table_name  = $wpdb->prefix . 'mlw_results';
+	$result      = $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT * FROM {$table_name} WHERE unique_id = %d ORDER BY result_id DESC LIMIT 1",
+			$last_13_chars
+		)
+	);
 
-    if (empty($certificate_id)) {
-        wp_send_json_error(['message' => '<div class="qsm-certificate-error" style="color: red;"><span class="dashicons dashicons-no"></span> ' . esc_html($err_blank) . '</div>']);
-    }
+	if ( empty( $certificate_id ) ) {
+		wp_send_json_error(
+			array(
+				'message' => '<div class="qsm-certificate-error" style="color: red;"><span class="dashicons dashicons-no"></span> ' . esc_html( $err_blank ) . '</div>',
+			)
+		);
+	}
 
-    $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}mlw_results WHERE unique_id = %d ORDER BY result_id DESC LIMIT 1", $last_13_chars));
-    if (empty($result->unique_id)) {
-        wp_send_json_error(['message' => '<div class="qsm-certificate-error" style="color: red;"><span class="dashicons dashicons-no"></span> ' . esc_html($err_wrong) . '</div>']);
-    }
+	if ( empty( $result->unique_id ) ) {
+		wp_send_json_error(
+			array(
+				'message' => '<div class="qsm-certificate-error" style="color: red;"><span class="dashicons dashicons-no"></span> ' . esc_html( $err_wrong ) . '</div>',
+			)
+		);
+	}
 
-    $quiz_result = maybe_unserialize($result->quiz_results);
-    $expiry = DateTime::createFromFormat('Ymd', substr(substr($unique_key, 0, -13), -8));
-    $expiry_formatted = $expiry ? $expiry->format('d F Y') : __('Invalid date', 'qsm-certificate');
-    $current = intval(str_replace('-', '', date('Y-m-d')));
-    $is_valid = $current <= intval(substr(substr($unique_key, 0, -13), -8));
-    
-    $status_color = $is_valid ? 'green' : 'red';
-    $status = $is_valid ? __('Valid', 'qsm-certificate') : __('Expired', 'qsm-certificate');
+	$quiz_result        = maybe_unserialize( $result->quiz_results );
+	$expiry            = DateTime::createFromFormat( 'Ymd', substr( substr( $unique_key, 0, -13 ), -8 ) );
+	$expiry_formatted  = $expiry ? $expiry->format( 'd F Y' ) : __( 'Invalid date', 'qsm-certificate' );
+	$current           = intval( str_replace( '-', '', gmdate( 'Y-m-d' ) ) );
+	$is_valid          = $current <= intval( substr( substr( $unique_key, 0, -13 ), -8 ) );
+	$status_color      = $is_valid ? 'green' : 'red';
+	$status            = $is_valid ? __( 'Valid', 'qsm-certificate' ) : __( 'Expired', 'qsm-certificate' );
+if($expiry_formatted === 'Invalid date'){
+	$html ="";
+	wp_send_json_success( array( 'message' => $html ) );
+	wp_die();
+}
+	$html  = '<div class="qsm-certificate-details"><table class="qsm-certificate-table">';
+	$html .= '<thead><tr><th>' . esc_html__( 'Field', 'qsm-certificate' ) . '</th><th>' . esc_html__( 'Value', 'qsm-certificate' ) . '</th></tr></thead>';
+	$html .= '<tbody>';
+	$html .= '<tr><td>' . esc_html__( 'Quiz Name', 'qsm-certificate' ) . '</td><td>' . esc_html( $result->quiz_name ) . '</td></tr>';
+	$html .= '<tr><td>' . esc_html__( 'Point Score', 'qsm-certificate' ) . '</td><td>' . esc_html( $result->point_score ) . ' / ' . esc_html( $quiz_result['total_possible_points'] ) . '</td></tr>';
+	$html .= '<tr><td>' . esc_html__( 'User Name', 'qsm-certificate' ) . '</td><td>' . esc_html( $result->name ) . '</td></tr>';
+	$html .= '<tr><td>' . esc_html__( 'User Email', 'qsm-certificate' ) . '</td><td>' . esc_html( $result->email ) . '</td></tr>';
+	$html .= '<tr><td>' . esc_html__( 'Expiration Date', 'qsm-certificate' ) . '</td><td>' . esc_html( $expiry_formatted ) . '</td></tr>';
+	$html .= '<tr><td>' . esc_html__( 'Status', 'qsm-certificate' ) . '</td><td style="color: ' . esc_attr( $status_color ) . ';">' . esc_html( $status ) . '</td></tr>';
+	$html .= '</tbody></table></div>';
 
-    $html = '<div class="qsm-certificate-details"><table class="qsm-certificate-table">
-        <thead><tr><th>' . __('Field', 'qsm-certificate') . '</th><th>' . __('Value', 'qsm-certificate') . '</th></tr></thead>
-        <tbody>
-            <tr><td>' . __('Quiz Name', 'qsm-certificate') . '</td><td>' . $result->quiz_name . '</td></tr>
-            <tr><td>' . __('Point Score', 'qsm-certificate') . '</td><td>' . $result->point_score . ' / ' . $quiz_result['total_possible_points'] . '</td></tr>
-            <tr><td>' . __('User Name', 'qsm-certificate') . '</td><td>' . $result->name . '</td></tr>
-            <tr><td>' . __('User Email', 'qsm-certificate') . '</td><td>' . $result->email . '</td></tr>
-            <tr><td>' . __('Expiration Date', 'qsm-certificate') . '</td><td>' . $expiry_formatted . '</td></tr>
-            <tr><td>' . __('Status', 'qsm-certificate') . '</td><td style="color: ' . $status_color . ';">' . $status . '</td></tr>
-        </tbody></table></div>';
-
-    wp_send_json_success(['message' => $html]);
-    wp_die();
+	wp_send_json_success( array( 'message' => $html ) );
+	wp_die();
 }

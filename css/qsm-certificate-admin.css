@@ -64,3 +64,28 @@
 #wp-certificate_template-wrap .qsm-certificate-template-preview-btn {
     margin-top: 10px;
 }
+
+.qsm-certificate-details{
+    width: fit-content;
+    margin: auto;
+}
+.qsm-certificate-details th {
+    background-color: #f2f2f2;
+    text-align: left;
+    padding: 12px 15px;
+    font-weight: bold;
+    border-bottom: 2px solid #ddd;
+}
+
+.qsm-certificate-details td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.qsm-certificate-details tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.qsm-certificate-details tr:hover {
+    background-color: #f1f1f1;
+}

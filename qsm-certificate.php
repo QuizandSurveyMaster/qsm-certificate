@@ -355,7 +355,6 @@ function qsm_addon_certificate_expiry_check() {
     $response['message'] = sprintf(
         '<div class="qsm-certificate-result">
             <div class="qsm-certificate-details">
-                <img class="qsm-certificate-templ-image" src="%s">
                 <span class="qsm-certificate-detail-row">
                     <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
                     <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
@@ -370,7 +369,6 @@ function qsm_addon_certificate_expiry_check() {
                 <a href="%s" target="_blank">%s</a>
             </div>
         </div>',
-        esc_url( QSM_CERTIFICATE_URL . '/assets/certificate-image.png' ),
         esc_html__( 'Issued By: ', 'qsm-certificate' ),
         esc_html( $result_data->quiz_name ),
         esc_html__( 'Name: ', 'qsm-certificate' ),

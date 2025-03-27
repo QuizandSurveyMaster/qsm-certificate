@@ -296,13 +296,14 @@ function qsm_addon_certificate_expiry_check() {
         );
     }
 
-    $last_13 = substr( $certificate_id, -13 );
-    $result_data = $wpdb->get_row(
-        $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}mlw_results WHERE unique_id = %d ORDER BY result_id DESC LIMIT 1",
-            $last_13
-        )
-    );
+	$last_13 = substr($certificate_id, -13);
+
+	$result_data = $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}mlw_results WHERE unique_id = %s ORDER BY result_id DESC LIMIT 1",
+			$last_13
+		)
+	);
     
     if ( empty( $result_data->unique_id ) ) {
         wp_send_json_error(
@@ -337,7 +338,7 @@ function qsm_addon_certificate_expiry_check() {
     $expiry_formatted = $expiry_date ? $expiry_date->format( 'd F Y' ) : __( 'Invalid date', 'qsm-certificate' );
 
     $is_valid = $current_int <= $expiry_int;
-    $status   = $is_valid
+    $status   = $is_valid || $expiry_int === 0
         ? array(
             'color' => 'green',
             'text'  => __( 'This Certificate is valid', 'qsm-certificate' ),
@@ -352,37 +353,42 @@ function qsm_addon_certificate_expiry_check() {
     $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, true );
     $certificate_url  = wp_upload_dir()['baseurl'] . "/qsm-certificates/$certificate_file";
 
-    $response['message'] = sprintf(
-        '<div class="qsm-certificate-result">
-            <div class="qsm-certificate-details">
-                <span class="qsm-certificate-detail-row">
-                    <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
-                    <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
-                    <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
-                    <span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
-                    <span class="dashicons %s" style="color: white; background-color: %s; border-radius: 15px;"></span>
-                    <span class="qsm-certificate-value">%s</span>
-                </span>
-            </div>
-            <div class="qsm-certificate-pdf-preview">
-                <span class="dashicons dashicons-arrow-right"></span>
-                <a href="%s" target="_blank">%s</a>
-            </div>
-        </div>',
-        esc_html__( 'Issued By: ', 'qsm-certificate' ),
-        esc_html( $result_data->quiz_name ),
-        esc_html__( 'Name: ', 'qsm-certificate' ),
-        esc_html( $result_data->name ),
-        esc_html__( 'Issued: ', 'qsm-certificate' ),
-        esc_html( $issued_date ),
-        esc_html__( 'Expires: ', 'qsm-certificate' ),
-        esc_html( $expiry_formatted ),
-        esc_attr( $status['icon'] ),
-        esc_attr( $status['color'] ),
-        esc_html( $status['text'] ),
-        esc_url( $certificate_url ),
-        esc_html__( 'Preview', 'qsm-certificate' )
-    );
+    $expiry_formatted = $expiry_date ? $expiry_date->format( 'd F Y' ) : false;
+
+	$response['message'] = sprintf(
+		'<div class="qsm-certificate-result">
+			<div class="qsm-certificate-details">
+				<span class="qsm-certificate-detail-row">
+					<span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
+					<span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
+					<span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>
+					%s
+					<span class="dashicons %s" style="color: white; background-color: %s; border-radius: 15px;"></span>
+					<span class="qsm-certificate-value">%s</span>
+				</span>
+			</div>
+			<div class="qsm-certificate-pdf-preview">
+				<span class="dashicons dashicons-arrow-right"></span>
+				<a href="%s" target="_blank">%s</a>
+			</div>
+		</div>',
+		esc_html__( 'Issued By: ', 'qsm-certificate' ),
+		esc_html( $result_data->quiz_name ),
+		esc_html__( 'Name: ', 'qsm-certificate' ),
+		esc_html( $result_data->name ),
+		esc_html__( 'Issued: ', 'qsm-certificate' ),
+		esc_html( $issued_date ),
+		$expiry_formatted ? sprintf(
+			'<span class="qsm-certificate-label">%s</span><span class="qsm-certificate-value">%s</span><br>',
+			esc_html__( 'Expires: ', 'qsm-certificate' ),
+			esc_html( $expiry_formatted )
+		) : '',
+		esc_attr( $status['icon'] ),
+		esc_attr( $status['color'] ),
+		esc_html( $status['text'] ),
+		esc_url( $certificate_url ),
+		esc_html__( 'Preview', 'qsm-certificate' )
+	);
 
     wp_send_json_success( $response );
     wp_die();

@@ -111,7 +111,27 @@ class QSM_Certificate {
 		add_action('admin_footer', 'qsm_certificate_template_content');
 		add_filter('qsm_addon_certificate_content_filter', 'qsm_advance_certificate_attach_certificate_file', 10, 2);
         add_filter( 'qmn_email_template_variable_results', 'qsm_advance_certificate_attach_certificate_file', 10, 2 );
+		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
 	}
+
+	/**
+     * Adds template variables for certificate.
+     *
+     * @param array $variable_list
+     * @return array
+     */
+    public function qsm_certificate_show_variable( $variable_list ) {
+        global $mlwQuizMasterNext;
+        if ( ! empty( $_GET['tab'] ) && 'emails' === $_GET['tab'] ) {
+            $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-advance-certificate' );
+            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-advance-certificate' );
+        }
+        $analysis = array(
+            'Certificate' => $template_array,
+        );
+        $variable_list = array_merge( $variable_list, $analysis );
+        return $variable_list;
+    }
 
 	/**
 	 * Display full name of user using %FULL_NAME%.

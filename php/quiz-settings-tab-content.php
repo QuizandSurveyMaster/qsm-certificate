@@ -197,7 +197,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %CURRENT_DATE%</p>
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
 					<p style="margin: 2px 0">- %EXPIRY_DATE%</p>
-					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
 					<p style="margin: 2px 0">- %CERTIFICATE_ID%</p>
           	<?php do_action('qsm_certificate_after_variable'); ?>
 				</td>

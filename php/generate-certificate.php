@@ -337,21 +337,23 @@ function qsm_certificate_template_content() {
  * Generates preview popup for certificates.
  */
 function qsm_preview_popup_function() {
-	global $mlwQuizMasterNext;
-	$certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
-	$background_image     = isset( $certificate_settings['background'] ) ? esc_url( $certificate_settings['background'] ) : '';
-	$certificate_title    = isset( $certificate_settings['title'] ) ? esc_html( $certificate_settings['title'] ) : '';
-	$certificate_content  = isset( $certificate_settings['content'] ) ? nl2br( $certificate_settings['content'] ) : '';
-	$certificate_logo     = isset( $certificate_settings['logo'] ) ? esc_url( $certificate_settings['logo'] ) : '';
-	$logo_style           = isset( $certificate_settings['logo_style'] ) ? esc_attr( $certificate_settings['logo_style'] ) : '';
-	$certificate_size     = isset( $certificate_settings['certificate_size'] ) ? $certificate_settings['certificate_size'] : 'Portrait';
+    global $mlwQuizMasterNext;
+    $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
+    $background_image     = isset( $certificate_settings['background'] ) ? esc_url( $certificate_settings['background'] ) : '';
+    $certificate_title    = isset( $certificate_settings['title'] ) ? esc_html( $certificate_settings['title'] ) : '';
+    $certificate_content  = isset( $certificate_settings['content'] ) ? nl2br( $certificate_settings['content'] ) : '';
+    $certificate_logo     = isset( $certificate_settings['logo'] ) ? esc_url( $certificate_settings['logo'] ) : '';
+    $logo_style           = isset( $certificate_settings['logo_style'] ) ? esc_attr( $certificate_settings['logo_style'] ) : '';
+    $certificate_size     = isset( $certificate_settings['certificate_size'] ) ? $certificate_settings['certificate_size'] : 'Portrait';
 
-	$is_landscape       = 'Landscape' === $certificate_size;
-	$aspect_ratio       = $is_landscape ? ( 8.26 / 11.69 ) : ( 11.69 / 8.26 );
-	$background_height  = $is_landscape ? round( 1000 * $aspect_ratio ) : '1000';
-	$background_size    = $is_landscape ? '940px 700px' : '707px 1000px';
-	$margin_top         = $is_landscape ? '95px 0 0' : '85px';
-	$background_width   = $is_landscape ? '940px' : '707px';
+    $a4_width_px = 794;   
+    $a4_height_px = 1123; 
+    
+    $is_landscape = 'Landscape' === $certificate_size;
+    $cert_width = $is_landscape ? $a4_height_px : $a4_width_px;
+    $cert_height = $is_landscape ? $a4_width_px : $a4_height_px;
+    $background_size = '100% 100%';    
+    $margin_top = $is_landscape ? '120px 0 50px' : '85px';
 
     $html  = '<div class="qsm-popup qsm-popup-slide" id="qsm-certificate-show-popup" aria-hidden="false">';
     $html .= '<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>';
@@ -377,11 +379,11 @@ function qsm_preview_popup_function() {
         ? 'body { font-family: "DejaVu Sans", sans-serif; text-align: left; }'
         : htmlspecialchars_decode($certificate_settings['certificate_font'], ENT_QUOTES);
     $html .= '</style>';
-    $html .= '<div style="background-image: url(' . esc_url($background_image) . '); background-size: ' . esc_attr($background_size) . '; position: relative; width: ' . esc_attr($background_width) . '; height: ' . esc_attr($background_height) . 'px; background-repeat: no-repeat; padding: 1px; margin: auto;">';
+    $html .= '<div style="background-image: url(' . esc_url($background_image) . '); background-size: ' . esc_attr($background_size) . '; position: relative; width: ' . esc_attr($cert_width) . 'px; height: ' . esc_attr($cert_height) . 'px; background-repeat: no-repeat; padding: 1px; margin: auto;">';
     
     if (!empty($certificate_logo)) {
         $html .= '<div style="' . esc_attr($logo_style) . '">';
-        $html .= '<img src="' . esc_url($certificate_logo) . '" alt="Logo" style="max-width: 150px; margin-bottom: 20px;">';
+        $html .= '<img src="' . esc_url($certificate_logo) . '" alt="Logo">';
         $html .= '</div>';
     }
     
@@ -394,7 +396,7 @@ function qsm_preview_popup_function() {
     $html .= '</div>';
     $html .= '</div>';
     $html .= '</div>';
-	echo $html;
+    echo $html;
 }
 function qsm_advance_certificate_attach_certificate_file($content, $quiz_array) {
     global $mlwQuizMasterNext;

@@ -285,7 +285,7 @@ function qsm_certificate_expiry_check_form( $settings, $cert_id ) {
     ob_start();
     ?>
     <form action="" method="post" id="qsm-certificate-expiry-check-form">
-        <label for="certificate_id">Certificate ID*</label>
+        <label for="certificate_id"><?php esc_html_e( 'Certificate ID*', 'qsm-certificate' ); ?></label>
         <input type="text" id="certificate_id" name="certificate_id">
         <input type="submit" value="Check Expiry" class="qsm-certificate-expiry-check-button qmn_btn">
     </form>

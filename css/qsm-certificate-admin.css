@@ -345,12 +345,10 @@ h2#qsm-certificate-preview-page-templates-title {
 .qsm-certificate-result .qsm-certificate-table-show .qsm-certificate-value{
     font-weight: 400;
     border-right: none;
-    width: 140px;
 }
 .qsm-certificate-result .qsm-certificate-table-show .qsm-certificate-label{
     border-right: none;
     border-left: none;
-    width: 140px;
 }
 .qsm-certificate-result .qsm-certificate-table-show{
     border-radius: 10px;
@@ -405,4 +403,7 @@ h2#qsm-certificate-preview-page-templates-title {
 }
 #validation_message .qsm-certificate-error span::before{
     line-height: 29px;
+}
+.qsm-certificate-details .qsm-certificate-detail-row span::before{
+    margin-top: 3px;
 }

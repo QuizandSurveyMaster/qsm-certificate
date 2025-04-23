@@ -349,6 +349,7 @@ function qsm_addon_certificate_expiry_check() {
 			array(
 				'status_icon'   => 'dashicons-no-alt',
 				'status_color'  => 'red',
+				'label_width'   => 'style= "width: 140px;"',
 				'status_text'   => esc_html( $error_msgs['certificate_id_err_msg_wrong_txt'] ),
 				'quiz_name'     => esc_html__( 'NA', 'qsm-certificate' ),
 				'name'          => esc_html__( 'NA', 'qsm-certificate' ),

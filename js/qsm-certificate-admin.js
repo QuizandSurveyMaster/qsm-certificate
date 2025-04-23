@@ -226,6 +226,11 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         jQuery('.qsm-certificate-result').hide();
     });
     
+    jQuery(document).on('click', '.qsm-certificate-page-template-use-button', function (e) {
+        e.preventDefault();
+        jQuery('#qsm-certificate-page-templates').hide();  
+    });
+
     jQuery(document).on('click', '.qsm-certificate-page-template-use-button', function (e) { 
         let structure = jQuery(this).data('structure');
         let editor = tinymce.get('certificate_template');

@@ -116,19 +116,19 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
                                     </span>
                                     <table class="qsm-certificate-table-show">
                                         <tr>
-                                            <td class="qsm-certificate-label">${response.data.translations.issued_by}</td>
+                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.issued_by}</td>
                                             <td class="qsm-certificate-value">${response.data.quiz_name}</td>
                                         </tr>
                                         <tr>
-                                            <td class="qsm-certificate-label">${response.data.translations.name_label}</td>
+                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.name_label}</td>
                                             <td class="qsm-certificate-value">${response.data.name}</td>
                                         </tr>
                                         <tr>
-                                            <td class="qsm-certificate-label">${response.data.translations.issued_date_label}</td>
+                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.issued_date_label}</td>
                                             <td class="qsm-certificate-value">${response.data.issued_date}</td>
                                         </tr>
                                         <tr>
-                                            <td class="qsm-certificate-label">${response.data.translations.expires_label}</td>
+                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.expires_label}</td>
                                             <td class="qsm-certificate-value ${response.data.expiry_date_status}">${response.data.expiry_date}</td>
                                         </tr>
                                     </table>

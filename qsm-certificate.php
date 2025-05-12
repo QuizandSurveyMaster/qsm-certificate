@@ -314,9 +314,10 @@ function qsm_addon_certificate_expiry_check() {
 		);
 	}
 
-	$certificate_id = sanitize_text_field( wp_unslash( $_POST['certificate_id'] ) );
+	$certificate_id = isset( $_POST['certificate_id'] ) ? sanitize_text_field( wp_unslash( $_POST['certificate_id'] ) ) : '';
+
 	$certificate_settings = get_option( 'certificate_settings', array() );
-	$error_msgs     = wp_parse_args(
+	$error_msgs           = wp_parse_args(
 		$certificate_settings,
 		array(
 			'certificate_id_err_msg_blank_txt' => __( 'Certificate ID cannot be blank', 'qsm-certificate' ),
@@ -336,10 +337,7 @@ function qsm_addon_certificate_expiry_check() {
 
 	$result_data = $wpdb->get_row(
 		$wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}mlw_results 
-			WHERE unique_id = %s 
-			ORDER BY result_id DESC 
-			LIMIT 1",
+			"SELECT * FROM {$wpdb->prefix}mlw_results WHERE unique_id = %s ORDER BY result_id DESC LIMIT 1",
 			$last_13
 		)
 	);
@@ -347,21 +345,21 @@ function qsm_addon_certificate_expiry_check() {
 	if ( empty( $result_data ) || empty( $result_data->unique_id ) || strlen( $last_13 ) !== 13 ) {
 		wp_send_json_success(
 			array(
-				'status_icon'   => 'dashicons-no-alt',
-				'status_color'  => 'red',
-				'label_width'   => 'style= "width: 165px;"',
-				'status_text'   => esc_html( $error_msgs['certificate_id_err_msg_wrong_txt'] ),
-				'quiz_name'     => esc_html__( 'NA', 'qsm-certificate' ),
-				'name'          => esc_html__( 'NA', 'qsm-certificate' ),
-				'issued_date'   => esc_html__( 'NA', 'qsm-certificate' ),
-				'expiry_date'   => esc_html__( 'NA', 'qsm-certificate' ),
+				'status_icon'     => 'dashicons-no-alt',
+				'status_color'    => 'red',
+				'label_width'     => 'style="width: 165px;"',
+				'status_text'     => esc_html( $error_msgs['certificate_id_err_msg_wrong_txt'] ),
+				'quiz_name'       => esc_html__( 'NA', 'qsm-certificate' ),
+				'name'            => esc_html__( 'NA', 'qsm-certificate' ),
+				'issued_date'     => esc_html__( 'NA', 'qsm-certificate' ),
+				'expiry_date'     => esc_html__( 'NA', 'qsm-certificate' ),
 				'certificate_url' => '',
-				'translations'  => array(
+				'translations'    => array(
 					'issued_by'         => esc_html__( 'Issued by', 'qsm-certificate' ),
-					'name_label'       => esc_html__( 'Name', 'qsm-certificate' ),
+					'name_label'        => esc_html__( 'Name', 'qsm-certificate' ),
 					'issued_date_label' => esc_html__( 'Issued Date', 'qsm-certificate' ),
-					'expires_label'    => esc_html__( 'Expires', 'qsm-certificate' ),
-					'preview'          => esc_html__( 'Preview', 'qsm-certificate' ),
+					'expires_label'     => esc_html__( 'Expires', 'qsm-certificate' ),
+					'preview'           => esc_html__( 'Preview', 'qsm-certificate' ),
 				),
 			)
 		);
@@ -393,42 +391,41 @@ function qsm_addon_certificate_expiry_check() {
 	$expiry_int   = intval( substr( substr( $certificate_id, 0, -13 ), -8 ) );
 	$current_int  = intval( date( 'Ymd' ) );
 	$expiry_date  = ( $expiry_int > 0 ) ? DateTime::createFromFormat( 'Ymd', $expiry_int ) : false;
-	$expiry_date  = $expiry_date ? $expiry_date->format( 'd F Y' ) : __( 'NA', 'qsm-certificate' );
-	$exp_time = $expiry_date ? date( 'd-m-Y', strtotime( $expiry_date ) ) : '';
-	$exp_date = str_replace('-', '', $exp_time);
+	$expiry_date  = $expiry_date ? $expiry_date->format( 'd F Y' ) : esc_html__( 'NA', 'qsm-certificate' );
+	$exp_time     = $expiry_date ? date( 'd-m-Y', strtotime( $expiry_date ) ) : '';
+	$exp_date     = str_replace( '-', '', $exp_time );
 	$is_valid     = ( $current_int <= $expiry_int ) || ( 0 === $expiry_int );
 	$status_color = $is_valid ? 'green' : 'red';
-	$status_text  = $is_valid ? __( 'This Certificate is valid', 'qsm-certificate' ) : __( 'This Certificate is Invalid', 'qsm-certificate' );
+	$status_text  = $is_valid ? esc_html__( 'This Certificate is valid', 'qsm-certificate' ) : esc_html__( 'This Certificate is Invalid', 'qsm-certificate' );
 	$status_icon  = $is_valid ? 'dashicons-yes' : 'dashicons-no-alt';
 
-    $upload_dir = wp_upload_dir();
-    $certificate_dir = $upload_dir['basedir'] . '/qsm-certificates/';
-    $encoded_time_taken = md5( $quiz_results['time_taken'] );
-    $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-{$encoded_time_taken}-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-    $certificate_url = $upload_dir['baseurl'] . '/qsm-certificates/' . $filename;
+	$upload_dir        = wp_upload_dir();
+	$certificate_dir   = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/';
+	$encoded_time_taken = md5( $quiz_results['time_taken'] );
+	$filename          = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-{$encoded_time_taken}-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+	$certificate_url   = trailingslashit( $upload_dir['baseurl'] ) . 'qsm-certificates/' . $filename;
 
-    // Check if file exists
-    if (!file_exists($certificate_dir . $filename)) {
-        $certificate_url = '';
-    }
+	if ( ! file_exists( $certificate_dir . $filename ) ) {
+		$certificate_url = '';
+	}
 
 	wp_send_json_success(
 		array(
-			'status_icon'          => esc_attr( $status_icon ),
-			'status_color'         => esc_attr( $status_color ),
-			'status_text'          => esc_html( $status_text ),
-			'quiz_name'            => esc_html( $result_data->quiz_name ),
-			'name'                 => esc_html( $result_data->name ),
-			'issued_date'          => esc_html( $issued_date ),
-			'expiry_date'          => esc_html( $expiry_date ),
-			'expiry_date_status'   => $expiry_int < $current_int ? 'qsm-logic-expired-date' : '',
-			'certificate_url'      => $certificate_url,
+			'status_icon'         => esc_attr( $status_icon ),
+			'status_color'        => esc_attr( $status_color ),
+			'status_text'         => esc_html( $status_text ),
+			'quiz_name'           => esc_html( $result_data->quiz_name ),
+			'name'                => esc_html( $result_data->name ),
+			'issued_date'         => esc_html( $issued_date ),
+			'expiry_date'         => esc_html( $expiry_date ),
+			'expiry_date_status'  => $expiry_int < $current_int ? 'qsm-logic-expired-date' : '',
+			'certificate_url'     => esc_url( $certificate_url ),
 			'translations'        => array(
 				'issued_by'         => esc_html__( 'Issued by', 'qsm-certificate' ),
-				'name_label'       => esc_html__( 'Name', 'qsm-certificate' ),
+				'name_label'        => esc_html__( 'Name', 'qsm-certificate' ),
 				'issued_date_label' => esc_html__( 'Issued Date', 'qsm-certificate' ),
-				'expires_label'    => esc_html__( 'Expires', 'qsm-certificate' ),
-				'preview'          => esc_html__( 'Preview', 'qsm-certificate' ),
+				'expires_label'     => esc_html__( 'Expires', 'qsm-certificate' ),
+				'preview'           => esc_html__( 'Preview', 'qsm-certificate' ),
 			),
 		)
 	);

@@ -35,9 +35,9 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	$prefix = isset($_POST['prefix']) ? str_replace(' ', '', $_POST['prefix']) : '';
 	$certificate_id = '';
 
-	if ($enable_expiry == 2) {
+	if ( $enable_expiry == 2 ) {
 		$certificate_id = $prefix;
-	} elseif ($enable_expiry == 0) {
+	} elseif ( $enable_expiry == 0 ) {
 		$expiry_days = isset($_POST['expiry_days']) ? intval($_POST['expiry_days']) : 0;
 		$future_date = (new DateTime())->modify('+' . $expiry_days . ' days')->format('Y-m-d');
 		$future_date_without_hyphens = str_replace('-', '', $future_date);
@@ -49,12 +49,12 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 
     // Prepares certificate settings array	
     $certificate_settings = array(
-		'enabled'          => intval( $_POST["enableCertificates"] ),
-		'certificate_size' => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
-		'certificate_font' => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
-		'title'            => sanitize_text_field( $_POST["certificate_title"] ),
+		'enabled'                          => intval( $_POST["enableCertificates"] ),
+		'certificate_size'                 => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
+		'certificate_font'                 => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
+		'title'                            => sanitize_text_field( $_POST["certificate_title"] ),
 		//'content' => wp_kses_post( $_POST["certificate_template"] ),
-		'content'          => wp_kses_post($_POST["certificate_template"],
+		'content'                          => wp_kses_post($_POST["certificate_template"],
 		array(
 			'b'    => array(),
 			'i'    => array(),
@@ -68,18 +68,18 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			),
 		)
 		),
-		'logo'             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
-		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
-		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
-		'dpi'              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
-		'expiry_date'      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
-		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
-		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
-		'certificate_id'   => $certificate_id,
-		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
-		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
-		'certificate_id_err_msg_wrong_txt' 		=>	(isset($_POST["certificate_id_err_msg_wrong_txt"]) && !empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
-		'certificate_id_err_msg_blank_txt' 		=>	(isset($_POST["certificate_id_err_msg_blank_txt"]) && !empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
+		'logo'                             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
+		'logo_style'                       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
+		'background'                       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
+		'dpi'                              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
+		'expiry_date'                      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
+		'expiry_days'                      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
+		'prefix'                           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
+		'certificate_id'                   => $certificate_id,
+		'enable_expiry'                    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
+		'never_expiry'                     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
+		'certificate_id_err_msg_wrong_txt' => (isset($_POST["certificate_id_err_msg_wrong_txt"]) && ! empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
+		'certificate_id_err_msg_blank_txt' => (isset($_POST["certificate_id_err_msg_blank_txt"]) && ! empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -203,9 +203,9 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
 				<?php 
 				wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(
-	'editor_height' => 250,
-	'textarea_rows' => 10,
-) ); ?>
+					'editor_height' => 250,
+					'textarea_rows' => 10,
+				) ); ?>
 				</td>
 			</tr>
 			<tr>
@@ -313,9 +313,9 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
  * @param array  $my_templates                     User's saved templates
  * @param string $type                             Type of template (certificate/result)
  */
-function qsm_certificate_popups_for_templates($certificate_template_from_script, $my_templates, $type) {
-    $valid_types = array('certificate', 'result');
-    if (!in_array($type, $valid_types)) {
+function qsm_certificate_popups_for_templates( $certificate_template_from_script, $my_templates, $type ) {
+    $valid_types = array( 'certificate', 'result' );
+    if ( ! in_array($type, $valid_types) ) {
         return;
     }
 
@@ -340,11 +340,11 @@ function qsm_certificate_popups_for_templates($certificate_template_from_script,
                 <main class="qsm-popup__content" id="qsm-<?php echo esc_attr($type); ?>-page-templates-content" 
                       data-type="<?php echo esc_attr($type); ?>" data-<?php echo esc_attr($type); ?>-page="">
                     <div class="qsm-<?php echo esc_attr($type); ?>-page-template-container qsm-<?php echo esc_attr($type); ?>-page-template-common">
-                        <?php foreach ($certificate_template_from_script as $key => $single_template) : ?>
-                            <?php if ($type === $single_template['template_type']) : ?>
+                        <?php foreach ( $certificate_template_from_script as $key => $single_template ) : ?>
+                            <?php if ( $type === $single_template['template_type'] ) : ?>
                                 <?php 
                                 $image_url = QSM_CERTIFICATE_URL . 'assets/screenshot-default-theme.png';
-                                if (!empty($single_template['template_preview'])) {
+                                if ( ! empty($single_template['template_preview']) ) {
                                     $image_url = QSM_CERTIFICATE_URL . 'assets/' . $single_template['template_preview'];
                                 }
                                 ?>

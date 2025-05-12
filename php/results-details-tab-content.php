@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function qsm_addon_certificate_register_results_details_tabs() {
     global $mlwQuizMasterNext;
-    $mlwQuizMasterNext->pluginHelper->register_results_settings_tab( esc_html__( 'Certificate Addon', 'quiz-master-next' ), 'qsm_addon_certificate_results_details_tabs_content' );
-    $mlwQuizMasterNext->pluginHelper->register_admin_results_tab( esc_html__( 'Certificate Report', 'quiz-master-next' ), 'qsm_addon_certificate_details_tabs_content', 13 );
+    $mlwQuizMasterNext->pluginHelper->register_results_settings_tab( esc_html__( 'Certificate Addon', 'qsm-certificate' ), 'qsm_addon_certificate_results_details_tabs_content' );
+    $mlwQuizMasterNext->pluginHelper->register_admin_results_tab( esc_html__( 'Certificate Report', 'qsm-certificate' ), 'qsm_addon_certificate_details_tabs_content', 13 );
 }
 
 /**
@@ -70,10 +70,10 @@ function qsm_addon_certificate_results_details_tabs_content() {
                 ?>
                 <div id="message" class="updated below-h2" style="margin-top: 20px;">
                     <p>
-                        <strong><?php esc_html_e( 'Success!', 'quiz-master-next' ); ?> </strong>
-                        <?php esc_html_e( 'Your certificate has been created.', 'quiz-master-next' ); ?> 
+                        <strong><?php esc_html_e( 'Success!', 'qsm-certificate' ); ?> </strong>
+                        <?php esc_html_e( 'Your certificate has been created.', 'qsm-certificate' ); ?> 
                         <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
-                            <?php esc_html_e( 'Download Certificate', 'quiz-master-next' ); ?>
+                            <?php esc_html_e( 'Download Certificate', 'qsm-certificate' ); ?>
                         </a>
                     </p>
                 </div>
@@ -84,7 +84,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
     ?>
     <form style="padding: 50px 0;" action="" method="post">
         <?php wp_nonce_field( 'certificate', 'certificate_nonce' ); ?>
-        <button class="button-primary"><?php esc_html_e( 'Generate Certificate', 'quiz-master-next' ); ?></button>
+        <button class="button-primary"><?php esc_html_e( 'Generate Certificate', 'qsm-certificate' ); ?></button>
     </form>
     <?php
 }
@@ -108,27 +108,27 @@ function qsm_addon_certificate_details_tabs_content() {
     wp_enqueue_style( 'certificate-datatable-css', QSM_CERTIFICATE_URL . 'css/datatables.min.css', array(), '2.1.8' );
 
     wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_obj', array(
-        'delete_confirm'          => esc_html__( 'Are you sure you want to delete this file?', 'quiz-master-next' ),
-        'bulk_delete_confirm'     => esc_html__( 'Are you sure you want to delete certificates?', 'quiz-master-next' ),
-        'no_certificate_selected' => esc_html__( 'Please select the certificates.', 'quiz-master-next' ),
-        'info'                    => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ certificates', 'quiz-master-next' ),
-        'search'                  => esc_html__( 'Search Certificates:', 'quiz-master-next' ),
-        'lengthMenu'              => esc_html__( 'Show _MENU_ entries', 'quiz-master-next' ),
-        'length_menu'             => esc_html__( 'All', 'quiz-master-next' ),
+        'delete_confirm'          => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),
+        'bulk_delete_confirm'     => esc_html__( 'Are you sure you want to delete certificates?', 'qsm-certificate' ),
+        'no_certificate_selected' => esc_html__( 'Please select the certificates.', 'qsm-certificate' ),
+        'info'                    => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ certificates', 'qsm-certificate' ),
+        'search'                  => esc_html__( 'Search Certificates:', 'qsm-certificate' ),
+        'lengthMenu'              => esc_html__( 'Show _MENU_ entries', 'qsm-certificate' ),
+        'length_menu'             => esc_html__( 'All', 'qsm-certificate' ),
     ) );
 
     $upload_dir      = wp_upload_dir();
     $certificate_dir = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/';
 
     if ( ! $wp_filesystem->is_dir( $certificate_dir ) ) {
-        echo '<div class="notice notice-error"><p>' . esc_html__( 'Certificate folder not found.', 'quiz-master-next' ) . '</p></div>';
+        echo '<div class="notice notice-error"><p>' . esc_html__( 'Certificate folder not found.', 'qsm-certificate' ) . '</p></div>';
         return;
     }
 
     $files = glob( $certificate_dir . '*.pdf' );
 
     if ( empty( $files ) ) {
-        echo '<div class="notice notice-info"><p>' . esc_html__( 'No PDF certificates found.', 'quiz-master-next' ) . '</p></div>';
+        echo '<div class="notice notice-info"><p>' . esc_html__( 'No PDF certificates found.', 'qsm-certificate' ) . '</p></div>';
         return;
     }
 
@@ -136,16 +136,16 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '<form method="post" id="qsm-certificate-form">';
     wp_nonce_field( 'bulk_delete_certificates_action', 'bulk_delete_certificates_nonce' );
 
-    echo '<input type="submit" name="bulk_delete" value="' . esc_attr__( 'Bulk Delete', 'quiz-master-next' ) . '" class="button action" style="margin: 20px 0 0;">';
+    echo '<input type="submit" name="bulk_delete" value="' . esc_attr__( 'Bulk Delete', 'qsm-certificate' ) . '" class="button action" style="margin: 20px 0 0;">';
 
     echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
         <tr>
             <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
-            <th class="qsm-manage-column">' . esc_html__( 'Certificate Name', 'quiz-master-next' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Generated Date', 'quiz-master-next' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Expiry Date', 'quiz-master-next' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Action', 'quiz-master-next' ) . '</th>
+            <th class="qsm-manage-column">' . esc_html__( 'Certificate Name', 'qsm-certificate' ) . '</th>
+            <th class="qsm-manage-column">' . esc_html__( 'Generated Date', 'qsm-certificate' ) . '</th>
+            <th class="qsm-manage-column">' . esc_html__( 'Expiry Date', 'qsm-certificate' ) . '</th>
+            <th class="qsm-manage-column">' . esc_html__( 'Action', 'qsm-certificate' ) . '</th>
         </tr>
       </thead>';
 
@@ -177,16 +177,16 @@ function qsm_addon_certificate_details_tabs_content() {
         if ( $expiration_date instanceof DateTime && $current_date >= $expiration_date ) {
             echo '<td style="color: red;">' . esc_html( $expiration_date->format( 'd-m-Y' ) ) . '</td>';
         } else {
-            echo '<td>' . esc_html( $expiration_date instanceof DateTime ? $expiration_date->format( 'd-m-Y' ) : esc_html__( 'Never Expire', 'quiz-master-next' ) ) . '</td>';
+            echo '<td>' . esc_html( $expiration_date instanceof DateTime ? $expiration_date->format( 'd-m-Y' ) : esc_html__( 'Never Expire', 'qsm-certificate' ) ) . '</td>';
         }
 
         echo '<td>
             <div class="qsm-table-icons">
                 <a href="' . esc_url( $file_url ) . '" target="_blank" class="qsm-view-file">
-                    <img src="' . esc_url( plugins_url( '../assets/eye-line.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'View Icon', 'quiz-master-next' ) . '">
+                    <img src="' . esc_url( plugins_url( '../assets/eye-line.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'View Icon', 'qsm-certificate' ) . '">
                 </a> 
                 <button type="button" class="qsm-delete-file" data-filename="' . esc_attr( $file_name ) . '">
-                    <img src="' . esc_url( plugins_url( '../assets/trash.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'Delete Icon', 'quiz-master-next' ) . '">
+                    <img src="' . esc_url( plugins_url( '../assets/trash.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
                 </button>
             </div>
         </td>';
@@ -221,12 +221,12 @@ function qsm_delete_certificate() {
 
         if ( $wp_filesystem->exists( $file_to_delete ) ) {
             $wp_filesystem->delete( $file_to_delete );
-            wp_send_json_success( esc_html__( 'File deleted successfully.', 'quiz-master-next' ) );
+            wp_send_json_success( esc_html__( 'File deleted successfully.', 'qsm-certificate' ) );
         } else {
-            wp_send_json_error( esc_html__( 'File not found.', 'quiz-master-next' ) );
+            wp_send_json_error( esc_html__( 'File not found.', 'qsm-certificate' ) );
         }
     } else {
-        wp_send_json_error( esc_html__( 'Invalid file name.', 'quiz-master-next' ) );
+        wp_send_json_error( esc_html__( 'Invalid file name.', 'qsm-certificate' ) );
     }
 }
 
@@ -240,7 +240,7 @@ function qsm_bulk_delete_certificates() {
     WP_Filesystem();
 
     if ( ! isset( $_POST['bulk_delete_certificates_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['bulk_delete_certificates_nonce'] ) ), 'bulk_delete_certificates_action' ) ) {
-        wp_send_json_error( esc_html__( 'Nonce verification failed.', 'quiz-master-next' ) );
+        wp_send_json_error( esc_html__( 'Nonce verification failed.', 'qsm-certificate' ) );
     }
 
     $upload_dir      = wp_upload_dir();
@@ -255,8 +255,8 @@ function qsm_bulk_delete_certificates() {
                 $wp_filesystem->delete( $file_to_delete );
             }
         }
-        wp_send_json_success( esc_html__( 'Selected certificates deleted successfully.', 'quiz-master-next' ) );
+        wp_send_json_success( esc_html__( 'Selected certificates deleted successfully.', 'qsm-certificate' ) );
     } else {
-        wp_send_json_error( esc_html__( 'No certificates selected for deletion.', 'quiz-master-next' ) );
+        wp_send_json_error( esc_html__( 'No certificates selected for deletion.', 'qsm-certificate' ) );
     }
 }

@@ -305,71 +305,72 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
-	<?php
-	/**
- * Displays certificate template popups for different template types
+<?php
+/**
+ * Displays certificate template popups for different template types.
  *
- * @param array  $certificate_template_from_script Array of certificate templates
- * @param array  $my_templates                     User's saved templates
- * @param string $type                             Type of template (certificate/result)
+ * @param array  $certificate_template_from_script Array of certificate templates.
+ * @param array  $my_templates                     User's saved templates.
+ * @param string $type                             Type of template (certificate/result).
  */
-function qsm_certificate_popups_for_templates($certificate_template_from_script, $my_templates, $type) {
-    $valid_types = array('certificate', 'result');
-    if (!in_array($type, $valid_types)) {
+function qsm_certificate_popups_for_templates( $certificate_template_from_script, $my_templates, $type ) {
+    $valid_types = array( 'certificate', 'result' );
+
+    if ( ! in_array( $type, $valid_types, true ) ) {
         return;
     }
 
     ?>
-	<div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="true" style="display:none;">
-		<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
-			<div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
-				<header class="qsm-popup__header">
-                    <div class="qsm-<?php echo esc_attr($type); ?>-page-template-header-left">
-                        <img class="qsm-<?php echo esc_attr($type); ?>-page-template-header-image" 
-                             src="<?php echo esc_url(QSM_CERTIFICATE_URL . 'assets/icon-200x200.png'); ?>" 
-                             alt="<?php esc_attr_e('Certificate Icon', 'qsm-certificate'); ?>"/>
-                        <h2 class="qsm-popup__title" id="qsm-<?php echo esc_attr($type); ?>-page-templates-title">
-                            <?php esc_html_e('Certificate Templates', 'qsm-certificate'); ?>
+    <div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="true" style="display:none;">
+        <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+            <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                <header class="qsm-popup__header">
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-left">
+                        <img class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-image"
+                             src="<?php echo esc_url( QSM_CERTIFICATE_URL . 'assets/icon-200x200.png' ); ?>"
+                             alt="<?php echo esc_attr__( 'Certificate Icon', 'qsm-certificate' ); ?>" />
+                        <h2 class="qsm-popup__title" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                            <?php esc_html_e( 'Certificate Templates', 'qsm-certificate' ); ?>
                         </h2>
                     </div>
-                    <div class="qsm-<?php echo esc_attr($type); ?>-page-template-header-right">
-                        <div class="qsm-<?php echo esc_attr($type); ?>-page-template-header"></div>
-                        <a class="qsm-popup__close" aria-label="<?php esc_attr_e('Close modal', 'qsm-certificate'); ?>" data-micromodal-close></a>
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-right">
+                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header"></div>
+                        <a class="qsm-popup__close" aria-label="<?php echo esc_attr__( 'Close modal', 'qsm-certificate' ); ?>" data-micromodal-close></a>
                     </div>
                 </header>
-                <main class="qsm-popup__content" id="qsm-<?php echo esc_attr($type); ?>-page-templates-content" 
-                      data-type="<?php echo esc_attr($type); ?>" data-<?php echo esc_attr($type); ?>-page="">
-                    <div class="qsm-<?php echo esc_attr($type); ?>-page-template-container qsm-<?php echo esc_attr($type); ?>-page-template-common">
-                        <?php foreach ($certificate_template_from_script as $key => $single_template) : ?>
-                            <?php if ($type === $single_template['template_type']) : ?>
-                                <?php 
+                <main class="qsm-popup__content" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates-content"
+                      data-type="<?php echo esc_attr( $type ); ?>" data-<?php echo esc_attr( $type ); ?>-page="">
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-container qsm-<?php echo esc_attr( $type ); ?>-page-template-common">
+                        <?php foreach ( $certificate_template_from_script as $key => $single_template ) : ?>
+                            <?php if ( $type === $single_template['template_type'] ) : ?>
+                                <?php
                                 $image_url = QSM_CERTIFICATE_URL . 'assets/screenshot-default-theme.png';
-                                if (!empty($single_template['template_preview'])) {
+                                if ( ! empty( $single_template['template_preview'] ) ) {
                                     $image_url = QSM_CERTIFICATE_URL . 'assets/' . $single_template['template_preview'];
                                 }
                                 ?>
-                                <div class="qsm-<?php echo esc_attr($type); ?>-page-template-card">
-                                    <div data-url="<?php echo esc_url($image_url); ?>" class="qsm-<?php echo esc_attr($type); ?>-page-template-card-content">
-                                        <img class="qsm-<?php echo esc_attr($type); ?>-page-template-card-image" 
-                                             src="<?php echo esc_url($image_url); ?>" 
-                                             alt="<?php echo esc_attr($single_template['template_name']); ?>">
-                                        <div class="qsm-<?php echo esc_attr($type); ?>-page-template-card-buttons">
-                                            <button class="qsm-<?php echo esc_attr($type); ?>-page-template-preview-button button" 
-                                                    data-indexid="<?php echo esc_attr($key); ?>">
-                                                <img class="qsm-common-svg-image-class" 
-                                                     src="<?php echo esc_url(QSM_CERTIFICATE_URL . 'assets/eye-line-blue.png'); ?>" 
-                                                     alt="<?php esc_attr_e('Preview', 'qsm-certificate'); ?>" />
-                                                <?php esc_html_e('Preview', 'qsm-certificate'); ?>
+                                <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card">
+                                    <div data-url="<?php echo esc_url( $image_url ); ?>" class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-content">
+                                        <img class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-image"
+                                             src="<?php echo esc_url( $image_url ); ?>"
+                                             alt="<?php echo esc_attr( $single_template['template_name'] ); ?>">
+                                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-buttons">
+                                            <button class="qsm-<?php echo esc_attr( $type ); ?>-page-template-preview-button button"
+                                                    data-indexid="<?php echo esc_attr( $key ); ?>">
+                                                <img class="qsm-common-svg-image-class"
+                                                     src="<?php echo esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line-blue.png' ); ?>"
+                                                     alt="<?php echo esc_attr__( 'Preview', 'qsm-certificate' ); ?>" />
+                                                <?php esc_html_e( 'Preview', 'qsm-certificate' ); ?>
                                             </button>
-                                            <button class="qsm-<?php echo esc_attr($type); ?>-page-template-use-button button" 
-                                                    data-structure="default" 
-                                                    data-indexid="<?php echo esc_attr($key); ?>">
-                                                <?php esc_html_e('Use Template', 'qsm-certificate'); ?>
+                                            <button class="qsm-<?php echo esc_attr( $type ); ?>-page-template-use-button button"
+                                                    data-structure="default"
+                                                    data-indexid="<?php echo esc_attr( $key ); ?>">
+                                                <?php esc_html_e( 'Use Template', 'qsm-certificate' ); ?>
                                             </button>
                                         </div>
                                     </div>
-                                    <p class="qsm-<?php echo esc_attr($type); ?>-page-template-template-name">
-                                        <?php echo esc_html($single_template['template_name']); ?>
+                                    <p class="qsm-<?php echo esc_attr( $type ); ?>-page-template-template-name">
+                                        <?php echo esc_html( $single_template['template_name'] ); ?>
                                     </p>
                                 </div>
                             <?php endif; ?>
@@ -380,17 +381,17 @@ function qsm_certificate_popups_for_templates($certificate_template_from_script,
         </div>
     </div>
 
-<div class="qsm-popup qsm-popup-slide" id="qsm-preview-<?php echo esc_attr($type); ?>-page-templates" style="display:none;">
-    <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
-        <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-preview-<?php echo esc_attr($type); ?>-page-templates-title">
-		        <header class="qsm-popup__header">
-                    <h2 class="qsm-popup__title" id="qsm-preview-<?php echo esc_attr($type); ?>-page-templates-title">
-                        <?php esc_html_e('Template Preview', 'qsm-certificate'); ?>
+    <div class="qsm-popup qsm-popup-slide" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates" style="display:none;">
+        <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+            <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                <header class="qsm-popup__header">
+                    <h2 class="qsm-popup__title" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                        <?php esc_html_e( 'Template Preview', 'qsm-certificate' ); ?>
                     </h2>
-                    <a class="qsm-popup__close" aria-label="<?php esc_attr_e('Close modal', 'qsm-certificate'); ?>" data-micromodal-close></a>
+                    <a class="qsm-popup__close" aria-label="<?php echo esc_attr__( 'Close modal', 'qsm-certificate' ); ?>" data-micromodal-close></a>
                 </header>
-                <main class="qsm-popup__content" id="qsm-preview-<?php echo esc_attr($type); ?>-page-templates-content">
-                    <div class="qsm-preview-<?php echo esc_attr($type); ?>-page-template-container">
+                <main class="qsm-popup__content" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-content">
+                    <div class="qsm-preview-<?php echo esc_attr( $type ); ?>-page-template-container">
                         <div class="qsm-preview-template-image-wrapper"></div>
                     </div>
                 </main>

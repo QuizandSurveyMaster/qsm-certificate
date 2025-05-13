@@ -10,7 +10,7 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
 }
     if ($.fn.DataTable) {
         var table = $('#qsm-certificate-table').DataTable();
-        if (table) { 
+        if (table) {
             table.destroy();
         }
         $('#qsm-certificate-table').DataTable({
@@ -110,7 +110,7 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
                             <div class="qsm-popup-close">&times;</div>
                                 <div class="qsm-certificate-details">
                                     <span class="qsm-certificate-detail-row">
-                                        <span class="dashicons ${response.data.status_icon}" 
+                                        <span class="dashicons ${response.data.status_icon}"
                                               style="color: white; background-color: ${response.data.status_color};"></span>
                                         <span class="qsm-certificate-value">${response.data.status_text}</span>
                                     </span>
@@ -142,17 +142,17 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
                         </div>
                     </div>
                 `;
-             
+
                 jQuery('body').append(modalHTML);
-                
+
                 jQuery('.qsm-popup-overlay').css('display', 'flex').hide().fadeIn();
-                
+
                 jQuery('.qsm-popup-close, .qsm-popup-overlay').on('click', function() {
                     jQuery('.qsm-popup-overlay').fadeOut(function() {
                         jQuery(this).remove();
                     });
                 });
-                
+
                 jQuery('.qsm-certificate-result').on('click', function(e) {
                     e.stopPropagation();
                 });
@@ -202,15 +202,15 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
 
     jQuery(document).on('click', '.qsm-certificate-page-template-header-right .qsm-popup__close', function (event) {
         event.preventDefault();
-        jQuery('#qsm-certificate-page-templates').hide(); 
+        jQuery('#qsm-certificate-page-templates').hide();
     });
     jQuery(document).on('mouseenter', '.qsm-certificate-page-template-card-content', function () {
         jQuery(this).find('.qsm-certificate-page-template-card-buttons').show();
     });
-    
+
     jQuery(document).on('mouseleave', '.qsm-certificate-page-template-card-content', function () {
         jQuery(this).find('.qsm-certificate-page-template-card-buttons').hide();
-    });    
+    });
 
     jQuery(document).on('click', '.qsm-certificate-page-template-preview-button', function (e) {
         e.preventDefault();
@@ -225,15 +225,14 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         event.preventDefault();
         jQuery('.qsm-certificate-result').hide();
     });
-    
+
     jQuery(document).on('click', '.qsm-certificate-page-template-use-button', function (e) {
         e.preventDefault();
-        jQuery('#qsm-certificate-page-templates').hide();  
+        jQuery('#qsm-certificate-page-templates').hide();
     });
 
-    jQuery(document).on('click', '.qsm-certificate-page-template-use-button', function (e) { 
+    jQuery(document).on('click', '.qsm-certificate-page-template-use-button', function (e) {
         let structure = jQuery(this).data('structure');
-        let editor = tinymce.get('certificate_template');
         let templateValue;
         let dataIndexID;
         if (structure == 'default') {
@@ -242,8 +241,27 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         }
         let updatedContent = templateValue.replace(/([^]+)/g, '<qsmvariabletag>$1</qsmvariabletag>&nbsp;');
         updatedContent = updatedContent.replace(/\\/g, '');
-        editor.setContent('');
-        editor.execCommand('mceInsertContent', false, updatedContent);
+
+        // Try to get the editor instance
+        let editor = tinymce.get('certificate_template');
+
+        // If editor exists, use it directly
+        if (editor) {
+            editor.setContent('');
+            editor.execCommand('mceInsertContent', false, updatedContent);
+        } else {
+            // If editor doesn't exist, try to initialize it
+            tinymce.init({
+                selector: '#certificate_template',
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        editor.setContent('');
+                        editor.execCommand('mceInsertContent', false, updatedContent);
+                    });
+                }
+            });
+        }
+
         let qsm_certificate_css = dataIndexID.template_css;
         let qsm_certificate_bg = qsmCertificateObject.qsm_tmpl_bg_url + dataIndexID.template_background;
         let certificate_custom_style_area = document.getElementById('certificate_font');

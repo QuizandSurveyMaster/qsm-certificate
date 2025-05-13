@@ -1,3 +1,12 @@
+<h3>2.0.0 (May 13, 2025) </h3>
+<ul>
+	<li>Feature: Added option to import certificate templates</li>
+	<li>Feature: Introduced certificate preview functionality</li>
+	<li>Feature: Added option to edit the certificate validity message</li>
+	<li>Feature: Introduced certificate list page with pagination and filtering</li>
+	<li>Feature: Implemented option to delete certificates</li>
+	<li>Enhancement: Refined UI of the certificate validation form</li>
+</ul>
 <h3>1.3.5 (February 17, 2025) </h3>
 <ul>
 	<li>Enhancement: Improved certificate license validation logic</li>

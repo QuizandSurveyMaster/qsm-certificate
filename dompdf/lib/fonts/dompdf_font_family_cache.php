@@ -83,7 +83,7 @@ return array (
     'italic' => $fontDir . '/tiro_devanagari_hindi_italic_b901fd9ce651b665d81308d5ec6d6ea2',
   ),
   'poppins' => array(
-    'normal' => $fontDir . '/poppins_normal_442dffd12abdf0df26c14405d3f49bfa',
+    'normal' => $fontDir . '/poppins_normal_e5cad8c9667063c0b8878ceea956a170',
   ),
   'noto sans devanagari' => array(
     'normal' => $fontDir . '/noto_sans_devanagari_normal_f396c01c7a196910b22cb2f53d7cf9d4',

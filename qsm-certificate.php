@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: http://quizandsurveymaster.com
- * Version: 1.3.5
+ * Version: 2.0.0
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '1.3.5';
+	public $version = '2.0.0';
 
 	/**
 	 * Main Construct Function
@@ -411,16 +411,16 @@ function qsm_addon_certificate_expiry_check() {
 
 	wp_send_json_success(
 		array(
-			'status_icon'         => esc_attr( $status_icon ),
-			'status_color'        => esc_attr( $status_color ),
-			'status_text'         => esc_html( $status_text ),
-			'quiz_name'           => esc_html( $result_data->quiz_name ),
-			'name'                => esc_html( $result_data->name ),
-			'issued_date'         => esc_html( $issued_date ),
-			'expiry_date'         => esc_html( $expiry_date ),
-			'expiry_date_status'  => $expiry_int < $current_int ? 'qsm-logic-expired-date' : '',
-			'certificate_url'     => esc_url( $certificate_url ),
-			'translations'        => array(
+			'status_icon'        => esc_attr( $status_icon ),
+			'status_color'       => esc_attr( $status_color ),
+			'status_text'        => esc_html( $status_text ),
+			'quiz_name'          => esc_html( $result_data->quiz_name ),
+			'name'               => esc_html( $result_data->name ),
+			'issued_date'        => esc_html( $issued_date ),
+			'expiry_date'        => esc_html( $expiry_date ),
+			'expiry_date_status' => $expiry_int < $current_int ? 'qsm-logic-expired-date' : '',
+			'certificate_url'    => esc_url( $certificate_url ),
+			'translations'       => array(
 				'issued_by'         => esc_html__( 'Issued by', 'qsm-certificate' ),
 				'name_label'        => esc_html__( 'Name', 'qsm-certificate' ),
 				'issued_date_label' => esc_html__( 'Issued Date', 'qsm-certificate' ),

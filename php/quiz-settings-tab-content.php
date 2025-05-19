@@ -321,7 +321,7 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
     }
 
     ?>
-    <div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="true" style="display:none;">
+    <div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="false" style="display:none;">
         <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
             <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
                 <header class="qsm-popup__header">

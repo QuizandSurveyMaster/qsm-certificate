@@ -89,7 +89,7 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
 
 
     $('input[name="enable_expiry"]').change(function() {
-        qsmUpdateExpiryFields();
+        qsm_certificate_update_expiry_fields();
     });
 
     jQuery(document).on('click', '.qsm-certificate-expiry-check-button', function (event) {
@@ -161,7 +161,7 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
             }
         });
     });
-    function qsmUpdateExpiryFields() {
+    function qsm_certificate_update_expiry_fields() {
         let enableExpiry = $('input[name="enable_expiry"]:checked').val();
         if (enableExpiry === '0') {
             $('.qsm-certificate-expiry-date').hide();
@@ -174,9 +174,10 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
             $('.qsm-certificate-expiry-days').hide();
         }
     }
-    qsmUpdateExpiryFields();
+    qsm_certificate_update_expiry_fields();
 
-    jQuery(document).on('change', '.qsm-certificate-background', function () {
+    jQuery(document).on('change', '.qsm-certificate-background', function (e) {
+        e.preventDefault();
         var imageUrl = jQuery(this).val();
 
         if (imageUrl) {
@@ -189,6 +190,31 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
     jQuery(document).on('click', '.qsm-preview-btn', function (event) {
         event.preventDefault();
         jQuery('#qsm-certificate-show-popup').show();
+        const $cert = {
+            size: $('input[name="certificateSize"]:checked').val() || 'Portrait',
+            font: $('#certificate_font').val()?.trim() || '',
+            title: $('#certificate_title').val()?.trim() || '',
+            logo: $('#certificate_logo').val()?.trim() || '',
+            logoStyle: $('#certificate_logo_style').val()?.trim() || '',
+            background: $('#qsm_certificate_background').val()?.trim() || '',
+            content: tinymce.get('certificate_template')?.getContent({ format: 'raw' }) || $('#certificate_template').val()
+        };
+
+        const [A4_WIDTH, A4_HEIGHT] = [Math.round(8.26 * 100), Math.round(11.69 * 100)];
+        const [width, height] = $cert.size === 'Landscape' ? [A4_HEIGHT, A4_WIDTH] : [A4_WIDTH, A4_HEIGHT];
+
+        const html = `
+            <style>
+                ${!$cert.font.includes('dejavusans') ? $cert.font : 'body { font-family: "DejaVu Sans", sans-serif; text-align: left; }'}
+            </style>
+            <div style="background-image: url('${$cert.background}'); background-size: cover; position: relative; width: ${width}px; height: ${height}px; padding: 1px; margin: auto;">
+                ${$cert.logo ? `<div style="${$cert.logoStyle}"><img src="${$cert.logo}" alt="Logo"></div>` : ''}
+                ${$cert.title ? `<h1 style="text-align: center; margin: ${$cert.size === 'Landscape' ? '120px 0 50px' : '60px 0 20px'}; font-weight: 700;">${$cert.title}</h1>` : ''}
+                <div style="text-align: center; vertical-align: middle; justify-content: center;">${$cert.content}</div>
+            </div>
+        `;
+
+        $('#qsm-certificate-show-changes').html(html);
     });
 
     jQuery(document).on('click', '.qsm-certificate-preview-page-template-header-right .qsm-popup__close', function (event) {
@@ -264,30 +290,33 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
 
         let qsm_certificate_css = dataIndexID.template_css;
         let qsm_certificate_bg = qsmCertificateObject.qsm_tmpl_bg_url + dataIndexID.template_background;
-        let certificate_custom_style_area = document.getElementById('certificate_font');
-        let qsm_certificate_background = document.getElementById('qsm_certificate_background');
-        let qsm_certificate_logo = document.getElementById('certificate_logo');
-        let qsm_certificate_logo_css = document.getElementById('certificate_logo_style');
-        let qsm_certificate_portrait_mode = document.getElementById('radio32');
-        let qsm_certificate_landscape_mode = document.getElementById('radio33');
-        let qsm_certificate_certificate_title = document.getElementById('certificate_title');
+        let certificate_custom_style_area = jQuery('#certificate_font');
+        let qsm_certificate_background = jQuery('#qsm_certificate_background');
+        let qsm_certificate_logo = jQuery('#certificate_logo');
+        let qsm_certificate_logo_css = jQuery('#certificate_logo_style');
+        let qsm_certificate_portrait_mode = jQuery('#radio32');
+        let qsm_certificate_landscape_mode = jQuery('#radio33');
+        let qsm_certificate_certificate_title = jQuery('#certificate_title');
+        let qsm_certificate_preview_bg_img = jQuery('#qsm-certificate-image');
+
         if(dataIndexID.id == '2' || dataIndexID.id == '4'){
-            qsm_certificate_portrait_mode.checked = true;
-            qsm_certificate_certificate_title.value = '';
+            qsm_certificate_portrait_mode.prop('checked', true);
+            qsm_certificate_certificate_title.val('');
         } else {
-            qsm_certificate_landscape_mode.checked = true;
-            qsm_certificate_certificate_title.value = 'PERSONALITY QUIZ';
+            qsm_certificate_landscape_mode.prop('checked', true);
+            qsm_certificate_certificate_title.val('PERSONALITY QUIZ');
         }
         if(dataIndexID.template_logo && dataIndexID.template_logo_css){
             let qsm_cert_logo = qsmCertificateObject.qsm_tmpl_bg_url + dataIndexID.template_logo;
             let qsm_cert_logo_css = dataIndexID.template_logo_css;
-            qsm_certificate_logo.value = qsm_cert_logo;
-            qsm_certificate_logo_css.value = qsm_cert_logo_css;
+            qsm_certificate_logo.val(qsm_cert_logo);
+            qsm_certificate_logo_css.val(qsm_cert_logo_css);
         } else {
-            qsm_certificate_logo.value = '';
+            qsm_certificate_logo.val('');
         }
-            certificate_custom_style_area.value = qsm_certificate_css;
-            qsm_certificate_background.value = qsm_certificate_bg;
+        certificate_custom_style_area.val(qsm_certificate_css);
+        qsm_certificate_background.val(qsm_certificate_bg);
+        qsm_certificate_preview_bg_img.attr('src', qsm_certificate_bg);
     });
 
 });

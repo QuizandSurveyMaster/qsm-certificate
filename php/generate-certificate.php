@@ -131,7 +131,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
         $content = htmlspecialchars_decode( $content, ENT_QUOTES ) ;
 	}
     $certificate_title   = $settings["title"];
-    $certificate_title   = nl2br( $certificate_title, false );
+    $certificate_title   = $certificate_title;
     $certificate_title   = stripslashes( $certificate_title );
     $background = "";
     $background_path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['background'] );
@@ -154,7 +154,7 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
 	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
 	$html_bottom = '<div style="' . $logo_style . '"> ' . $logo
     . ( ! empty($certificate_title) ? '<h1 style="text-align:center;margin-top:80px;font-weight:700;">' . $certificate_title . '</h1>' : '')
-    . '<div style="text-align:center;vertical-align:middle;justify-content: center;">' . nl2br($content)
+    . '<div style="text-align:center;vertical-align:middle;justify-content: center;">' . $content
     . '</div></body></html>';
     $html            = $html_top . $html . $html_bottom;
     return $html;
@@ -336,28 +336,11 @@ function qsm_certificate_template_content() {
         qsm_certificate_popups_for_templates($certificate_template_from_script, $my_templates, 'certificate');
     }
 }
+
 /**
  * Generates preview popup for certificates.
  */
 function qsm_preview_popup_function() {
-    global $mlwQuizMasterNext;
-    $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
-    $background_image     = isset( $certificate_settings['background'] ) ? esc_url( $certificate_settings['background'] ) : '';
-    $certificate_title    = isset( $certificate_settings['title'] ) ? esc_html( $certificate_settings['title'] ) : '';
-    $certificate_content  = isset( $certificate_settings['content'] ) ? nl2br( $certificate_settings['content'] ) : '';
-    $certificate_logo     = isset( $certificate_settings['logo'] ) ? esc_url( $certificate_settings['logo'] ) : '';
-    $logo_style           = isset( $certificate_settings['logo_style'] ) ? esc_attr( $certificate_settings['logo_style'] ) : '';
-    $certificate_size     = isset( $certificate_settings['certificate_size'] ) ? $certificate_settings['certificate_size'] : 'Portrait';
-
-    $a4_width_px = 794;   
-    $a4_height_px = 1123; 
-    
-    $is_landscape = 'Landscape' === $certificate_size;
-    $cert_width = $is_landscape ? $a4_height_px : $a4_width_px;
-    $cert_height = $is_landscape ? $a4_width_px : $a4_height_px;
-    $background_size = '100% 100%';    
-    $margin_top = $is_landscape ? '120px 0 50px' : '85px';
-
     $html  = '<div class="qsm-popup qsm-popup-slide" id="qsm-certificate-show-popup" aria-hidden="false">';
     $html .= '<div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>';
     $html .= '<div class="qsm-popup__container qsm-certificate-popup" role="dialog" aria-modal="true" aria-labelledby="modal-3-title">';
@@ -376,32 +359,19 @@ function qsm_preview_popup_function() {
     $html .= '<div class="qsm-title-overlay"></div>';
     $html .= '</header>';
     $html .= '<main id="qsm-certificate-show-changes">';
-    $html .= '<title>' . esc_html($certificate_title) . '</title>';
-    $html .= '<style>';
-    $html .= empty($certificate_settings['certificate_font']) || 'dejavusans' === $certificate_settings['certificate_font']
-        ? 'body { font-family: "DejaVu Sans", sans-serif; text-align: left; }'
-        : htmlspecialchars_decode($certificate_settings['certificate_font'], ENT_QUOTES);
-    $html .= '</style>';
-    $html .= '<div style="background-image: url(' . esc_url($background_image) . '); background-size: ' . esc_attr($background_size) . '; position: relative; width: ' . esc_attr($cert_width) . 'px; height: ' . esc_attr($cert_height) . 'px; background-repeat: no-repeat; padding: 1px; margin: auto;">';
-    
-    if ( ! empty($certificate_logo) ) {
-        $html .= '<div style="' . esc_attr($logo_style) . '">';
-        $html .= '<img src="' . esc_url($certificate_logo) . '" alt="Logo">';
-        $html .= '</div>';
-    }
-    
-    if ( ! empty($certificate_title) ) {
-        $html .= '<h1 style="text-align: center; margin: ' . esc_attr($margin_top) . '; font-weight: 700;">' . esc_html($certificate_title) . '</h1>';
-    }
-    $html .= '<div style="text-align: center; vertical-align: middle; justify-content: center;">' . $certificate_content . '</div>';
-    $html .= '</div>';
     $html .= '</main>';
     $html .= '</div>';
     $html .= '</div>';
     $html .= '</div>';
     echo $html;
 }
-function qsm_advance_certificate_attach_certificate_file( $content, $quiz_array ) {
+
+function qsm_certificate_preview_allow_br_tags($init) {
+  $settings['wpautop'] = false;
+    return $settings;
+}
+
+function qsm_certificate_attach_certificate_file( $content, $quiz_array ) {
     global $mlwQuizMasterNext;
 
     $quiz_options    = $mlwQuizMasterNext->quiz_settings->get_quiz_options();

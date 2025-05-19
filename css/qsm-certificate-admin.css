@@ -83,8 +83,7 @@
     color: red;
 }
 #qsm-certificate-show-popup .qsm-popup__container{
-    min-width: fit-content;
-    margin: 0 30px 30px;
+    max-width: 100%;
 }
 .qsm-certificate-popup-footer{
     margin-top: 10px;
@@ -286,11 +285,9 @@ h2#qsm-certificate-preview-page-templates-title {
     cursor: pointer;
 }
 #qsm-certificate-show-popup .qsm-popup__header{
-    display: grid
-;
+    display: grid;
     grid-template-columns: 1.4fr 2fr;
     border-bottom: 1px solid rgba(30, 30, 30, 0.1);
-    padding: 0 10px;
 }
 #qsm-certificate-show-popup .qsm-popup__header .qsm-certificate-preview-page-template-header-image {
 	max-height: 55px;

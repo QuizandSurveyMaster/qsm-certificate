@@ -109,9 +109,10 @@ class QSM_Certificate {
 		add_filter( 'upload_mimes', array( $this, 'add_ttf_upload_mimes' ) );
 		add_action('admin_footer', 'qsm_preview_popup_function');
 		add_action('admin_footer', 'qsm_certificate_template_content');
-		add_filter('qsm_addon_certificate_content_filter', 'qsm_advance_certificate_attach_certificate_file', 10, 2);
-        add_filter( 'qmn_email_template_variable_results', 'qsm_advance_certificate_attach_certificate_file', 10, 2 );
+		add_filter('qsm_addon_certificate_content_filter', 'qsm_certificate_attach_certificate_file', 10, 2);
+        add_filter( 'qmn_email_template_variable_results', 'qsm_certificate_attach_certificate_file', 10, 2 );
 		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
+		add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
 	}
 
 	/**

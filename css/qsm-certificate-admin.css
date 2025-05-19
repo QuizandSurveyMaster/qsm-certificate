@@ -303,7 +303,7 @@ h2#qsm-certificate-preview-page-templates-title {
     height: 40px;
     border-radius: 20px;
     font-size: 25px;
-    line-height: unset;
+    line-height: 40px;
     position: relative; 
     top: -10px;
     left: 10px;

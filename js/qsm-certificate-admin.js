@@ -32,60 +32,97 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
 
 
     // Handle single file deletion
-    $('.qsm-delete-file').on('click', function() {
+    $(document).on('click', '.qsm-delete-file', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
         var filename = $(this).data('filename');
+        var row = $(this).closest('tr');
+
         if (confirm(qsm_certificate_obj.delete_confirm)) {
-            var row = $(this).closest('tr');
-            $.post(ajaxurl, {
-                action: 'delete_certificate',
-                file_name: filename
-            }, function(response) {
-                if (response.success) {
-                    row.fadeOut(function() {
-                        $(this).remove();
-                    });
-                } else {
-                    alert(response.data);
+            row.addClass('processing');
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_certificate',
+                    file_name: filename,
+                    security: $('#bulk_delete_certificates_nonce').val()
+                },
+                dataType: 'json',
+                complete: function () {
+                    row.removeClass('processing');
+                },
+                success: function (response) {
+                    if (response.success) {
+                        row.fadeOut(400, function () {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert(response.data);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred during deletion.');
                 }
             });
         }
     });
 
-        // Handle select all functionality
-        $('#qsm-select-all-certificate').click(function() {
-            $('input[name="certificates[]"]').prop('checked', this.checked);
+    // Select all functionality
+    $('#qsm-select-all-certificate').on('change', function () {
+        $('input[name="certificates[]"]').prop('checked', this.checked);
+    });
+
+    // Bulk delete with proper event handling
+    $('#qsm-certificate-form').on('submit', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if ($(this).hasClass('processing')) return false;
+        $(this).addClass('processing');
+
+        var certificates = [];
+        $('input[name="certificates[]"]:checked').each(function () {
+            certificates.push($(this).val());
         });
 
-        // Handle bulk delete submission
-        $('#qsm-certificate-form').on('submit', function(e) {
-            e.preventDefault();
-
-            var certificates = [];
-            $('input[name="certificates[]"]:checked').each(function() {
-                certificates.push($(this).val());
-            });
-
-            if (certificates.length === 0) {
-                alert(qsm_certificate_obj.no_certificate_selected);
-                return;
-            }
-            if(confirm(qsm_certificate_obj.bulk_delete_confirm)){
-                var data = {
-                action: 'bulk_delete_certificates',
-                certificates: certificates,
-                bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
-            };
+        if (certificates.length === 0) {
+            alert(qsm_certificate_obj.no_certificate_selected);
+            $(this).removeClass('processing');
+            return false;
         }
 
-            $.post(ajaxurl, data, function(response) {
-                if (response.success) {
-                    alert(response.data);
-                    location.reload();
-                } else {
-                    alert(response.data);
+        if (confirm(qsm_certificate_obj.bulk_delete_confirm)) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'bulk_delete_certificates',
+                    certificates: certificates,
+                    bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
+                },
+                dataType: 'json',
+                complete: function () {
+                    $('#qsm-certificate-form').removeClass('processing');
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.data);
+                        location.reload();
+                    } else {
+                        alert(response.data);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred during bulk deletion.');
                 }
             });
-        });
+        } else {
+            $(this).removeClass('processing');
+        }
+    });
 
 
     $('input[name="enable_expiry"]').change(function() {

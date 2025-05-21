@@ -237,6 +237,11 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				</td>
 			</tr>
 			<tr>
+				<td colspan="2">
+					<h2><?php echo __('Certificate Expiration Settings', 'qsm-certificate'); ?></h2>
+				</td>
+			</tr>
+			<tr>
 				<td width="30%">
     				<strong><?php echo __('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
 				</td>

@@ -356,5 +356,32 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         qsm_certificate_preview_bg_img.attr('src', qsm_certificate_bg);
     });
 
+    jQuery(document).on('click', '.button.qsm-certificate-copy-shortcode-btn', function (e) {
+        e.preventDefault();
+
+        const $btn = jQuery(this);
+        const shortcode = jQuery('.qsm-certificate-expiry-shortcode-print').val()?.trim();
+        const $msg = $btn.closest('td').find('.certificate-copy-msg');
+
+        if (!shortcode) return;
+
+        const showMsg = () => $msg.stop(true, true).fadeIn(200).delay(1500).fadeOut(200);
+
+        const fallbackCopy = (text) => {
+            const temp = jQuery('<textarea>').val(text).css({ position: 'fixed', left: '-9999px' }).appendTo('body');
+            temp[0].select();
+            try {
+                if (document.execCommand('copy')) showMsg();
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            temp.remove();
+        };
+
+        navigator.clipboard?.writeText
+            ? navigator.clipboard.writeText(shortcode).then(showMsg).catch(() => fallbackCopy(shortcode))
+            : fallbackCopy(shortcode);
+    });
+
 });
 

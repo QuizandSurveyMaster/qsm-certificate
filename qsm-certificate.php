@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: QSM - Certificate
- * Plugin URI: http://quizandsurveymaster.com
+ * Plugin URI: https://quizandsurveymaster.com
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
- * Author URI: http://quizandsurveymaster.com
+ * Author URI: https://quizandsurveymaster.com
  * Version: 2.0.0
  *
  * @author QSM Team
@@ -209,13 +209,13 @@ class QSM_Certificate {
 
 		// setup the updater.
 		$edd_updater = new EDD_SL_Plugin_Updater(
-			'http://quizandsurveymaster.com',
+			'https://quizandsurveymaster.com',
 			__FILE__,
 			array(
 				'version'   => $this->version, // current version number.
 				'license'   => $license_key,   // license key (used get_option above to retrieve from DB).
 				'item_name' => 'Certificate',  // name of this plugin.
-				'author'    => 'Frank Corso',  // author of this plugin.
+				'author'    => 'QSM Team',  // author of this plugin.
 			)
 		);
 	}

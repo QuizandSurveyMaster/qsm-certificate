@@ -30,14 +30,14 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 
 	// If nonce is set and correct, save certificate settings
 	if ( isset( $_POST["certificate_nonce"] ) && wp_verify_nonce( $_POST['certificate_nonce'], 'certificate') ) {
-	
+
 	$enable_expiry = isset($_POST['enable_expiry']) ? intval($_POST['enable_expiry']) : 0;
 	$prefix = isset($_POST['prefix']) ? str_replace(' ', '', $_POST['prefix']) : '';
 	$certificate_id = '';
 
-	if ($enable_expiry == 2) {
+	if ( $enable_expiry == 2 ) {
 		$certificate_id = $prefix;
-	} elseif ($enable_expiry == 0) {
+	} elseif ( $enable_expiry == 0 ) {
 		$expiry_days = isset($_POST['expiry_days']) ? intval($_POST['expiry_days']) : 0;
 		$future_date = (new DateTime())->modify('+' . $expiry_days . ' days')->format('Y-m-d');
 		$future_date_without_hyphens = str_replace('-', '', $future_date);
@@ -47,15 +47,14 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		$certificate_id = $prefix . $expiry_date;
 	}
 
-    // Prepares certificate settings array	
+    // Prepares certificate settings array
     $certificate_settings = array(
-		'enabled'          => intval( $_POST["enableCertificates"] ),
-		'email_enable'     => intval( $_POST["certificateEmail"] ),
-		'certificate_size' => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
-		'certificate_font' => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
-		'title'            => sanitize_text_field( $_POST["certificate_title"] ),
+		'enabled'                          => intval( $_POST["enableCertificates"] ),
+		'certificate_size'                 => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
+		'certificate_font'                 => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
+		'title'                            => sanitize_text_field( $_POST["certificate_title"] ),
 		//'content' => wp_kses_post( $_POST["certificate_template"] ),
-		'content'          => wp_kses_post($_POST["certificate_template"],
+		'content'                          => wp_kses_post($_POST["certificate_template"],
 		array(
 			'b'    => array(),
 			'i'    => array(),
@@ -69,18 +68,18 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			),
 		)
 		),
-		'logo'             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
-		'logo_style'       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
-		'background'       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
-		'dpi'              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
-		'expiry_date'      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
-		'expiry_days'      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
-		'prefix'           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
-		'certificate_id'   => $certificate_id,
-		'enable_expiry'    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
-		'never_expiry'     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
-		'certificate_id_err_msg_wrong_txt' 		=>	(isset($_POST["certificate_id_err_msg_wrong_txt"]) && !empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
-		'certificate_id_err_msg_blank_txt' 		=>	(isset($_POST["certificate_id_err_msg_blank_txt"]) && !empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
+		'logo'                             => isset($_POST["certificate_logo"]) ? $_POST["certificate_logo"] : "",
+		'logo_style'                       => isset($_POST['certificate_logo_style']) ? $_POST['certificate_logo_style'] : "",
+		'background'                       => isset($_POST["certificate_background"]) ? $_POST["certificate_background"] : plugins_url( '../assets/default-certificate-background.png', __FILE__ ),
+		'dpi'                              => isset( $_POST["certificate_dpi"] ) ? $_POST["certificate_dpi"] : 100,
+		'expiry_date'                      => (isset($_POST["expiry_date"]) && isset($_POST["enable_expiry"]) == 1) ? $_POST["expiry_date"] : "",
+		'expiry_days'                      => (isset($_POST["expiry_days"]) && isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 0) ? intval($_POST["expiry_days"]) : "",
+		'prefix'                           => isset($_POST["prefix"]) ? $_POST["prefix"] : "",
+		'certificate_id'                   => $certificate_id,
+		'enable_expiry'                    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
+		'never_expiry'                     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
+		'certificate_id_err_msg_wrong_txt' => (isset($_POST["certificate_id_err_msg_wrong_txt"]) && ! empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
+		'certificate_id_err_msg_blank_txt' => (isset($_POST["certificate_id_err_msg_blank_txt"]) && ! empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -101,7 +100,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				'content'    => $certificate[1],
 				'logo'       => $certificate[2],
 				'background' => $certificate[3],
-				'email_enable' => $certificate[5],
 			);
 		}
 	}
@@ -120,38 +118,28 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'background'       => '',
 		'dpi'              => 100,
 		'enable_expiry'    => 2,
-		'email_enable'     => 1,
 	);
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	update_option( 'certificate_settings', $certificate_settings ,true );
 	?>
-	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
-	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
+	<h2><?php esc_html_e('Certificate', 'qsm-certificate'); ?></h2>
+	<p><b><?php esc_html_e('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
 
 	<form action="" method="post">
-	<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
+	<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
 		<table class="form-table">
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio31" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '1' ); ?> value='1' /><label for="radio31"><?php _e('No', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
-			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
-				<td>
-					<strong><?php echo __('Enable Email for this quiz/survey?', 'qsm-certificate'); ?></strong>
-				</td>
-				<td>
-				    <input type="radio" id="radio34" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '0' ); ?> value='0' /><label for="radio34"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
-				    <input type="radio" id="radio35" name="certificateEmail" <?php checked( $certificate_settings["email_enable"], '1' ); ?> value='1' /><label for="radio35"><?php _e('No', 'qsm-certificate'); ?></label><br>
-				</td>
-			</tr>
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Certificate Orientation', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Certificate Orientation', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				    <input type="radio" id="radio32" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Portrait' ); ?> value='Portrait' /><label for="radio32"><?php _e('Portrait', 'qsm-certificate'); ?></label><br>
@@ -160,16 +148,16 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Custom Style', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Custom Style', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<textarea cols="50" rows="8" id="certificate_font" name="certificate_font"><?php echo trim( htmlspecialchars_decode( $certificate_settings["certificate_font"], ENT_QUOTES ) ); ?></textarea>
-					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/#adding-google-fonts" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
+					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/#adding-google-fonts" target="_blank"><?php esc_html_e('Click here', 'qsm-certificate') ?></a> <?php esc_html_e('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Title', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Title', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				<textarea cols="80" rows="3" id="certificate_title" name="certificate_title"><?php echo stripslashes( $certificate_settings["title"] ); ?></textarea>
@@ -177,7 +165,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Select PDF Resolution', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Select PDF Resolution', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<select id="certificate_dpi" name="certificate_dpi">
@@ -209,37 +197,36 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 					<p style="margin: 2px 0">- %CURRENT_DATE%</p>
 					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
 					<p style="margin: 2px 0">- %EXPIRY_DATE%</p>
-					<p style="margin: 2px 0">- %DATE_TAKEN%</p>
 					<p style="margin: 2px 0">- %CERTIFICATE_ID%</p>
           	<?php do_action('qsm_certificate_after_variable'); ?>
 				</td>
 				<td>
-				<?php 
+				<?php
 				wp_editor( htmlspecialchars_decode( $certificate_settings["content"], ENT_QUOTES ), 'certificate_template', array(
-	'editor_height' => 250,
-	'textarea_rows' => 10,
-) ); ?>
+					'editor_height' => 250,
+					'textarea_rows' => 10,
+				) ); ?>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Logo (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('URL To Logo (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="3" id="certificate_logo" name="certificate_logo"><?php echo $certificate_settings["logo"]; ?></textarea>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Logo Img style(CSS properties)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Logo Img style(CSS properties)', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="3" id="certificate_logo_style" name="certificate_logo_style"><?php echo $certificate_settings["logo_style"]; ?></textarea>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
 					<p style="font-style: italic; color: #666; margin-top: 5px;">
-    				<?php echo __('If no background image is provided, the default certificate background will be used automatically.', 'qsm-certificate'); ?>
+    				<?php esc_html_e('If no background image is provided, the default certificate background will be used automatically.', 'qsm-certificate'); ?>
 					</p>
 				</td>
 				<td>
@@ -250,129 +237,186 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				</td>
 			</tr>
 			<tr>
+				<td colspan="2">
+					<h2><?php esc_html_e('Certificate Expiration Settings', 'qsm-certificate'); ?></h2>
+				</td>
+			</tr>
+			<tr>
 				<td width="30%">
-    				<strong><?php echo __('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
+    				<strong><?php esc_html_e('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
-					<input id="never_expiry" type="radio" name="enable_expiry" value="2" 
-					<?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '2' ); 
+					<input id="never_expiry" type="radio" name="enable_expiry" value="2"
+					<?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '2' );
 					} ?>>
-					<label><?php echo __('Never Expire', 'qsm-certificate'); ?></label>
+					<label for="never_expiry"><?php esc_html_e('Never Expire', 'qsm-certificate'); ?></label>
 				<br>
-					<input id="enable_expiry_date" type="radio" name="enable_expiry" value="1" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '1' ); 
+					<input id="enable_expiry_date" type="radio" name="enable_expiry" value="1" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '1' );
 					} ?>>
-					<label><?php echo __('Expiry Date', 'qsm-certificate'); ?></label>
+					<label for="enable_expiry_date"><?php esc_html_e('Expiry Date', 'qsm-certificate'); ?></label>
 				<br>
-					<input id="enable_expiry_days" type="radio" name="enable_expiry" value="0" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '0' ); 
+					<input id="enable_expiry_days" type="radio" name="enable_expiry" value="0" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '0' );
 					} ?>>
-					<label><?php echo __('Expiry Days', 'qsm-certificate'); ?></label>
+					<label for="enable_expiry_days"><?php esc_html_e('Expiry Days', 'qsm-certificate'); ?></label>
 				<br>
 					<p style="font-style: italic; color: #666; margin-top: 5px;">
-    				<?php echo __('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
+    				<?php esc_html_e('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
 					</p>
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-date">
 				<td width="30%">
-					<strong><?php echo __('Set expiry date', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Set expiry date', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="date" id="expiry_date" name="expiry_date" value="<?php echo isset($certificate_settings["expiry_date"]) ? esc_attr($certificate_settings["expiry_date"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-days">
 				<td width="30%">
-					<strong><?php echo __('Set expiry date in X days', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Set expiry date in X days', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="number" id="expiry_days" name="expiry_days" value="<?php echo isset($certificate_settings["expiry_days"]) ? esc_attr($certificate_settings["expiry_days"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"]) ? esc_attr($certificate_settings["prefix"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
+				<td>
+					<div class="qsm-certificate-expiry-shortcode-notloop button-secondary">
+						<span class="qsm-certificate-expiry-shortcode-print" style="cursor: pointer;">
+							[quiz_expiry_check]
+						</span>
+						<span class="qsm-certificate-expiry-shortcode-info">
+							<span class="certificate-copy-msg">
+								<?php esc_html_e( 'Click to Copy', 'qsm-certificate' ); ?>
+							</span>
+							<span class="certificate-copy-success" style="display: none;">
+								<?php esc_html_e( 'Copied!', 'qsm-certificate' ); ?>
+							</span>
+						</span>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="certificate_id_err_msg_blank_txt" name="certificate_id_err_msg_blank_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_blank_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_blank_txt"]) : __("Please enter a valid Certificate ID.", 'qsm-certificate'); ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
 				</td>
 			</tr>
-			<tr valign="top" class="qsm_advance_certificate_feature" style="display: none;">
-				<td width="30%">
-					<strong><?php echo __('Make shortcode for share certificate on social media', 'qsm-certificate'); ?></strong>
-				</td>
-				<td>
-					<div class="advance-certificate-options-notloop">
-						<div class="advance-certificate-options-field active">
-							<div class="advance-certificate-options-group leaderboard-options-inputs">
-								<input class="qsm-advance-certificate-shortcode-print" disabled type="text" value="[qsm_certificate_share]" style="width: 280px; background: #f5f5f5;" />
-							</div>
-							<div class="advance-certificate-options-group advance-certificate-options-switch">
-								<button class="button advance-certificate-generate-shortcode-button" title="<?php echo esc_attr__('Copy Shortcode', 'qsm-advance-certificate'); ?>">
-									<span class="dashicons dashicons-admin-page"></span>
-								</button>
-							</div>
-							<div class="advance-certificate-options-group advance-certificate-options-actions">
-								<a href="javascript:void(0)" class="settings-field" title="<?php echo esc_attr__('Customize', 'qsm-advance-certificate'); ?>">
-									<span class="dashicons dashicons-edit"></span>
-								</a>
-							</div>
-							<div class="advance-certificate-options-field-settings arrow-left" style="display:none;">
-								<div class="advance-certificate-options-group">
-									<label class="advance-certificate-options-label"><?php esc_html_e("Select Quizzes", "qsm-advance-certificate"); ?></label>
-									<select id="qsm-certificate-share" name="qsm-certificate-share[]" multiple class="select2-multiselect">
-										<?php 
-										$social_media = [
-											'Linkedin' => '1',
-											'Facebook' => '2',
-											'Twitter' => '3',
-											'Instagram' => '4',
-										];
-										foreach ($social_media as $name => $value): ?>
-											<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($name); ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-								<button class="button-primary qsm-save-quizzes"><?php esc_html_e('Save Changes', 'qsm-advance-certificate'); ?></button>
-							</div>
-						</div>
-					</div>
-				</td>
-			</tr>
 		</table>
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
-		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
+		<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
-	<?php
-    if (isset($_GET['page'], $_GET['tab']) && $_GET['page'] === 'mlw_quiz_options' && $_GET['tab'] === 'certificate'){
-	$qsm_pop_up_arguments = array(
-		"id"           => 'modal-advance-certificate',
-		"title"        => __('Advance Certificate', 'qsm-certificate'),
-		"description"  => __('Enhance your certificate experience with powerful new features: preview certificates before finalizing, choose from a variety of customizable certificate templates, easily send certificates via email in multiple formats, and Share directly on social media with a shortcode. Upgrade now to streamline your certificate management!.', 'qsm-certificate'),
-		"information"  => __('QSM Addon Bundle is the best way to get all our add-ons at a discount. Upgrade to save 95% today OR you can buy Advanced Question Addon separately.', 'qsm-certificate'),
-		"buy_btn_text" => __('Buy Advance Certificate Addon', 'qsm-certificate'),
-		"doc_link"     => qsm_get_plugin_link( 'docs/certificate', 'qsm_list', 'certificate', 'certificate-upsell_read_documentation', 'qsm_plugin_upsell' ),
-		"upgrade_link" => qsm_get_plugin_link( 'pricing', 'qsm_list', 'certificate', 'certificate-upsell_upgrade', 'qsm_plugin_upsell' ),
-		"addon_link"   => qsm_get_plugin_link( 'downloads/certificate', 'qsm_list', 'certificate', 'certificate-upsell_buy_addon', 'qsm_plugin_upsell' ),
-	);
-	qsm_admin_upgrade_popup($qsm_pop_up_arguments);
+<?php
+/**
+ * Displays certificate template popups for different template types.
+ *
+ * @param array  $certificate_template_from_script Array of certificate templates.
+ * @param array  $my_templates                     User's saved templates.
+ * @param string $type                             Type of template (certificate/result).
+ */
+function qsm_certificate_popups_for_templates( $certificate_template_from_script, $my_templates, $type ) {
+    $valid_types = array( 'certificate', 'result' );
+
+    if ( ! in_array( $type, $valid_types, true ) ) {
+        return;
+    }
+
+    ?>
+    <div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="false" style="display:none;">
+        <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+            <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                <header class="qsm-popup__header">
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-left">
+                        <img class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-image"
+                             src="<?php echo esc_url( QSM_CERTIFICATE_URL . 'assets/icon-200x200.png' ); ?>"
+                             alt="<?php echo esc_attr__( 'Certificate Icon', 'qsm-certificate' ); ?>" />
+                        <h2 class="qsm-popup__title" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                            <?php esc_html_e( 'Certificate Templates', 'qsm-certificate' ); ?>
+                        </h2>
+                    </div>
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-right">
+                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header"></div>
+                        <a class="qsm-popup__close" aria-label="<?php echo esc_attr__( 'Close modal', 'qsm-certificate' ); ?>" data-micromodal-close></a>
+                    </div>
+                </header>
+                <main class="qsm-popup__content" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates-content"
+                      data-type="<?php echo esc_attr( $type ); ?>" data-<?php echo esc_attr( $type ); ?>-page="">
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-container qsm-<?php echo esc_attr( $type ); ?>-page-template-common">
+                        <?php foreach ( $certificate_template_from_script as $key => $single_template ) : ?>
+                            <?php if ( $type === $single_template['template_type'] ) : ?>
+                                <?php
+                                $image_url = QSM_CERTIFICATE_URL . 'assets/screenshot-default-theme.png';
+                                if ( ! empty( $single_template['template_preview'] ) ) {
+                                    $image_url = QSM_CERTIFICATE_URL . 'assets/' . $single_template['template_preview'];
+                                }
+                                ?>
+                                <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card">
+                                    <div data-url="<?php echo esc_url( $image_url ); ?>" class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-content">
+                                        <img class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-image"
+                                             src="<?php echo esc_url( $image_url ); ?>"
+                                             alt="<?php echo esc_attr( $single_template['template_name'] ); ?>">
+                                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-card-buttons">
+                                            <button class="qsm-<?php echo esc_attr( $type ); ?>-page-template-preview-button button"
+                                                    data-indexid="<?php echo esc_attr( $key ); ?>">
+                                                <img class="qsm-common-svg-image-class"
+                                                     src="<?php echo esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line-blue.png' ); ?>"
+                                                     alt="<?php echo esc_attr__( 'Preview', 'qsm-certificate' ); ?>" />
+                                                <?php esc_html_e( 'Preview', 'qsm-certificate' ); ?>
+                                            </button>
+                                            <button class="qsm-<?php echo esc_attr( $type ); ?>-page-template-use-button button"
+                                                    data-structure="default"
+                                                    data-indexid="<?php echo esc_attr( $key ); ?>">
+                                                <?php esc_html_e( 'Use Template', 'qsm-certificate' ); ?>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="qsm-<?php echo esc_attr( $type ); ?>-page-template-template-name">
+                                        <?php echo esc_html( $single_template['template_name'] ); ?>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <div class="qsm-popup qsm-popup-slide" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates" style="display:none;">
+        <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+            <div class="qsm-popup__container" role="dialog" aria-modal="true" aria-labelledby="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                <header class="qsm-popup__header">
+                    <h2 class="qsm-popup__title" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-title">
+                        <?php esc_html_e( 'Template Preview', 'qsm-certificate' ); ?>
+                    </h2>
+                    <a class="qsm-popup__close" aria-label="<?php echo esc_attr__( 'Close modal', 'qsm-certificate' ); ?>" data-micromodal-close></a>
+                </header>
+                <main class="qsm-popup__content" id="qsm-preview-<?php echo esc_attr( $type ); ?>-page-templates-content">
+                    <div class="qsm-preview-<?php echo esc_attr( $type ); ?>-page-template-container">
+                        <div class="qsm-preview-template-image-wrapper"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    <?php
 }
 }
 ?>

@@ -399,7 +399,7 @@ function qsm_handle_certificate_attachment( $content, $quiz_array ) {
                 $phpmailer->AddAttachment($certificate_path, 'certificate.pdf');
             });
 
-            $content = str_replace($placeholder, __('Your certificate is attached to this email.', 'qsm-advance-certificate'), $content);
+            $content = str_replace($placeholder, __('Your certificate is attached to this email.', 'qsm-certificate'), $content);
         } else {
             $content = str_replace($placeholder, '', $content);
         }

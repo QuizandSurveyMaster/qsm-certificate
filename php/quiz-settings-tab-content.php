@@ -289,7 +289,20 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td width="30%">
 					<strong><?php esc_html_e('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><p><?php esc_html_e('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
+				<td>
+					<div class="qsm-certificate-expiry-shortcode-notloop">
+						<div class="qsm-certificate-expiry-shortcode-field active">
+							<div class="qsm-certificate-expiry-shortcode-group">
+								<input class="qsm-certificate-expiry-shortcode-print" disabled type="text" value="[quiz_expiry_check]" style="width: 280px; background: #f5f5f5;" />
+							</div>
+							<div class="qsm-certificate-expiry-shortcode-group qsm-certificate-expiry-shortcode-switch">
+								<button class="button qsm-certificate-copy-shortcode-btn" title="<?php echo esc_attr__('Copy Shortcode', 'qsm-certificate'); ?>">
+									<span class="dashicons dashicons-admin-page"></span>
+								</button>
+							</div>
+						</div>
+					</div>
+					<span class="certificate-copy-msg" ><?php echo esc_attr__('Copied!', 'qsm-certificate')?></span>
 				</td>
 			</tr>
 			<tr>

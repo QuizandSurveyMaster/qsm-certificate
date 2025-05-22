@@ -125,8 +125,8 @@ class QSM_Certificate {
     public function qsm_certificate_show_variable( $variable_list ) {
         global $mlwQuizMasterNext;
         if ( ! empty( $_GET['tab'] ) && 'emails' === $_GET['tab'] ) {
-            $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-advance-certificate' );
-            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-advance-certificate' );
+            $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-certificate' );
+            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
         }
         $analysis = array(
             'Certificate' => $template_array,
@@ -138,7 +138,7 @@ class QSM_Certificate {
     public function qsm_certificate_link_variable( $variable_list ) {
         global $mlwQuizMasterNext;
         if ( ! empty( $_GET['tab'] ) && 'results-pages' === $_GET['tab'] ) {
-            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-advance-certificate' );
+            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
         }
         $analysis = array(
             'Certificate' => $template_array,

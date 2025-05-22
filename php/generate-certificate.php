@@ -366,7 +366,7 @@ function qsm_preview_popup_function() {
     echo $html;
 }
 
-function qsm_certificate_preview_allow_br_tags($init) {
+function qsm_certificate_preview_allow_br_tags( $init ) {
   $settings['wpautop'] = false;
     return $settings;
 }

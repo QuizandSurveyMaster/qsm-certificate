@@ -53,10 +53,10 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
 			);
 
 			wp_remote_post(
-				'http://quizandsurveymaster.com',
+				'https://quizandsurveymaster.com',
 				array(
 					'timeout'   => 15,
-					'sslverify' => false,
+					'sslverify' => true,
 					'body'      => $api_params,
 				)
 			);
@@ -71,10 +71,10 @@ function qsm_addon_certificate_addon_settings_tabs_content() {
 				);
 
 				wp_remote_post(
-					'http://quizandsurveymaster.com',
+					'https://quizandsurveymaster.com',
 					array(
 						'timeout'   => 15,
-						'sslverify' => false,
+						'sslverify' => true,
 						'body'      => $api_params,
 					)
 				);

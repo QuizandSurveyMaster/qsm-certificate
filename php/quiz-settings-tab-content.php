@@ -122,15 +122,15 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	$certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 	update_option( 'certificate_settings', $certificate_settings ,true );
 	?>
-	<h2><?php echo __('Certificate', 'qsm-certificate'); ?></h2>
-	<p><b><?php echo __('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
+	<h2><?php esc_html_e('Certificate', 'qsm-certificate'); ?></h2>
+	<p><b><?php esc_html_e('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
 
 	<form action="" method="post">
-	<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
+	<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
 		<table class="form-table">
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Enable certificates for this quiz/survey?', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				    <input type="radio" id="radio30" name="enableCertificates" <?php checked( $certificate_settings["enabled"], '0' ); ?> value='0' /><label for="radio30"><?php _e('Yes', 'qsm-certificate'); ?></label><br>
@@ -139,7 +139,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Certificate Orientation', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Certificate Orientation', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				    <input type="radio" id="radio32" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Portrait' ); ?> value='Portrait' /><label for="radio32"><?php _e('Portrait', 'qsm-certificate'); ?></label><br>
@@ -148,16 +148,16 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr valign="top">
 				<td>
-					<strong><?php echo __('Custom Style', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Custom Style', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<textarea cols="50" rows="8" id="certificate_font" name="certificate_font"><?php echo trim( htmlspecialchars_decode( $certificate_settings["certificate_font"], ENT_QUOTES ) ); ?></textarea>
-					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/#adding-google-fonts" target="_blank"><?php echo __('Click here', 'qsm-certificate') ?></a> <?php echo __('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
+					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/#adding-google-fonts" target="_blank"><?php esc_html_e('Click here', 'qsm-certificate') ?></a> <?php esc_html_e('to learn about adding custom fonts.', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Title', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Title', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 				<textarea cols="80" rows="3" id="certificate_title" name="certificate_title"><?php echo stripslashes( $certificate_settings["title"] ); ?></textarea>
@@ -165,7 +165,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Select PDF Resolution', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Select PDF Resolution', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<select id="certificate_dpi" name="certificate_dpi">
@@ -210,23 +210,23 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Logo (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('URL To Logo (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="3" id="certificate_logo" name="certificate_logo"><?php echo $certificate_settings["logo"]; ?></textarea>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Logo Img style(CSS properties)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Logo Img style(CSS properties)', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><textarea cols="80" rows="3" id="certificate_logo_style" name="certificate_logo_style"><?php echo $certificate_settings["logo_style"]; ?></textarea>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('URL To Background Img (Must be JPG, JPEG, PNG, GIF or SVG)', 'qsm-certificate'); ?></strong>
 					<p style="font-style: italic; color: #666; margin-top: 5px;">
-    				<?php echo __('If no background image is provided, the default certificate background will be used automatically.', 'qsm-certificate'); ?>
+    				<?php esc_html_e('If no background image is provided, the default certificate background will be used automatically.', 'qsm-certificate'); ?>
 					</p>
 				</td>
 				<td>
@@ -238,77 +238,77 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 			</tr>
 			<tr>
 				<td colspan="2">
-					<h2><?php echo __('Certificate Expiration Settings', 'qsm-certificate'); ?></h2>
+					<h2><?php esc_html_e('Certificate Expiration Settings', 'qsm-certificate'); ?></h2>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-    				<strong><?php echo __('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
+    				<strong><?php esc_html_e('Activate Expiration Settings', 'qsm-certificate'); ?></strong>
 				</td>
 				<td>
 					<input id="never_expiry" type="radio" name="enable_expiry" value="2"
 					<?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '2' );
 					} ?>>
-					<label for="never_expiry"><?php echo __('Never Expire', 'qsm-certificate'); ?></label>
+					<label for="never_expiry"><?php esc_html_e('Never Expire', 'qsm-certificate'); ?></label>
 				<br>
 					<input id="enable_expiry_date" type="radio" name="enable_expiry" value="1" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '1' );
 					} ?>>
-					<label for="enable_expiry_date"><?php echo __('Expiry Date', 'qsm-certificate'); ?></label>
+					<label for="enable_expiry_date"><?php esc_html_e('Expiry Date', 'qsm-certificate'); ?></label>
 				<br>
 					<input id="enable_expiry_days" type="radio" name="enable_expiry" value="0" <?php if ( isset( $certificate_settings["enable_expiry"] ) ) { checked( $certificate_settings["enable_expiry"], '0' );
 					} ?>>
-					<label for="enable_expiry_days"><?php echo __('Expiry Days', 'qsm-certificate'); ?></label>
+					<label for="enable_expiry_days"><?php esc_html_e('Expiry Days', 'qsm-certificate'); ?></label>
 				<br>
 					<p style="font-style: italic; color: #666; margin-top: 5px;">
-    				<?php echo __('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
+    				<?php esc_html_e('Select a radio button to activate expiration settings. Choosing "Expiry Days" will calculate the expiration based on the number of days, while selecting "Expiry Date" allows you to manually set a specific date.', 'qsm-certificate'); ?>
 					</p>
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-date">
 				<td width="30%">
-					<strong><?php echo __('Set expiry date', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Set expiry date', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="date" id="expiry_date" name="expiry_date" value="<?php echo isset($certificate_settings["expiry_date"]) ? esc_attr($certificate_settings["expiry_date"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr class = "qsm-certificate-expiry-days">
 				<td width="30%">
-					<strong><?php echo __('Set expiry date in X days', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Set expiry date in X days', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="number" id="expiry_days" name="expiry_days" value="<?php echo isset($certificate_settings["expiry_days"]) ? esc_attr($certificate_settings["expiry_days"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Add Certificate Id Prefix', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"]) ? esc_attr($certificate_settings["prefix"]) : ""; ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
 				</td>
-				<td><p><?php echo __('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
+				<td><p><?php esc_html_e('[quiz_expiry_check]', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="certificate_id_err_msg_blank_txt" name="certificate_id_err_msg_blank_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_blank_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_blank_txt"]) : __("Please enter a valid Certificate ID.", 'qsm-certificate'); ?>">
 				</td>
 			</tr>
 			<tr>
 				<td width="30%">
-					<strong><?php echo __('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
+					<strong><?php esc_html_e('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
 				</td>
 				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
 				</td>
 			</tr>
 		</table>
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
-		<button class="button-primary"><?php echo __('Save Settings', 'qsm-certificate'); ?></button>
+		<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
 	</form>
 <?php
 /**

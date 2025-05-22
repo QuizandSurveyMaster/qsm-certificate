@@ -112,6 +112,7 @@ class QSM_Certificate {
 		add_filter('qsm_addon_certificate_content_filter', 'qsm_certificate_attach_certificate_file', 10, 2);
         add_filter( 'qmn_email_template_variable_results', 'qsm_certificate_attach_certificate_file', 10, 2 );
 		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
+		add_filter( 'qsm_text_variable_list_result', array( $this, 'qsm_certificate_link_variable' ), 10, 1 );
 		add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
 	}
 
@@ -124,8 +125,20 @@ class QSM_Certificate {
     public function qsm_certificate_show_variable( $variable_list ) {
         global $mlwQuizMasterNext;
         if ( ! empty( $_GET['tab'] ) && 'emails' === $_GET['tab'] ) {
-            $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-advance-certificate' );
-            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-advance-certificate' );
+            $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-certificate' );
+            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
+        }
+        $analysis = array(
+            'Certificate' => $template_array,
+        );
+        $variable_list = array_merge( $variable_list, $analysis );
+        return $variable_list;
+    }
+
+    public function qsm_certificate_link_variable( $variable_list ) {
+        global $mlwQuizMasterNext;
+        if ( ! empty( $_GET['tab'] ) && 'results-pages' === $_GET['tab'] ) {
+            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
         }
         $analysis = array(
             'Certificate' => $template_array,

@@ -356,32 +356,32 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         qsm_certificate_preview_bg_img.attr('src', qsm_certificate_bg);
     });
 
-    jQuery(document).on('click', '.button.qsm-certificate-copy-shortcode-btn', function (e) {
-        e.preventDefault();
-
-        const $btn = jQuery(this);
-        const shortcode = jQuery('.qsm-certificate-expiry-shortcode-print').val()?.trim();
-        const $msg = $btn.closest('td').find('.certificate-copy-msg');
-
-        if (!shortcode) return;
-
-        const showMsg = () => $msg.stop(true, true).fadeIn(200).delay(1500).fadeOut(200);
-
-        const fallbackCopy = (text) => {
-            const temp = jQuery('<textarea>').val(text).css({ position: 'fixed', left: '-9999px' }).appendTo('body');
-            temp[0].select();
-            try {
-                if (document.execCommand('copy')) showMsg();
-            } catch (err) {
-                console.error('Copy failed', err);
-            }
-            temp.remove();
-        };
-
-        navigator.clipboard?.writeText
-            ? navigator.clipboard.writeText(shortcode).then(showMsg).catch(() => fallbackCopy(shortcode))
-            : fallbackCopy(shortcode);
+    jQuery(document).on('change', 'input[name="qsm_certificate_expiry_shortcode"]', function () {
+        var $el = jQuery('.qsm-certificate-expiry-shortcode-notloop');
+        $el.css('visibility', jQuery(this).is(':checked') ? 'visible' : 'hidden');
+        if ($el.data('first')) jQuery('#qsm-certificate-expiry-layout').val('grid');
     });
+
+    jQuery(document).on('click', '.qsm-certificate-expiry-shortcode-notloop .qsm-certificate-expiry-shortcode-info', function () {
+        var $container = jQuery(this).closest('.qsm-certificate-expiry-shortcode-notloop');
+        var shortcode = $container.find('.qsm-certificate-expiry-shortcode-print').text().trim();
+        $container.find('.certificate-copy-msg').hide();
+        $container.find('.certificate-copy-success').fadeIn();
+        copyToClipboard(shortcode);
+        setTimeout(function () {
+            $container.find('.certificate-copy-success').hide();
+            $container.find('.certificate-copy-msg').fadeIn();
+        }, 1000);
+    });
+
+    function copyToClipboard(text) {
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        textarea.value = text;
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
 
 });
 

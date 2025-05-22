@@ -1,4 +1,4 @@
-<h3>2.0.0 (May 13, 2025) </h3>
+<h3>2.0.0 (May 22, 2025) </h3>
 <ul>
 	<li>Feature: Added option to import certificate templates</li>
 	<li>Feature: Introduced certificate preview functionality</li>

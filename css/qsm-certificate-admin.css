@@ -402,56 +402,25 @@ h2#qsm-certificate-preview-page-templates-title {
     line-height: 29px;
 }
 .qsm-certificate-expiry-shortcode-notloop {
-    display: inline-flex;
-    align-items: center;
-    background: #ffffff;
-    border: 1px solid #e1e1e1;
-    padding: 5px 10px;
-    border-radius: 2px;
+    min-width: 120px;
+    text-align: center;
+    margin-left: 8px;
+    margin-top: -6px;
 }
-
-.qsm-certificate-expiry-shortcode-field {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.qsm-certificate-expiry-shortcode-group input.qsm-dashboard-shortcode-print {
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #333;
-    padding: 0;
-    outline: none;
-    width: auto;
-    min-width: 160px;
-    cursor: default;
-}
-
-.qsm-certificate-expiry-shortcode-switch button.dashboard-generate-shortcode-button {
-    background: none;
-    border: none;
-    padding: 0;
+.qsm-certificate-expiry-shortcode-notloop span {
     cursor: pointer;
-    color: #666;
 }
-
-.qsm-certificate-expiry-shortcode-switch button.dashboard-generate-shortcode-button:hover {
-    color: #000;
-}
-
-.qsm-certificate-expiry-shortcode-switch .dashicons {
-    font-size: 20px;
-    line-height: 17px;
-    vertical-align: middle;
-}
-.qsm-certificate-expiry-shortcode-group .button.qsm-certificate-copy-shortcode-btn{
-    background: none;
-    color: black;
-    border: none;
-}
-.certificate-copy-msg {
+.certificate-copy-success {
+    color: rgb(45, 158, 45);
     display: none;
-    position: relative;
 }
-
+.qsm-certificate-expiry-shortcode-notloop:not(:hover) .qsm-certificate-expiry-shortcode-info {
+    display: none;
+}
+.qsm-certificate-expiry-shortcode-notloop:hover .qsm-certificate-expiry-shortcode-print {
+    display: none;
+}
+.qsm-certificate-expiry-shortcode-notloop.button-secondary:hover {
+    background: #DDEFFE;
+    border: 1px dashed;
+}

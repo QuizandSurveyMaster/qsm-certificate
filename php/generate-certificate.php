@@ -356,13 +356,13 @@ function qsm_preview_popup_function() {
     $html .= '</div>';
     echo $html;
 }
-if ( isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
-    add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
-}
 function qsm_certificate_preview_allow_br_tags($init) {
-    $settings['wpautop'] = false;
-    return $settings;
+    if ( isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
+        $init['wpautop'] = false;
+    }
+    return $init;
 }
+add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
 
 function qsm_certificate_attach_certificate_file( $content, $quiz_array ) {
     global $mlwQuizMasterNext;

@@ -231,7 +231,7 @@ function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
 function qsm_certificate_scripts_load() {
     wp_enqueue_script(
         'qsm_certificate_js',
-        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js',
+        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-front.js',
         array( 'jquery' ),
         QSM_CERTIFICATE_VERSION,
         true
@@ -246,36 +246,29 @@ function qsm_certificate_scripts_load() {
             'ajaxurl'  => admin_url( 'admin-ajax.php' ),
         )
     );
-    
-    wp_localize_script(
-        'qsm_certificate_js',
-        'qsm_certificate_pro_obj',
-        array(
-            'preview'         => esc_html__('Preview', 'qsm-certificate'),
-            'import_template' => esc_html__('Import Template', 'qsm-certificate'),
-        )
-    );
 }
 
 add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
 
 function qsm_certificate_localize_script_load() {
-    wp_enqueue_script( 
-        'qsm_certificate_js', 
-        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
-        array( 'jquery' ), 
-        QSM_CERTIFICATE_VERSION, 
-        true
-    );
+    if ( isset($_GET['page']) && $_GET['page'] === 'mlw_quiz_options' && isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
+        wp_enqueue_script( 
+            'qsm_certificate_js', 
+            QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
+            array('jquery'), 
+            QSM_CERTIFICATE_VERSION, 
+            true
+        );
 
-    wp_localize_script(
-        'qsm_certificate_js',
-        'qsm_certificate_pro_obj',
-        array(
-            'preview'         => esc_html__('Preview', 'qsm-certificate'),
-            'import_template' => esc_html__('Import Template', 'qsm-certificate'),
-        )
-    );
+        wp_localize_script(
+            'qsm_certificate_js',
+            'qsm_certificate_pro_obj',
+            array(
+                'preview'         => esc_html__('Preview', 'qsm-certificate'),
+                'import_template' => esc_html__('Import Template', 'qsm-certificate'),
+            )
+        );
+    }
 }
 
 add_action( 'admin_enqueue_scripts', 'qsm_certificate_localize_script_load' );
@@ -326,9 +319,7 @@ function qsm_certificate_template_content() {
     $js_data = array(
         'quizID'          => $quiz_id,
         'script_tmpl'     => $certificate_template_from_script,
-        'qsm_tmpl_bg_url' => QSM_CERTIFICATE_URL . 'assets/',
-        'Preview'         => esc_html__('Preview', 'quiz-advance-certificate'),
-        'Template'        => esc_html__('Import Template', 'quiz-advance-certificate'),
+        'qsm_tmpl_bg_url' => QSM_CERTIFICATE_URL . 'assets/'
     );
     wp_localize_script('qsm_advance_certificate_admin_script', 'qsmCertificateObject', $js_data);
 
@@ -365,11 +356,13 @@ function qsm_preview_popup_function() {
     $html .= '</div>';
     echo $html;
 }
-
-function qsm_certificate_preview_allow_br_tags( $init ) {
-  $settings['wpautop'] = false;
-    return $settings;
+function qsm_certificate_preview_allow_br_tags($init) {
+    if ( isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
+        $init['wpautop'] = false;
+    }
+    return $init;
 }
+add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
 
 function qsm_certificate_attach_certificate_file( $content, $quiz_array ) {
     global $mlwQuizMasterNext;

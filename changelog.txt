@@ -1,4 +1,8 @@
-<h3>2.0.0 (May 22, 2025) </h3>
+<h3>2.0.1 (July 31, 2025)</h3>
+<ul>
+	<li>Fix: Resolved issue with text blocks</li>
+</ul>
+<h3>2.0.0 (May 22, 2025)</h3>
 <ul>
 	<li>Feature: Added option to import certificate templates</li>
 	<li>Feature: Introduced certificate preview functionality</li>
@@ -7,49 +11,49 @@
 	<li>Feature: Implemented option to delete certificates</li>
 	<li>Enhancement: Refined UI of the certificate validation form</li>
 </ul>
-<h3>1.3.5 (February 17, 2025) </h3>
+<h3>1.3.5 (February 17, 2025)</h3>
 <ul>
 	<li>Enhancement: Improved certificate license validation logic</li>
 </ul>
-<h3>1.3.4 (February 17, 2025) </h3>
+<h3>1.3.4 (February 17, 2025)</h3>
 <ul>
 	<li>Enhancement: Updated the validation confirmation message to include the valid and expiry dates.</li>
 </ul>
-<h3>1.3.3 (February 10, 2025) </h3>
+<h3>1.3.3 (February 10, 2025)</h3>
 <ul>
 	<li>Bug: Fixed quiz_expiry_check shortcode issue for non-logged-in users</li>
 </ul>
-<h3>1.3.2 (December 12, 2024) </h3>
+<h3>1.3.2 (December 12, 2024)</h3>
 <ul>
 	<li>Enhancement: Introduced an option to display a certificate background preview.</li>
 </ul>
-<h3>1.3.1 (November 13, 2024) </h3>
+<h3>1.3.1 (November 13, 2024)</h3>
 <ul>
 	<li>Bug: Fixed issue with certificate expiry date</li>
 </ul>
-<h3>1.3.0 (October 30, 2024) </h3>
+<h3>1.3.0 (October 30, 2024)</h3>
 <ul>
 	<li>Feature: Added the %EXPIRY_DATE% variable to display the expiration date on certificates</li>
 	<li>Feature: Added an option to set an expiration date or days on certificates</li>
 	<li>Feature: Added options to view and delete certificates</li>
 </ul>
-<h3>1.2.0 (October 07, 2024) </h3>
+<h3>1.2.0 (October 07, 2024)</h3>
 <ul>
 	<li>Bug: Fixed PHP warning with username</li>
 </ul>
-<h3>1.1.5 (April 09, 2024) </h3>
+<h3>1.1.5 (April 09, 2024)</h3>
 <ul>
 	<li>Feature: Added an option to set resolution of the PDF</li>
 </ul>
-<h3>1.1.4 (February 12, 2024) </h3>
+<h3>1.1.4 (February 12, 2024)</h3>
 <ul>
 	<li>Bug: Fixed issue with certificate fonts layout</li>
 </ul>
-<h3>1.1.3 (October 03, 2023) </h3>
+<h3>1.1.3 (October 03, 2023)</h3>
 <ul>
 	<li>Bug: Fixed issue with certificate background image</li>
 </ul>
-<h3>1.1.2 (May 05, 2023) </h3>
+<h3>1.1.2 (May 05, 2023)</h3>
 <ul>
 	<li>Bug: Fixed conflict with export result add-on</li>
 </ul>

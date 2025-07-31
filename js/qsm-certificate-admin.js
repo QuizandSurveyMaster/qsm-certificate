@@ -1,13 +1,15 @@
 jQuery(document).ready(function($) {
-// For preview button
-if (!$('#wp-certificate_template-media-buttons .qsm-preview-btn').length) {
-    jQuery('#wp-certificate_template-media-buttons').append(`<button class="button qsm-preview-btn"><span class="dashicons dashicons-visibility"></span>${qsm_certificate_pro_obj.preview}</button>`);
-}
+    // For preview button
+    if (!$('#wp-certificate_template-media-buttons .qsm-preview-btn').length) {
+        let preview = typeof qsm_certificate_pro_obj !== 'undefined' ? qsm_certificate_pro_obj.preview : '';
+        jQuery('#wp-certificate_template-media-buttons').append(`<button class="button qsm-preview-btn"><span class="dashicons dashicons-visibility"></span>${preview}</button>`);
+    }
 
-// For template button
-if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
-    jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${qsm_certificate_pro_obj.import_template}</button>`);
-}
+    // For template button
+    if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
+        let import_template = typeof qsm_certificate_pro_obj !== 'undefined' ? qsm_certificate_pro_obj.import_template : '';
+        jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${import_template}</button>`);
+    }
     if ($.fn.DataTable) {
         var table = $('#qsm-certificate-table').DataTable();
         if (table) {
@@ -29,7 +31,6 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
             ]
         });
     }
-
 
     // Handle single file deletion
     $(document).on('click', '.qsm-delete-file', function (e) {
@@ -71,12 +72,12 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
     });
 
     // Select all functionality
-    $('#qsm-select-all-certificate').on('change', function () {
+    $(document).on('change', '#qsm-select-all-certificate', function () {
         $('input[name="certificates[]"]').prop('checked', this.checked);
     });
 
     // Bulk delete with proper event handling
-    $('#qsm-certificate-form').on('submit', function (e) {
+    $(document).on('submit', '#qsm-certificate-form', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
@@ -129,75 +130,6 @@ if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         qsm_certificate_update_expiry_fields();
     });
 
-    jQuery(document).on('click', '.qsm-certificate-expiry-check-button', function (event) {
-        event.preventDefault();
-
-        let certificate_id = jQuery(document).find('#certificate_id').val();
-        var data = {
-            action: 'qsm_addon_certificate_expiry_check',
-            certificate_id: certificate_id,
-        };
-
-        jQuery.post(qsm_certificate_ajax_object.ajaxurl, data, function(response) {
-            if (response.success) {
-                jQuery(document).find('#validation_message').html('');
-                const modalHTML = `
-                    <div class="qsm-popup-overlay">
-                        <div class="qsm-certificate-result">
-                            <div class="qsm-popup-close">&times;</div>
-                                <div class="qsm-certificate-details">
-                                    <span class="qsm-certificate-detail-row">
-                                        <span class="dashicons ${response.data.status_icon}"
-                                              style="color: white; background-color: ${response.data.status_color};"></span>
-                                        <span class="qsm-certificate-value">${response.data.status_text}</span>
-                                    </span>
-                                    <table class="qsm-certificate-table-show">
-                                        <tr>
-                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.issued_by}</td>
-                                            <td class="qsm-certificate-value">${response.data.quiz_name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.name_label}</td>
-                                            <td class="qsm-certificate-value">${response.data.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.issued_date_label}</td>
-                                            <td class="qsm-certificate-value">${response.data.issued_date}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="qsm-certificate-label" ${response.data.label_width}>${response.data.translations.expires_label}</td>
-                                            <td class="qsm-certificate-value ${response.data.expiry_date_status}">${response.data.expiry_date}</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                ${response.data.certificate_url ? `
-                        <div class="qsm-certificate-pdf-preview">
-                            <a href="${response.data.certificate_url}" target="_blank">${response.data.translations.preview}</a>
-                        </div>
-                        ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                jQuery('body').append(modalHTML);
-
-                jQuery('.qsm-popup-overlay').css('display', 'flex').hide().fadeIn();
-
-                jQuery('.qsm-popup-close, .qsm-popup-overlay').on('click', function() {
-                    jQuery('.qsm-popup-overlay').fadeOut(function() {
-                        jQuery(this).remove();
-                    });
-                });
-
-                jQuery('.qsm-certificate-result').on('click', function(e) {
-                    e.stopPropagation();
-                });
-            } else {
-                jQuery(document).find('#validation_message').html(response.data.message);
-            }
-        });
-    });
     function qsm_certificate_update_expiry_fields() {
         let enableExpiry = $('input[name="enable_expiry"]:checked').val();
         if (enableExpiry === '0') {

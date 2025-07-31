@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: https://quizandsurveymaster.com
- * Version: 2.0.0
+ * Version: 2.0.1
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '2.0.0';
+	public $version = '2.0.1';
 
 	/**
 	 * Main Construct Function
@@ -113,7 +113,6 @@ class QSM_Certificate {
         add_filter( 'qmn_email_template_variable_results', 'qsm_certificate_attach_certificate_file', 10, 2 );
 		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
 		add_filter( 'qsm_text_variable_list_result', array( $this, 'qsm_certificate_link_variable' ), 10, 1 );
-		add_filter( 'wp_editor_settings', 'qsm_certificate_preview_allow_br_tags' );
 	}
 
 	/**
@@ -361,7 +360,7 @@ function qsm_addon_certificate_expiry_check() {
 			array(
 				'status_icon'     => 'dashicons-no-alt',
 				'status_color'    => 'red',
-				'label_width'     => 'style="width:148px position: relative;"',
+				'label_width'     => 'style="width:170px; position: relative;"',
 				'status_text'     => esc_html( $error_msgs['certificate_id_err_msg_wrong_txt'] ),
 				'quiz_name'       => esc_html__( 'NA', 'qsm-certificate' ),
 				'name'            => esc_html__( 'NA', 'qsm-certificate' ),

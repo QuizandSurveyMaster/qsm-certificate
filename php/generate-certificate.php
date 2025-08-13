@@ -404,7 +404,6 @@ function qsm_certificate_template_content() {
 
     wp_enqueue_script('qsm_advance_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
 
-    $my_templates = array_column($certificate_template_from_script, 'template_name');
     $js_data = array(
         'quizID'          => $quiz_id,
         'script_tmpl'     => $certificate_template_from_script,
@@ -413,7 +412,7 @@ function qsm_certificate_template_content() {
     wp_localize_script('qsm_advance_certificate_admin_script', 'qsmCertificateObject', $js_data);
 
     if ( function_exists('qsm_certificate_popups_for_templates') ) {
-        qsm_certificate_popups_for_templates($certificate_template_from_script, $my_templates, 'certificate');
+        qsm_certificate_popups_for_templates( $certificate_template_from_script, 'certificate' );
     }
 }
 

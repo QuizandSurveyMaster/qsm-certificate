@@ -8,7 +8,9 @@ jQuery(document).ready(function($) {
     // For template button
     if (!$('#wp-certificate_template-wrap .qsm-certificate-template-btn').length) {
         let import_template = typeof qsm_certificate_pro_obj !== 'undefined' ? qsm_certificate_pro_obj.import_template : '';
+        let save_template = typeof qsm_certificate_pro_obj !== 'undefined' ? qsm_certificate_pro_obj.save_template : '';
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${import_template}</button>`);
+        jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-save-template-button"></span>${save_template}</button>`);
     }
     if ($.fn.DataTable) {
         var table = $('#qsm-certificate-table').DataTable();
@@ -190,9 +192,23 @@ jQuery(document).ready(function($) {
         event.preventDefault();
         jQuery('#qsm-certificate-show-popup').hide();
     });
-    jQuery(document).on('click', '.qsm-certificate-template-btn', function (event) {
-        event.preventDefault();
-        jQuery('#qsm-certificate-page-templates').show();
+    jQuery(document).on('click', '.qsm-certificate-template-btn', function (e) {
+        e.preventDefault();
+        var $p = jQuery('#qsm-certificate-page-templates').show(),
+            type = $p.find('main[id$="-page-templates-content"]').data('type') || 'certificate',
+            $links = $p.find('.qsm-' + type + '-page-tmpl-header-links'),
+            $page = $p.find('.qsm-' + type + '-page-template-container'),
+            $my = $p.find('.qsm-' + type + '-my-template-container');
+        $links.removeClass('active').filter('[data-tab="page"]').addClass('active');
+        $page.show();
+        $my.hide();
+        $links.off('click.qsmTabs').on('click.qsmTabs', function (ev) {
+            ev.preventDefault();
+            var tab = jQuery(this).data('tab');
+            $links.removeClass('active');
+            jQuery(this).addClass('active');
+            if (tab === 'page') { $my.hide(); $page.show(); } else { $page.hide(); $my.show(); }
+        });
     });
 
     jQuery(document).on('click', '.qsm-certificate-page-template-header-right .qsm-popup__close', function (event) {
@@ -317,3 +333,168 @@ jQuery(document).ready(function($) {
 
 });
 
+jQuery(document).ready(function() {
+    jQuery('input[name="qsm-template-action"]').on('change', function() {
+        const isNew = jQuery(this).val() === 'new';
+        jQuery('#qsm-template-name-row').toggle(isNew);
+        jQuery('#qsm-template-select-row').toggle(!isNew);
+        jQuery('#qsm-certificate-template-name').prop('required', isNew);
+        jQuery('#qsm-certificate-template-select').prop('required', !isNew);
+        const submitText = window.qsm_certificate_template_obj || {};
+        jQuery('#qsm-template-name-update-popup-btn').text(isNew ? submitText.save_template : submitText.update_template);
+    });
+    jQuery('input[name="qsm-template-action"]:checked').trigger('change');
+
+    jQuery('.qsm-certificate-save-template-button').on('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        MicroModal.show('qsm-template-name-update-popup');
+        jQuery('#qsm-template-name-update-popup-btn').off('click').on('click', function(event) {
+            event.preventDefault();
+            var $btn = jQuery(this);
+            if ($btn.prop('disabled')) return;
+            $btn.prop('disabled', true);
+            var actionType = jQuery('input[name="qsm-template-action"]:checked').val();
+            var template_name = jQuery('#qsm-certificate-template-name').val();
+            var template_id = jQuery('#qsm-certificate-template-select').val();
+            // Client-side validation
+            if (actionType === 'new') {
+                jQuery('#qsm-certificate-template-name').css('border', '');
+                if (!template_name || !template_name.trim()) {
+                    jQuery('#qsm-certificate-template-name').css('border', '1px solid #dc2626').focus();
+                    $btn.prop('disabled', false);
+                    return;
+                }
+            } else if (actionType === 'update') {
+                jQuery('#qsm-certificate-template-select').css('border', '');
+                if (!template_id) {
+                    jQuery('#qsm-certificate-template-select').css('border', '1px solid #dc2626').focus();
+                    $btn.prop('disabled', false);
+                    return;
+                }
+            }
+            var $cert_data = {
+                size: jQuery('input[name="certificateSize"]:checked').val() || 'Portrait',
+                font: jQuery('#certificate_font').val()?.trim() || '',
+                title: jQuery('#certificate_title').val()?.trim() || '',
+                logo: jQuery('#certificate_logo').val()?.trim() || '',
+                dpi: jQuery('#certificate_dpi').val()?.trim() || '',
+                logoStyle: jQuery('#certificate_logo_style').val()?.trim() || '',
+                background: jQuery('#qsm_certificate_background').val()?.trim() || '',
+                content: tinymce.get('certificate_template')?.getContent({ format: 'raw' }) || jQuery('#certificate_template').val(),            
+            };
+            var data = {
+                action: 'qsm_addon_certificate_save_template',
+                quiz_id: qsm_certificate_pro_obj.quiz_id,
+                template_name: template_name,
+                cert_data: $cert_data,
+                template_action: actionType,
+                template_id: template_id
+            };
+            jQuery.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    $btn.prop('disabled', false);
+                    if (response.success) {
+                        MicroModal.close('qsm-template-name-update-popup');
+                        const res = response.data || {};
+                        try { if (window.qsm_certificate_template_obj && qsm_certificate_template_obj.certificate_data_by_id && res.template_id && res.cert_data) { qsm_certificate_template_obj.certificate_data_by_id[res.template_id] = res.cert_data; } } catch(_) {}
+
+                        const id = parseInt(res.template_id, 10);
+                        const name = res.template_name || template_name || '';
+                        const created = res.creation_date || '';
+
+                        // Reflect in the Update select dropdown
+                        const $tplSelect = jQuery('#qsm-certificate-template-select');
+                        if ($tplSelect.length && id) {
+                            const $opt = $tplSelect.find('option[value="' + id + '"]');
+                            if ($opt.length) {
+                                $opt.text(name).prop('selected', true);
+                            } else {
+                                jQuery('<option>', { value: id, text: name }).appendTo($tplSelect).prop('selected', true);
+                            }
+                        }
+                        const $tbody = jQuery('.qsm-my-templates-table-body');
+                        if (!$tbody.length) return;
+
+                        $tbody.find('tr.qsm-no-templates-row').remove();
+                        if (!$tbody.find('tr.qsm-templates-header').length && !$tbody.find('th').length) {
+                            const t = qsm_certificate_template_obj;
+                            $tbody.append('<tr class="qsm-templates-header"><th>' + t.template_name + '<\/th><th>' + t.template_id + '<\/th><th>' + t.created_date + '<\/th><th>' + t.actions + '<\/th><\/tr>');
+                        }
+
+                        const $existing = $tbody.find('button.qsm-use-my-template[data-template-id="' + id + '"]').closest('tr');
+                        if ($existing.length) {
+                            const $tds = $existing.find('td');
+                            if ($tds.length >= 3) { jQuery($tds[0]).text(name); jQuery($tds[1]).text(id); jQuery($tds[2]).text(created); }
+                        } else {
+                            const t = qsm_certificate_template_obj;
+                            const actionsHtml = '<div class="qsm-table-icons">\
+                                <button type="button" class="qsm-use-my-template" data-template-id="' + id + '"><img src="' + t.import_template_svg + '" alt="Import Icon"><\/button>\
+                                <button type="button" class="qsm-delete-template" data-template-id="' + id + '"><img src="' + t.delete_template_svg + '" alt="Delete Icon"><\/button>\
+                            <\/div>';
+                            const $row = jQuery('<tr><td><\/td><td><\/td><td><\/td><td><\/td><\/tr>');
+                            $row.find('td').eq(0).text(name);
+                            $row.find('td').eq(1).text(id);
+                            $row.find('td').eq(2).text(created);
+                            $row.find('td').eq(3).html(actionsHtml);
+                            $tbody.append($row);
+                        }
+                    } else {
+                        alert(response.data);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $btn.prop('disabled', false);
+                    alert(error);
+                }
+            });
+        });
+        jQuery('#qsm-template-name-update-popup-close').on('click', function(event) {
+            event.preventDefault();
+            MicroModal.close('qsm-template-name-update-popup');
+        });
+    });
+
+    jQuery(document).off('click', '.qsm-use-my-template').on('click', '.qsm-use-my-template', function (e) {
+        e.preventDefault();
+        let template_data = qsm_certificate_template_obj.certificate_data_by_id;
+        let template_id = jQuery(this).attr('data-template-id');
+        let template_data_by_id = template_data[template_id];
+        jQuery('#qsm_certificate_background').val(template_data_by_id.background || '');
+        jQuery('#certificate_font').val(template_data_by_id.font || '');
+        jQuery('#certificate_logo').val(template_data_by_id.logo || '');
+        jQuery('#certificate_logo_style').val(template_data_by_id.logoStyle || '');
+        jQuery('#certificate_title').val(template_data_by_id.title || '');
+        jQuery('input[name="certificateSize"][value="' + (template_data_by_id.size === 'Landscape' ? 'Landscape' : 'Portrait') + '"]').prop('checked', true);
+        const editor = (typeof tinymce !== 'undefined') && tinymce.get('certificate_template');
+        editor ? editor.setContent(template_data_by_id.content || '') : jQuery('#certificate_template').val(template_data_by_id.content || '');
+    });
+
+    jQuery(document)
+        .off('click.qsmDeleteTpl', '.qsm-delete-template')
+        .on('click.qsmDeleteTpl', '.qsm-delete-template', function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const $btn = jQuery(this);
+        if ($btn.prop('disabled')) return;
+        const id = parseInt($btn.data('template-id'), 10);
+        if (!id) return alert('Invalid template ID.');
+        if (!confirm(qsm_certificate_pro_obj.tmpl_confirm_msg)) return;
+
+        $btn.prop('disabled', true);
+        jQuery.post(ajaxurl, { action: 'qsm_addon_certificate_delete_template', template_id: id })
+            .done(function (res) {
+                if (res && res.success) {
+                    $btn.closest('tr').fadeOut(200, function(){ jQuery(this).remove(); });
+                } else {
+                    alert((res && res.data) ? res.data : qsm_certificate_pro_obj.failed_msg);
+                    $btn.prop('disabled', false);
+                }
+            })
+            .fail(function () { alert(qsm_certificate_pro_obj.server_error_msg); $btn.prop('disabled', false); });
+    });
+});

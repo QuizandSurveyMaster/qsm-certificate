@@ -448,3 +448,13 @@ h2#qsm-certificate-preview-page-templates-title {
     position: relative;
     top: 3px;
 }
+#qsm-template-name-update-form td {
+    display: grid;
+    grid-template-columns: 22px auto;
+    align-items: center;
+    row-gap: 8px;
+}
+
+#qsm-template-name-update-form td input[type="radio"] {
+    margin: 0;
+}

@@ -327,10 +327,9 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
  * Displays certificate template popups for different template types.
  *
  * @param array  $certificate_template_from_script Array of certificate templates.
- * @param array  $my_templates                     User's saved templates.
  * @param string $type                             Type of template (certificate/result).
  */
-function qsm_certificate_popups_for_templates( $certificate_template_from_script, $my_templates, $type ) {
+function qsm_certificate_popups_for_templates( $certificate_template_from_script, $type ) {
     global $wpdb;
     wp_enqueue_script( 'qsm_certificate_js', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
     $quiz_id = isset( $_GET['quiz_id'] ) ? (int) $_GET['quiz_id'] : 0;
@@ -342,8 +341,6 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
         ARRAY_A
     );
     $certificate_data_by_id = array();
-    // Avoid unused parameter warning.
-    unset( $my_templates );
 
     foreach ( $certificate_templates as $tpl ) {
         $tpl_id  = $tpl['id'];

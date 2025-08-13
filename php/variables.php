@@ -14,6 +14,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 function qsm_addon_certificate_variable( $content, $quiz_array ) {
     global $mlwQuizMasterNext, $wpdb;
 
+    $templates = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, certificate_data FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
+            (int) $quiz_array['quiz_id']
+        )
+    );
+
+    foreach ( $templates as $template ) {
+        $template_data  = maybe_unserialize( $template->certificate_data );
+        $certificate_id = (int) $template->id;
+        $variable_name  = '%CERTIFICATE_TEMPLATE_' . $certificate_id . '%';
+
+        if ( empty( $template_data ) || strpos( $content, $variable_name ) === false ) {
+            continue;
+        }
+
+        // Generate certificate for this specific template ID, return file name
+        $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_array, $certificate_id, true );
+
+        if ( ! empty( $certificate_file ) ) {
+            $upload_dir  = wp_upload_dir();
+            $decoded     = urldecode( $certificate_file );
+            $path        = $upload_dir['basedir'] . '/qsm-certificates/' . $decoded;
+            $url         = $upload_dir['baseurl'] . '/qsm-certificates/' . $decoded;
+
+            if ( file_exists( $path ) && is_readable( $path ) ) {
+                $link    = sprintf( '<a href="%s" class="qsm-certificate-link" target="_blank" download>%s</a>', esc_url( $url ), esc_html__( 'Download Your Certificate', 'qsm-certificate' ) );
+                $content = str_replace( $variable_name, $link, $content );
+            } else {
+                $content = str_replace( $variable_name, '', $content );
+            }
+        } else {
+            $content = str_replace( $variable_name, '', $content );
+        }
+    }
+
     // Load the settings.
     $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
 
@@ -57,7 +93,7 @@ function qsm_addon_certificate_variable( $content, $quiz_array ) {
     // Process certificate if enabled.
     if ( 0 === (int) $certificate_settings['enabled'] && false !== strpos( $content, '%CERTIFICATE_LINK%' ) ) {
         // Generate certificate.
-        $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_array, true );
+        $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_array, 0, true );
 
         // Check if the file was created.
         if ( ! empty( $certificate_file ) && false !== $certificate_file ) {

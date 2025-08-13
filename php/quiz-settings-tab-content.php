@@ -342,14 +342,17 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
         ARRAY_A
     );
     $certificate_data_by_id = array();
-    foreach ($certificate_templates as $tpl) {
-        $tpl_id = $tpl['id'];
-        $tpl_data = maybe_unserialize($tpl['certificate_data']);
-        if ( is_array( $tpl_data ) && isset( $tpl_data['content'] ) && isset($tpl_data['font'] ) ) {
+    // Avoid unused parameter warning.
+    unset( $my_templates );
+
+    foreach ( $certificate_templates as $tpl ) {
+        $tpl_id  = $tpl['id'];
+        $tpl_data = maybe_unserialize( $tpl['certificate_data'] );
+        if ( is_array( $tpl_data ) && isset( $tpl_data['content'] ) && isset( $tpl_data['font'] ) ) {
             $tpl_data['content'] = wp_unslash( $tpl_data['content'] );
-            $tpl_data['font'] = wp_unslash( $tpl_data['font'] );
+            $tpl_data['font']    = wp_unslash( $tpl_data['font'] );
         }
-        $certificate_data_by_id[$tpl_id] = $tpl_data;
+        $certificate_data_by_id[ $tpl_id ] = $tpl_data;
     }
     wp_localize_script(
         'qsm_certificate_js',
@@ -548,7 +551,7 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
 					</form>
                 </main>
                 <footer class="qsm-popup__footer">
-                    <button type="submit" class="qsm-popup__btn button button-primary qsm-template-name-update-popup-btn" id="qsm-template-name-update-popup-btn"><?php esc_html_e( 'Update Template Name', 'qsm-save-resume' ); ?></button>
+                    <button type="submit" class="qsm-popup__btn button button-primary qsm-template-name-update-popup-btn" id="qsm-template-name-update-popup-btn"><?php esc_html_e( 'Update Template Name', 'qsm-certificate' ); ?></button>
                 </footer>
             </div>
         </div>

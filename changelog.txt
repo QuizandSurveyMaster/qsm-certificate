@@ -1,6 +1,9 @@
-<h3>2.0.1 (July 31, 2025)</h3>
+<h3>2.1.0 (August 21, 2025)</h3>
 <ul>
-	<li>Fix: Resolved issue with text blocks</li>
+  <li>Feature: Introduced certificate template support for results and emails</li>
+  <li>Feature: Added functionality to save custom certificate templates</li>
+  <li>Feature: Added option to delete existing certificate templates</li>
+  <li>Bug: Resolved conflict between certificate addon and text blocks</li>
 </ul>
 <h3>2.0.0 (May 22, 2025)</h3>
 <ul>

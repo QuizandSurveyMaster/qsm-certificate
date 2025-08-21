@@ -126,7 +126,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 	<p><b><?php esc_html_e('After enabling and configuring. your certificate, you will have to add it to an email on the Emails tab or a results page on the Results Page tab using the %CERTIFICATE_LINK% variable.', 'qsm-certificate'); ?></b></p>
 
 	<form action="" method="post">
-	<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
 		<table class="form-table">
 			<tr valign="top">
 				<td>
@@ -328,15 +327,45 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
  * Displays certificate template popups for different template types.
  *
  * @param array  $certificate_template_from_script Array of certificate templates.
- * @param array  $my_templates                     User's saved templates.
  * @param string $type                             Type of template (certificate/result).
  */
-function qsm_certificate_popups_for_templates( $certificate_template_from_script, $my_templates, $type ) {
-    $valid_types = array( 'certificate', 'result' );
+function qsm_certificate_popups_for_templates( $certificate_template_from_script, $type ) {
+    global $wpdb;
+    wp_enqueue_script( 'qsm_certificate_js', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+    $quiz_id = isset( $_GET['quiz_id'] ) ? (int) $_GET['quiz_id'] : 0;
+    $certificate_templates = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, certificate_data, template_name, Creation_date FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
+            $quiz_id
+        ),
+        ARRAY_A
+    );
+    $certificate_data_by_id = array();
 
-    if ( ! in_array( $type, $valid_types, true ) ) {
-        return;
+    foreach ( $certificate_templates as $tpl ) {
+        $tpl_id  = $tpl['id'];
+        $tpl_data = maybe_unserialize( $tpl['certificate_data'] );
+        if ( is_array( $tpl_data ) && isset( $tpl_data['content'] ) && isset( $tpl_data['font'] ) ) {
+            $tpl_data['content'] = wp_unslash( $tpl_data['content'] );
+            $tpl_data['font']    = wp_unslash( $tpl_data['font'] );
+        }
+        $certificate_data_by_id[ $tpl_id ] = $tpl_data;
     }
+    wp_localize_script(
+        'qsm_certificate_js',
+        'qsm_certificate_template_obj',
+        array(
+            'certificate_data_by_id' => $certificate_data_by_id,
+			'import_template_svg' => esc_url( plugins_url( '../assets/download-line.svg', __FILE__ ) ),
+			'delete_template_svg' => esc_url( plugins_url( '../assets/trash.png', __FILE__ ) ),
+			'template_name' => __( 'Template Name', 'qsm-certificate' ),
+			'template_id' => __( 'Template Id', 'qsm-certificate' ),
+			'created_date' => __( 'Created Date', 'qsm-certificate' ),
+			'actions' => __( 'Actions', 'qsm-certificate' ),
+            'save_template' => __( 'Save Template', 'qsm-certificate' ),
+            'update_template' => __( 'Update Template', 'qsm-certificate' ),
+        )
+    );
 
     ?>
     <div class="qsm-popup qsm-popup-slide" id="qsm-<?php echo esc_attr( $type ); ?>-page-templates" aria-hidden="false" style="display:none;">
@@ -352,7 +381,12 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
                         </h2>
                     </div>
                     <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-right">
-                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header"></div>
+                        <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header">
+                            <div class="qsm-<?php echo esc_attr( $type ); ?>-page-template-header-tabs">
+                                <a class="qsm-<?php echo esc_attr( $type ); ?>-page-tmpl-header-links active" data-tab="page" href="javascript:void(0)"><?php esc_html_e( 'Certificate Templates', 'qsm-certificate' ); ?></a>
+                                <a class="qsm-<?php echo esc_attr( $type ); ?>-page-tmpl-header-links" data-tab="my" href="javascript:void(0)"><?php esc_html_e( 'My Templates', 'qsm-certificate' ); ?></a>
+                            </div>
+                        </div>
                         <a class="qsm-popup__close" aria-label="<?php echo esc_attr__( 'Close modal', 'qsm-certificate' ); ?>" data-micromodal-close></a>
                     </div>
                 </header>
@@ -394,6 +428,48 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
+                    <div class="qsm-<?php echo esc_attr( $type ); ?>-my-template-container qsm-<?php echo esc_attr( $type ); ?>-page-template-common">
+                        <p class="description">
+                            <?php echo esc_html__( 'Important: To render this exact certificate template using certificate variables, replace the placeholder "X" with this template’s ID (see the Template ID column in the table below).', 'qsm-certificate' ); ?>
+                        </p>
+                        <table class="qsm-my-templates-table wp-list-table widefat fixed striped">
+                            <tbody class="qsm-my-templates-table-body">
+                            <?php 
+                            $template_names = $certificate_templates;
+                            if ( ! empty( $template_names ) ) { ?>
+                                <tr class="qsm-templates-header">
+                                    <th><?php echo esc_html__( 'Template Name', 'qsm-certificate' ); ?></th>
+                                    <th><?php echo esc_html__( 'Template Id', 'qsm-certificate' ); ?></th>
+                                    <th><?php echo esc_html__( 'Created Date', 'qsm-certificate' ); ?></th>
+                                    <th><?php echo esc_html__( 'Actions', 'qsm-certificate' ); ?></th>
+                                </tr>
+                                <?php foreach ( $template_names as $template ) : ?>
+                                    <tr>
+                                        <td><?php echo esc_html( $template['template_name'] ); ?></td>
+                                        <td><?php echo esc_html( $template['id'] ); ?></td>
+                                        <td><?php echo esc_html( $template['Creation_date'] ); ?></td>
+                                        <td>
+                                            <div class="qsm-table-icons">
+                                                <button type="button" class="qsm-use-my-template" data-template-id="<?php echo esc_attr( $template['id'] ); ?>">
+                                                <img src="<?php echo esc_url( plugins_url( '../assets/download-line.svg', __FILE__ ) ); ?>" alt="<?php echo esc_attr__( 'Import Icon', 'qsm-certificate' ); ?>">
+                                                </button>
+                                                <button type="button" class="qsm-delete-template" data-template-id="<?php echo esc_attr( $template['id'] ); ?>">
+                                                    <img src="<?php echo esc_url( plugins_url( '../assets/trash.png', __FILE__ ) ); ?>" alt="<?php echo esc_attr__( 'Delete Icon', 'qsm-certificate' ); ?>">
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php } else { ?>
+                                <tr class="qsm-no-templates-row">
+                                    <td colspan="4" class="qsm-no-templates-message">
+                                        <?php esc_html_e( 'No templates found', 'qsm-certificate' ); ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </main>
             </div>
         </div>
@@ -416,7 +492,68 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
             </div>
         </div>
     </div>
-    <?php
-}
+	<div class="qsm-popup qsm-popup-slide qsm-standard-popup " id="qsm-template-name-update-popup" aria-hidden="false"  style="display:none">
+        <div class="qsm-popup__overlay" tabindex="-1" data-micromodal-close>
+            <div class="qsm-popup__container" role="dialog" aria-modal="true">
+                <header class="qsm-popup__header qsm-template-name-update-popup-header">
+                    <div class="qsm-popup__title qsm-template-name-update-popup-title" id="modal-2-title">
+						<?php esc_html_e( 'Save Certificate Template', 'qsm-certificate' ); ?>
+					</div>
+                    <a class="qsm-popup__close qsm-popup-template-name-update-close" aria-label="Close modal" data-micromodal-close></a>
+                </header>
+                <main class="qsm-popup__content" id="modal-2-content">
+					<form action='' method='post' id="qsm-template-name-update-form">
+						<table class="form-table">
+							<tr>
+								<th>
+									<label><?php esc_html_e('Choose Action', 'qsm-certificate'); ?></label>
+								</th>
+								<td>
+									<input type="radio" name="qsm-template-action" id="qsm-template-action-new" value="new" checked>
+									<label for="qsm-template-action-new"><?php esc_html_e('Create New Template', 'qsm-certificate'); ?></label>
+									<input type="radio" name="qsm-template-action" id="qsm-template-action-update" value="update">
+									<label for="qsm-template-action-update"><?php esc_html_e('Update Existing Template', 'qsm-certificate'); ?></label>
+								</td>
+							</tr>
+							<tr id="qsm-template-name-row">
+								<th>
+									<label for="qsm-certificate-template-name"><?php esc_html_e('Enter Template Name', 'qsm-certificate'); ?></label>
+								</th>
+								<td>
+									<input type="text" class="small-text" name="qsm-certificate-template-name" id="qsm-certificate-template-name" />
+								</td>
+							</tr>
+							<tr id="qsm-template-select-row" style="display:none;">
+								<th>
+									<label for="qsm-certificate-template-select"><?php esc_html_e('Select Template to Update', 'qsm-certificate'); ?></label>
+								</th>
+								<td>
+									<select name="qsm-certificate-template-select" id="qsm-certificate-template-select">
+										<option value=""><?php esc_html_e('Select Template', 'qsm-certificate'); ?></option>
+										<?php
+										// Populate dropdown with all template names for this quiz
+										$quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
+										$template_names = $wpdb->get_results( $wpdb->prepare(
+											"SELECT id, template_name FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
+											$quiz_id
+										) );
+										foreach ($template_names as $template) {
+											echo '<option value="' . esc_attr($template->id) . '">' . esc_html($template->template_name) . '</option>';
+										}
+										?>
+									</select>
+								</td>
+							</tr>
+						</table>
+					</form>
+                </main>
+                <footer class="qsm-popup__footer">
+                    <button type="submit" class="qsm-popup__btn button button-primary qsm-template-name-update-popup-btn" id="qsm-template-name-update-popup-btn"><?php esc_html_e( 'Update Template Name', 'qsm-certificate' ); ?></button>
+                </footer>
+            </div>
+        </div>
+    </div>
+	<?php
+	}
 }
 ?>

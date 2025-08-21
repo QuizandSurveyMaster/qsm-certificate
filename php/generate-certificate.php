@@ -15,15 +15,14 @@ use Dompdf\Options;
  * @param bool $return_file Whether the function should return the filepath or a boolean.
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
-function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file = false ) {
+function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id = 0, $return_file = false ) {
     if ( ! class_exists( 'Dompdf\Autoloader' ) ) {
         require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
     }
 	global $wpdb;
 	global $mlwQuizMasterNext;
-	// Load the settings.
-	$certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
-	if ( ! is_array( $certificate_settings ) ) {
+    $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
+    if ( ! is_array( $certificate_settings ) ) {
 		$quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $quiz_results["quiz_id"] ) );
 		// Loads the certificate options vVariables.
 		if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
@@ -51,8 +50,72 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
-    // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
+        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d";
+        $params = array( (int) $quiz_results['quiz_id'] );
+        // Only load a specific template when template_id > 0.
+        // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.
+        if ( (int) $template_id > 0 ) {
+            $query  .= ' AND id = %d';
+            $params[] = (int) $template_id;
+            $templates = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
+        } else {
+            $templates = array();
+        }
+        if ( ! empty( $templates ) ) {
+            $tpl      = $templates[0];
+            $tpl_id   = (int) $tpl['id'];
+            $tpl_data = maybe_unserialize( $tpl['certificate_data'] );
+            if ( is_array( $tpl_data ) && ! empty( $tpl_data['content'] ) ) {
+                $tpl_data['content'] = wp_unslash( $tpl_data['content'] );
+                if ( isset( $tpl_data['font'] ) ) {
+                    $tpl_data['certificate_font'] = wp_unslash( $tpl_data['font'] );
+                }
+                if ( isset( $tpl_data['size'] ) ) {
+                    $tpl_data['certificate_size'] = $tpl_data['size'];
+                }
+                if ( isset( $tpl_data['logoStyle'] ) ) {
+                    $tpl_data['logo_style'] = $tpl_data['logoStyle'];
+                }
+                $exp_date = '';
+                if ( $certificate_settings['never_expiry'] == 1 ) {
+                    $exp_date = "";
+                } else {
+                    $expire_time = $certificate_settings['expiry_days']
+                    ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
+                    : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
+                    $exp_date = str_replace('-', '', $expire_time);
+                }
+                $encoded_time_taken = md5( $quiz_results['time_taken'] );
+                $filename           = "{$quiz_results['quiz_id']}-{$tpl_id}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
+                $wp_upload      = wp_upload_dir();
+                $pdf_file_name = $filename;
+                $pdf_folder    = trailingslashit( $wp_upload['basedir'] ) . 'qsm-certificates/';
+                if ( ! file_exists( $pdf_folder . $filename ) ) {
+                    if ( ! is_dir( $pdf_folder ) ) {
+                        wp_mkdir_p( $pdf_folder );
+                    }
+                    $html          = qsm_pdf_html_post_process_certificate( '', $tpl_data, $quiz_results );
+                    $dompdf        = new Dompdf();
+                    $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
+                    $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
+                    $dompdf->setPaper( 'A4', $orientation );
+                    $dompdf->set_option( 'isHtml5ParserEnabled', true );
+                    $dompdf->set_option( 'isFontSubsettingEnabled', true );
+                    $dompdf->set_option( 'isRemoteEnabled', true );
+                    if ( isset( $tpl_data['dpi'] ) ) {
+                        $dompdf->set_option( 'dpi', (int) $tpl_data['dpi'] );
+                    }
+                    $dompdf->loadHtml( $html );
+                    $dompdf->render();
+                    $pdf_output = $dompdf->output();
+                    file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
+                }
+                return $return_file ? urlencode( $pdf_file_name ) : true;
+            }
+        }
+
         if ( $certificate_settings['never_expiry'] == 1 ) {
             $exp_date = "";
         } else {
@@ -71,10 +134,10 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
     $wp_upload = wp_upload_dir();
     $pdf_file_name = $filename;
 
-	if ( ! file_exists( $wp_upload['basedir'] . "/qsm-certificates/.$filename" ) ) {
+	if ( ! file_exists( $wp_upload['basedir'] . "/qsm-certificates/$filename" ) ) {
         $pdf_folder = $wp_upload['basedir'] . '/qsm-certificates/';
-        if ( ! is_dir($pdf_folder) ) {
-            mkdir($pdf_folder, 0755);
+        if ( ! is_dir( $pdf_folder ) ) {
+            wp_mkdir_p( $pdf_folder );
         }
         $pdf_url = $wp_upload['baseurl']  . '/qsm-certificates/';
 
@@ -108,11 +171,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $return_file
 			'status' => false,
         );
     }
-    if ( $pdf_file_name ) {
-        return urlencode( $pdf_file_name );
-    } else {
-        return true;
-    }
+    return $return_file ? urlencode( $pdf_file_name ) : true;
   }
 }
 
@@ -206,6 +265,28 @@ function qsm_certificate_variable_expiry_date( $content, $mlw_quiz_array ) {
     return $content;
 }
 
+/**
+ * PHPMailer hook to add certificate attachments.
+ */
+function qsm_certificate_add_attachments_to_phpmailer( $phpmailer ) {
+    global $qsm_certificate_mail_attachments;
+    if ( empty( $qsm_certificate_mail_attachments ) || ! is_array( $qsm_certificate_mail_attachments ) ) {
+        return;
+    }
+
+    $seen = array();
+    foreach ( $qsm_certificate_mail_attachments as $att ) {
+        if ( empty( $att['path'] ) || ! file_exists( $att['path'] ) || isset( $seen[ $att['path'] ] ) ) {
+            continue;
+        }
+        $seen[ $att['path'] ] = true;
+        $phpmailer->addAttachment( $att['path'], isset( $att['name'] ) ? $att['name'] : basename( $att['path'] ) );
+    }
+
+    $qsm_certificate_mail_attachments = array();
+    remove_action( 'phpmailer_init', 'qsm_certificate_add_attachments_to_phpmailer', 10 );
+}
+
 function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
 	global $mlwQuizMasterNext;
     global $wpdb;
@@ -251,7 +332,9 @@ function qsm_certificate_scripts_load() {
 add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
 
 function qsm_certificate_localize_script_load() {
+    global $wpdb;
     if ( isset($_GET['page']) && $_GET['page'] === 'mlw_quiz_options' && isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
+        $quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
         wp_enqueue_script( 
             'qsm_certificate_js', 
             QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
@@ -266,6 +349,11 @@ function qsm_certificate_localize_script_load() {
             array(
                 'preview'         => esc_html__('Preview', 'qsm-certificate'),
                 'import_template' => esc_html__('Import Template', 'qsm-certificate'),
+                'save_template' => esc_html__('Save Template', 'qsm-certificate'),
+                'quiz_id' => $quiz_id,
+                'tmpl_confirm_msg' => esc_html__('Are you sure you want to delete this template?', 'qsm-certificate'),
+                'failed_msg' => esc_html__('Failed to delete template.', 'qsm-certificate'),
+                'server_error_msg' => esc_html__('Server error. Please try again.', 'qsm-certificate'),
             )
         );
     }
@@ -315,7 +403,6 @@ function qsm_certificate_template_content() {
 
     wp_enqueue_script('qsm_advance_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
 
-    $my_templates = array_column($certificate_template_from_script, 'template_name');
     $js_data = array(
         'quizID'          => $quiz_id,
         'script_tmpl'     => $certificate_template_from_script,
@@ -324,7 +411,7 @@ function qsm_certificate_template_content() {
     wp_localize_script('qsm_advance_certificate_admin_script', 'qsmCertificateObject', $js_data);
 
     if ( function_exists('qsm_certificate_popups_for_templates') ) {
-        qsm_certificate_popups_for_templates($certificate_template_from_script, $my_templates, 'certificate');
+        qsm_certificate_popups_for_templates( $certificate_template_from_script, 'certificate' );
     }
 }
 
@@ -379,22 +466,56 @@ function qsm_certificate_attach_certificate_file( $content, $quiz_array ) {
 }
 
 function qsm_handle_certificate_attachment( $content, $quiz_array ) {
-    $placeholder = '%CERTIFICATE_ATTACHMENT_PDF%';
+    $generic_placeholder = '%CERTIFICATE_ATTACHMENT_PDF%';
+    $message_text        = __( 'Your certificate is attached to this email.', 'qsm-certificate' );
+    $attachments         = array();
+    $upload              = wp_upload_dir();
 
-    if ( strpos($content, $placeholder) !== false ) {
-        $certificate_file = qsm_addon_certificate_generate_certificate($quiz_array, true);
+    if ( preg_match_all( '/%CERTIFICATE_ATTACHMENT_PDF_(\d+)%/i', $content, $matches ) ) {
+        $ids = array_unique( array_map( 'intval', $matches[1] ) );
+        foreach ( $ids as $tpl_id ) {
+            if ( $tpl_id <= 0 ) {
+                continue;
+            }
+            $file = qsm_addon_certificate_generate_certificate( $quiz_array, $tpl_id, true );
+            if ( ! empty( $file ) && false !== $file ) {
+                $path = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/' . $file;
+                if ( file_exists( $path ) && is_readable( $path ) ) {
+                    $attachments[] = array( 'path' => $path, 'name' => 'certificate-' . $tpl_id . '.pdf' );
+                    $content       = str_replace( '%CERTIFICATE_ATTACHMENT_PDF_' . $tpl_id . '%', $message_text, $content );
+                } else {
+                    $content = str_replace( '%CERTIFICATE_ATTACHMENT_PDF_' . $tpl_id . '%', '', $content );
+                }
+            } else {
+                $content = str_replace( '%CERTIFICATE_ATTACHMENT_PDF_' . $tpl_id . '%', '', $content );
+            }
+        }
+    }
 
-        if ( ! empty($certificate_file) && false !== $certificate_file ) {
-            $upload          = wp_upload_dir();
-            $certificate_path = $upload['basedir'] . "/qsm-certificates/$certificate_file";
-
-            add_action('phpmailer_init', function ( $phpmailer ) use ( $certificate_path ) {
-                $phpmailer->AddAttachment($certificate_path, 'certificate.pdf');
-            });
-
-            $content = str_replace($placeholder, __('Your certificate is attached to this email.', 'qsm-certificate'), $content);
+    if ( false !== strpos( $content, $generic_placeholder ) ) {
+        $file = qsm_addon_certificate_generate_certificate( $quiz_array, 0, true );
+        if ( ! empty( $file ) && false !== $file ) {
+            $path = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/' . $file;
+            if ( file_exists( $path ) && is_readable( $path ) ) {
+                $attachments[] = array( 'path' => $path, 'name' => 'certificate.pdf' );
+                $content       = str_replace( $generic_placeholder, $message_text, $content );
+            } else {
+                $content = str_replace( $generic_placeholder, '', $content );
+            }
         } else {
-            $content = str_replace($placeholder, '', $content);
+            $content = str_replace( $generic_placeholder, '', $content );
+        }
+    }
+
+    if ( ! empty( $attachments ) ) {
+        global $qsm_certificate_mail_attachments;
+        if ( ! is_array( $qsm_certificate_mail_attachments ) ) {
+            $qsm_certificate_mail_attachments = array();
+        }
+        $qsm_certificate_mail_attachments = array_merge( $qsm_certificate_mail_attachments, $attachments );
+
+        if ( ! has_action( 'phpmailer_init', 'qsm_certificate_add_attachments_to_phpmailer' ) ) {
+            add_action( 'phpmailer_init', 'qsm_certificate_add_attachments_to_phpmailer', 10, 1 );
         }
     }
 

@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: https://quizandsurveymaster.com
- * Version: 2.0.1
+ * Version: 2.1.0
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '2.0.1';
+	public $version = '2.1.0';
 
 	/**
 	 * Main Construct Function
@@ -113,6 +113,30 @@ class QSM_Certificate {
         add_filter( 'qmn_email_template_variable_results', 'qsm_certificate_attach_certificate_file', 10, 2 );
 		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
 		add_filter( 'qsm_text_variable_list_result', array( $this, 'qsm_certificate_link_variable' ), 10, 1 );
+		add_action( 'admin_init', array( $this, 'qsm_certificate_template_create_table' ) );
+		add_action( 'wp_ajax_qsm_addon_certificate_save_template', 'qsm_addon_certificate_save_template' );
+		add_action( 'wp_ajax_nopriv_qsm_addon_certificate_save_template', 'qsm_addon_certificate_save_template' );
+	}
+
+	public function qsm_certificate_template_create_table() {
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$certificate_template_table_name = $wpdb->prefix . 'mlw_certificate_template';
+
+		if ( $wpdb->get_var( "SHOW TABLES LIKE '$certificate_template_table_name'" ) != $certificate_template_table_name ) {
+			$sql = "CREATE TABLE $certificate_template_table_name (
+  			id int(11) NOT NULL AUTO_INCREMENT,
+  			quiz_id int(12) NOT NULL,
+			template_name varchar(255) NOT NULL,
+  			Creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  			certificate_data TEXT NOT NULL,
+  			PRIMARY KEY  (id)
+  		) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
+		}
 	}
 
 	/**
@@ -125,7 +149,7 @@ class QSM_Certificate {
         global $mlwQuizMasterNext;
         if ( ! empty( $_GET['tab'] ) && 'emails' === $_GET['tab'] ) {
             $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-certificate' );
-            $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
+            $template_array['%CERTIFICATE_ATTACHMENT_PDF_X%'] = __( 'This will allow to user to send the template on email via template id ', 'qsm-certificate' );
         }
         $analysis = array(
             'Certificate' => $template_array,
@@ -138,6 +162,7 @@ class QSM_Certificate {
         global $mlwQuizMasterNext;
         if ( ! empty( $_GET['tab'] ) && 'results-pages' === $_GET['tab'] ) {
             $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
+            $template_array['%CERTIFICATE_TEMPLATE_X%'] = __( 'This will allow to user to show template by using template id.', 'qsm-certificate' );
         }
         $analysis = array(
             'Certificate' => $template_array,
@@ -443,3 +468,86 @@ function qsm_addon_certificate_expiry_check() {
 		)
 	);
 }
+
+function qsm_addon_certificate_save_template() {
+    global $mlwQuizMasterNext, $wpdb;
+
+    $cert_data        = isset( $_POST['cert_data'] ) ? wp_unslash( $_POST['cert_data'] ) : array();
+    $quiz_id          = isset( $_POST['quiz_id'] ) ? (int) $_POST['quiz_id'] : 0;
+    $template_name    = isset( $_POST['template_name'] ) ? sanitize_text_field( wp_unslash( $_POST['template_name'] ) ) : '';
+    $certificate_data = maybe_serialize( $cert_data );
+    $template_action  = isset( $_POST['template_action'] ) ? sanitize_text_field( wp_unslash( $_POST['template_action'] ) ) : 'new';
+    $template_id      = isset( $_POST['template_id'] ) ? (int) $_POST['template_id'] : 0;
+    $table            = $wpdb->prefix . 'mlw_certificate_template';
+    $creation_date    = current_time( 'mysql' );
+
+    if ( 'update' === $template_action && $template_id > 0 ) {
+        $ok = $wpdb->update(
+            $table,
+            array(
+                'certificate_data' => $certificate_data,
+                'Creation_date'    => $creation_date,
+            ),
+            array( 'id' => $template_id ),
+            array( '%s', '%s' ),
+            array( '%d' )
+        );
+        if ( false === $ok ) {
+            error_log( 'QSM Certificate: Failed to update certificate template. Last error: ' . $wpdb->last_error );
+            wp_send_json_error( 'Failed to update certificate template' );
+        }
+        wp_send_json_success( array(
+            'message'       => 'Certificate template updated',
+            'template_id'   => $template_id,
+            'template_name' => $template_name,
+            'creation_date' => $creation_date,
+            'cert_data'     => $cert_data,
+        ) );
+    }
+
+    $ok = $wpdb->insert(
+        $table,
+        array(
+            'quiz_id'          => $quiz_id,
+            'template_name'    => $template_name,
+            'Creation_date'    => $creation_date,
+            'certificate_data' => $certificate_data,
+        ),
+        array( '%d', '%s', '%s', '%s' )
+    );
+    if ( false === $ok ) {
+        error_log( 'QSM Certificate: Failed to insert certificate template. Last error: ' . $wpdb->last_error );
+        wp_send_json_error( 'Failed to insert certificate template' );
+    }
+    wp_send_json_success( array(
+        'message'       => 'Certificate template saved',
+        'template_id'   => $wpdb->insert_id,
+        'template_name' => $template_name,
+        'creation_date' => $creation_date,
+        'cert_data'     => $cert_data,
+    ) );
+}
+
+/**
+ * AJAX handler to delete a certificate template.
+ */
+function qsm_addon_certificate_delete_template() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'mlw_certificate_template';
+    $template_id = isset( $_POST['template_id'] ) ? absint( wp_unslash( $_POST['template_id'] ) ) : 0;
+    if ( 0 >= $template_id ) {
+        wp_send_json_error( 'Invalid template ID.' );
+    }
+
+    $ok = $wpdb->delete(
+        $table,
+        array( 'id' => $template_id ),
+        array( '%d' )
+    );
+    if ( false === $ok ) {
+        error_log( 'QSM Certificate: Failed to delete certificate template. Last error: ' . $wpdb->last_error );
+        wp_send_json_error( 'Failed to delete certificate template' );
+    }
+    wp_send_json_success( array( 'message' => 'Certificate template deleted' ) );
+}
+add_action( 'wp_ajax_qsm_addon_certificate_delete_template', 'qsm_addon_certificate_delete_template' );

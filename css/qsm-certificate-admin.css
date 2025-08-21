@@ -93,8 +93,10 @@
     top: 3px;
     right: 3px;
 }
-#wp-certificate_template-wrap .qsm-certificate-template-btn{
+#wp-certificate_template-wrap .qsm-certificate-template-btn,
+#wp-certificate_template-wrap .qsm-certificate-save-template-button{
     margin-top: 10px;
+    margin-right: 5px;
 }
 .qsm-certificate-page-template-card {
 	display: flex;
@@ -238,6 +240,10 @@ h2#qsm-certificate-page-templates-title {
     text-decoration: underline;
     text-decoration-color: #1D4ED8;
     text-underline-offset: 10px;
+}
+
+.qsm-certificate-page-template-header-tabs a{
+    text-decoration: none;
 }
 
 .qsm-more-settings-box-details a.qsm-view-templates-list:hover{
@@ -423,4 +429,32 @@ h2#qsm-certificate-preview-page-templates-title {
 .qsm-certificate-expiry-shortcode-notloop.button-secondary:hover {
     background: #DDEFFE;
     border: 1px dashed;
+}
+#qsm-certificate-page-templates-content .qsm-certificate-my-template-container{
+    margin: 0 20px;
+}
+.qsm-use-my-template,
+.qsm-delete-template{
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-left: 1px solid #ccc;
+    padding-top: 5px;
+    padding-bottom: 3px;
+    border-right: 1px solid #ccc;   
+}
+.qsm-use-my-template img{
+    width: 20px;
+    position: relative;
+    top: 3px;
+}
+#qsm-template-name-update-form td {
+    display: grid;
+    grid-template-columns: 22px auto;
+    align-items: center;
+    row-gap: 8px;
+}
+
+#qsm-template-name-update-form td input[type="radio"] {
+    margin: 0;
 }

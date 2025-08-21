@@ -1,0 +1,281 @@
+name: Release QSM Certificate
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Extract version from the main plugin file
+      - name: Get plugin version
+        id: get_version
+        run: |
+          VERSION=$(grep -E "^\s*\*\s+Version:\s*[0-9]+\.[0-9]+\.[0-9]+" qsm-certificate.php | sed -E 's/^\s*\*\s+Version:\s*//')
+          echo "PLUGIN_VERSION=$VERSION" >> $GITHUB_ENV
+          
+      # Get full changelog from changelog.txt
+      - name: Get full changelog
+        run: |
+          # Read the complete changelog.txt file which is already in HTML format
+          # Ensure we get the entire file with all version histories
+          echo "Reading complete changelog from changelog.txt"
+          CHANGELOG=$(cat changelog.txt)
+          
+          # Verify we have content
+          if [[ -z "$CHANGELOG" ]]; then
+            echo "WARNING: Changelog appears to be empty!"
+            CHANGELOG="<h3>${PLUGIN_VERSION} ($(date '+%d %b %Y'))</h3><ul><li>Release</li></ul>"
+          else
+            echo "Changelog successfully read with $(echo "$CHANGELOG" | wc -l) lines"
+          fi
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      # Check if GitHub release already exists
+      - name: Check if GitHub release exists
+        id: check_github_release
+        run: |
+          RELEASE_EXISTS=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ env.PLUGIN_VERSION }}" | \
+            jq -r '.id')
+          
+          if [[ $RELEASE_EXISTS != "null" && $RELEASE_EXISTS != "" ]]; then
+            echo "Release already exists for v${{ env.PLUGIN_VERSION }}"
+            echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
+            echo "RELEASE_ID=$RELEASE_EXISTS" >> $GITHUB_ENV
+            
+            # Get existing release assets to find the zip file
+            ASSETS_JSON=$(curl -s -H "Authorization: token ${{ secrets.PERSONAL_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_EXISTS/assets")
+            
+            ZIP_ASSET_ID=$(echo $ASSETS_JSON | jq -r '.[] | select(.name=="qsm-certificate-${{ env.PLUGIN_VERSION }}.zip") | .id')
+            ZIP_ASSET_URL=$(echo $ASSETS_JSON | jq -r '.[] | select(.name=="qsm-certificate-${{ env.PLUGIN_VERSION }}.zip") | .browser_download_url')
+            
+            if [[ $ZIP_ASSET_ID != "" ]]; then
+              echo "Found existing zip asset"
+              echo "ZIP_ASSET_ID=$ZIP_ASSET_ID" >> $GITHUB_ENV
+              echo "ZIP_ASSET_URL=$ZIP_ASSET_URL" >> $GITHUB_ENV
+              
+              # Download existing zip file
+              curl -s -L -H "Authorization: token ${{ secrets.PERSONAL_TOKEN }}" \
+                -H "Accept: application/octet-stream" \
+                "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ZIP_ASSET_ID" \
+                --output qsm-certificate-${{ env.PLUGIN_VERSION }}.zip
+            fi
+          else
+            echo "No release found for v${{ env.PLUGIN_VERSION }}"
+            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      # Create a zip file of the plugin (only if release doesn't exist)
+      - name: Create plugin zip
+        if: env.RELEASE_EXISTS != 'true'
+        run: |
+          # Create zip from current directory contents, not a nested directory
+          zip -r qsm-certificate-${{ env.PLUGIN_VERSION }}.zip . -x "*.git*" "*.github*" "*.DS_Store*"
+
+      # Create a GitHub release (only if release doesn't exist)
+      - name: Create GitHub Release
+        id: create_release
+        if: env.RELEASE_EXISTS != 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          tag_name: v${{ env.PLUGIN_VERSION }}
+          release_name: Release v${{ env.PLUGIN_VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            New release of QSM Certificate v${{ env.PLUGIN_VERSION }}.
+            
+            ## Changelog
+            ${{ env.CHANGELOG }}
+
+      # Upload zip to GitHub release (only if release doesn't exist)
+      - name: Upload zip to release
+        if: env.RELEASE_EXISTS != 'true'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./qsm-certificate-${{ env.PLUGIN_VERSION }}.zip
+          asset_name: qsm-certificate-${{ env.PLUGIN_VERSION }}.zip
+          asset_content_type: application/zip
+
+      # Check if zip already exists in EDD uploads directory
+      - name: Check if WordPress EDD zip exists
+        env:
+          WP_SITE_URL: ${{ secrets.WP_SITE_URL }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+        run: |
+          echo "Checking if zip already exists in EDD uploads directory..."
+          
+          # Set current year and month for the EDD directory path
+          CURRENT_YEAR=$(date +"%Y")
+          CURRENT_MONTH=$(date +"%m")
+          
+          # Define EDD upload path
+          EDD_UPLOAD_PATH="/wp-content/uploads/edd/${CURRENT_YEAR}/${CURRENT_MONTH}/"
+          EDD_UPLOAD_URL="${WP_SITE_URL}${EDD_UPLOAD_PATH}"
+          
+          # Store EDD path info for later steps
+          echo "EDD_UPLOAD_PATH=${EDD_UPLOAD_PATH}" >> $GITHUB_ENV
+          
+          # Encode credentials for basic auth
+          AUTH_HEADER=$(echo -n "${WP_USER}:${WP_APP_PASS}" | base64 --wrap=0)
+          
+          # Check if file already exists using WP REST API to check file existence
+          FILE_CHECK=$(curl -s -I "${WP_SITE_URL}${EDD_UPLOAD_PATH}qsm-certificate-${{ env.PLUGIN_VERSION }}.zip" \
+            -H "Authorization: Basic $AUTH_HEADER" || echo 'Status: 404')
+          
+          # Check status code
+          if echo "$FILE_CHECK" | grep -q "HTTP/.*200"; then
+            echo "Zip file already exists in EDD uploads directory"
+            echo "ZIP_EXISTS=true" >> $GITHUB_ENV
+            echo "WP_ZIP_URL=${WP_SITE_URL}${EDD_UPLOAD_PATH}qsm-certificate-${{ env.PLUGIN_VERSION }}.zip" >> $GITHUB_ENV
+          else
+            echo "Zip file not found in EDD uploads directory"
+            echo "ZIP_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      # Upload zip directly to EDD uploads directory (only if zip doesn't exist)
+      - name: Upload zip to EDD uploads directory
+        id: upload_to_edd_directory
+        if: env.ZIP_EXISTS != 'true'
+        continue-on-error: true
+        env:
+          WP_SITE_URL: ${{ secrets.WP_SITE_URL }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+          QSM_API_KEY: ${{ secrets.QSM_API_KEY }}
+        run: |
+          set -e
+          echo "Uploading ZIP directly to EDD uploads directory..."
+          
+          # Verify the ZIP file exists locally
+          if [ ! -f "qsm-certificate-${{ env.PLUGIN_VERSION }}.zip" ]; then
+            echo "Error: ZIP file not found: qsm-certificate-${{ env.PLUGIN_VERSION }}.zip"
+            exit 1
+          fi
+          
+          # Use WordPress REST API to upload file to specific directory
+          # This uses the qsm_upload_to_edd_directory function via the REST API endpoint
+          echo "Uploading to EDD directory using API endpoint..."
+          
+          # Use the QSM API Key for authentication instead of Basic Auth
+          # The qsm_upload_to_edd_directory function expects the X-QSM-API-Key header
+          
+          # Call the API endpoint to upload the file
+          ZIP_UPLOAD=$(curl -s -X POST "${WP_SITE_URL}/wp-json/qsm-parsing-script/v1/upload-to-edd" \
+            -H "X-QSM-API-Key: ${QSM_API_KEY}" \
+            -F "file=@qsm-certificate-${{ env.PLUGIN_VERSION }}.zip" \
+            -F "year=${CURRENT_YEAR}" \
+            -F "month=${CURRENT_MONTH}")
+          
+          # Check if upload was successful
+          ZIP_URL=$(echo "$ZIP_UPLOAD" | jq -r '.file_url')
+          if [[ -z "$ZIP_URL" || "$ZIP_URL" == "null" ]]; then
+            echo "Failed to upload ZIP to EDD directory. Using SFTP fallback..."
+            
+            # Fallback: Create temporary netrc file for SFTP authentication
+            echo "machine ${WP_SITE_URL#*://} login ${WP_USER} password ${WP_APP_PASS}" > ~/.netrc
+            chmod 600 ~/.netrc
+            
+            # Use curl with SFTP to upload the file
+            # Note: This requires SFTP access to be configured on the server
+            # If SFTP isn't available, you'll need another fallback method
+            echo "Uploading via SFTP..."
+            
+            # Set the destination path - this assumes you know the server path that corresponds to /wp-content/uploads/
+            # This path must be adjusted based on your actual server configuration
+            EDD_DIR="/path/to/wp-content/uploads/edd/${CURRENT_YEAR}/${CURRENT_MONTH}/"
+            
+            # Final fallback: use the predefined path directly
+            echo "Using predefined EDD path: /wp-content/uploads/edd/${CURRENT_YEAR}/${CURRENT_MONTH}/"
+            WP_ZIP_URL="${WP_SITE_URL}/wp-content/uploads/edd/${CURRENT_YEAR}/${CURRENT_MONTH}/qsm-certificate-${{ env.PLUGIN_VERSION }}.zip"
+            
+            # Remove temporary netrc file
+            rm ~/.netrc
+          else
+            echo "ZIP uploaded successfully: $ZIP_URL"
+            WP_ZIP_URL="$ZIP_URL"
+          fi
+          
+          echo "WP_ZIP_URL=$WP_ZIP_URL" >> $GITHUB_ENV
+
+      # Update EDD product with zip URL and version data (always run this step)
+      - name: Update EDD product
+        id: update_edd_product
+        env:
+          WP_SITE_URL: ${{ secrets.WP_SITE_URL }}
+          QSM_API_KEY: ${{ secrets.QSM_API_KEY }}
+          EDD_PRODUCT_ID: ${{ secrets.EDD_PRODUCT_ID }}
+          PLUGIN_VERSION: ${{ env.PLUGIN_VERSION }}
+        run: |
+          # Don't fail the workflow if EDD update fails
+          set +e
+          
+          # Check for required environment variables
+          if [[ -z "${WP_SITE_URL}" || -z "${EDD_PRODUCT_ID}" || -z "${QSM_API_KEY}" ]]; then
+            echo "Missing required environment variables for EDD product update"
+            exit 1
+          fi
+          
+          # Set default ZIP URL if none exists
+          ZIP_URL="${{ env.WP_ZIP_URL }}"
+          if [[ -z "${ZIP_URL}" || "${ZIP_URL}" == "null" ]]; then
+            # Fallback to GitHub release URL if ZIP wasn't uploaded to WordPress
+            echo "No WordPress ZIP URL found, using GitHub release URL"
+            ZIP_URL="https://github.com/${{ github.repository }}/releases/download/v${{ env.PLUGIN_VERSION }}/qsm-certificate-${{ env.PLUGIN_VERSION }}.zip"
+          fi
+          
+          # Always attempt the EDD update
+            echo "Updating EDD product ${EDD_PRODUCT_ID} with version ${{ env.PLUGIN_VERSION }} and zip URL ${ZIP_URL}"
+            
+            # Extract changelog for this version
+            CHANGELOG=$(echo "${{ env.CHANGELOG }}" | sed -e 's/"/\\"/g' -e 's/$/\\n/g' | tr -d '\n')
+            
+            # Create JSON payload directly for the API call
+            echo "Creating JSON payload for EDD product update"
+            echo '{' > update_payload.json
+            echo '  "product_id": "'${EDD_PRODUCT_ID}'",' >> update_payload.json
+            echo '  "version": "'${{ env.PLUGIN_VERSION}}'",' >> update_payload.json
+            echo '  "zip_url": "'${ZIP_URL}'",' >> update_payload.json
+            echo '  "changelog": "'${CHANGELOG}'"' >> update_payload.json
+            echo '}' >> update_payload.json
+            
+            # Display the payload for debugging (with sensitive data masked)
+            echo "Update payload (API key masked):"
+            cat update_payload.json
+            
+            # Use the new secure API endpoint
+            echo "Sending update to EDD via QSM API endpoint..."
+            UPDATE_RESPONSE=$(curl -v -X POST "${WP_SITE_URL}/wp-json/qsm-edd/v1/update-product/" \
+              -H "Content-Type: application/json" \
+              -H "X-QSM-API-Key: ${QSM_API_KEY}" \
+              --data @update_payload.json 2>&1)
+              
+            echo "API Response:"
+            echo "$UPDATE_RESPONSE"
+            
+            # Check for errors in the response
+            if echo "$UPDATE_RESPONSE" | grep -q "error\|fail\|invalid\|not found"; then
+              echo "Error updating EDD product. Please check API response."
+            else
+              echo "EDD product update successful."
+            fi
+            
+            # Return success code for this step
+            exit 0

@@ -12,6 +12,30 @@ jQuery(document).ready(function($) {
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${import_template}</button>`);
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-save-template-button"></span>${save_template}</button>`);
     }
+
+    function qsm_toggle_certificate_rows(){
+        const $checked = jQuery('input[name="enableCertificates"]:checked');
+        if (!$checked.length) return;
+        const disabled = $checked.val() === '1';
+        const $form = $checked.closest('form');
+        const $body = $form.find('table.form-table:first tr').show().slice(1);
+
+        $body
+            .css('opacity', disabled ? 0.5 : 1)
+            .find('input,select,textarea,button')
+            .prop('readonly', disabled);
+
+        // Ensure submit is never readonly
+        $form.find('button[type="submit"],input[type="submit"]').prop('readonly', false);
+
+        const ed = window.tinymce && tinymce.get('certificate_template');
+        if (ed) { try { ed.setMode(disabled ? 'readonly' : 'design'); } catch(e){} }
+    }
+
+    jQuery(document).on('change','input[name="enableCertificates"]',qsm_toggle_certificate_rows);
+
+    qsm_toggle_certificate_rows();
+
     if ($.fn.DataTable) {
         var table = $('#qsm-certificate-table').DataTable();
         if (table) {

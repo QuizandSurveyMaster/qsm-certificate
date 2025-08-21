@@ -22,72 +22,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
 	global $wpdb;
 	global $mlwQuizMasterNext;
     $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
-    $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d";
-    $params = array( (int) $quiz_results['quiz_id'] );
-    // Only load a specific template when template_id > 0.
-    // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.
-    if ( (int) $template_id > 0 ) {
-        $query  .= ' AND id = %d';
-        $params[] = (int) $template_id;
-        $templates = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
-    } else {
-        $templates = array();
-    }
-	if ( ! empty( $templates ) ) {
-		$tpl      = $templates[0];
-		$tpl_id   = (int) $tpl['id'];
-		$tpl_data = maybe_unserialize( $tpl['certificate_data'] );
-		if ( is_array( $tpl_data ) && ! empty( $tpl_data['content'] ) ) {
-			$tpl_data['content'] = wp_unslash( $tpl_data['content'] );
-			if ( isset( $tpl_data['font'] ) ) {
-				$tpl_data['certificate_font'] = wp_unslash( $tpl_data['font'] );
-			}
-			if ( isset( $tpl_data['size'] ) ) {
-				$tpl_data['certificate_size'] = $tpl_data['size'];
-			}
-			if ( isset( $tpl_data['logoStyle'] ) ) {
-				$tpl_data['logo_style'] = $tpl_data['logoStyle'];
-			}
-			$exp_date = '';
-            if ( $certificate_settings['never_expiry'] == 1 ) {
-                $exp_date = "";
-            } else {
-                $expire_time = $certificate_settings['expiry_days']
-                ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
-                : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
-                $exp_date = str_replace('-', '', $expire_time);
-            }
-			$encoded_time_taken = md5( $quiz_results['time_taken'] );
-			$filename           = "{$quiz_results['quiz_id']}-{$tpl_id}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-			$filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
-			$wp_upload      = wp_upload_dir();
-			$pdf_file_name = $filename;
-			$pdf_folder    = trailingslashit( $wp_upload['basedir'] ) . 'qsm-certificates/';
-			if ( ! file_exists( $pdf_folder . $filename ) ) {
-				if ( ! is_dir( $pdf_folder ) ) {
-					wp_mkdir_p( $pdf_folder );
-				}
-				$html          = qsm_pdf_html_post_process_certificate( '', $tpl_data, $quiz_results );
-				$dompdf        = new Dompdf();
-				$size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
-				$orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
-				$dompdf->setPaper( 'A4', $orientation );
-				$dompdf->set_option( 'isHtml5ParserEnabled', true );
-				$dompdf->set_option( 'isFontSubsettingEnabled', true );
-				$dompdf->set_option( 'isRemoteEnabled', true );
-				if ( isset( $tpl_data['dpi'] ) ) {
-					$dompdf->set_option( 'dpi', (int) $tpl_data['dpi'] );
-				}
-				$dompdf->loadHtml( $html );
-				$dompdf->render();
-				$pdf_output = $dompdf->output();
-				file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
-			}
-			return $return_file ? urlencode( $pdf_file_name ) : true;
-		}
-	}
-
-	if ( ! is_array( $certificate_settings ) ) {
+    if ( ! is_array( $certificate_settings ) ) {
 		$quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $quiz_results["quiz_id"] ) );
 		// Loads the certificate options vVariables.
 		if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
@@ -115,8 +50,72 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
 
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
-    // If certificate is enabled
     if ( 0 == $certificate_settings["enabled"] ) {
+        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d";
+        $params = array( (int) $quiz_results['quiz_id'] );
+        // Only load a specific template when template_id > 0.
+        // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.
+        if ( (int) $template_id > 0 ) {
+            $query  .= ' AND id = %d';
+            $params[] = (int) $template_id;
+            $templates = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
+        } else {
+            $templates = array();
+        }
+        if ( ! empty( $templates ) ) {
+            $tpl      = $templates[0];
+            $tpl_id   = (int) $tpl['id'];
+            $tpl_data = maybe_unserialize( $tpl['certificate_data'] );
+            if ( is_array( $tpl_data ) && ! empty( $tpl_data['content'] ) ) {
+                $tpl_data['content'] = wp_unslash( $tpl_data['content'] );
+                if ( isset( $tpl_data['font'] ) ) {
+                    $tpl_data['certificate_font'] = wp_unslash( $tpl_data['font'] );
+                }
+                if ( isset( $tpl_data['size'] ) ) {
+                    $tpl_data['certificate_size'] = $tpl_data['size'];
+                }
+                if ( isset( $tpl_data['logoStyle'] ) ) {
+                    $tpl_data['logo_style'] = $tpl_data['logoStyle'];
+                }
+                $exp_date = '';
+                if ( $certificate_settings['never_expiry'] == 1 ) {
+                    $exp_date = "";
+                } else {
+                    $expire_time = $certificate_settings['expiry_days']
+                    ? (new DateTime())->modify('+' . intval($certificate_settings['expiry_days']) . ' days')->format('d-m-Y')
+                    : (new DateTime($certificate_settings['expiry_date']))->format('d-m-Y');
+                    $exp_date = str_replace('-', '', $expire_time);
+                }
+                $encoded_time_taken = md5( $quiz_results['time_taken'] );
+                $filename           = "{$quiz_results['quiz_id']}-{$tpl_id}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
+                $wp_upload      = wp_upload_dir();
+                $pdf_file_name = $filename;
+                $pdf_folder    = trailingslashit( $wp_upload['basedir'] ) . 'qsm-certificates/';
+                if ( ! file_exists( $pdf_folder . $filename ) ) {
+                    if ( ! is_dir( $pdf_folder ) ) {
+                        wp_mkdir_p( $pdf_folder );
+                    }
+                    $html          = qsm_pdf_html_post_process_certificate( '', $tpl_data, $quiz_results );
+                    $dompdf        = new Dompdf();
+                    $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
+                    $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
+                    $dompdf->setPaper( 'A4', $orientation );
+                    $dompdf->set_option( 'isHtml5ParserEnabled', true );
+                    $dompdf->set_option( 'isFontSubsettingEnabled', true );
+                    $dompdf->set_option( 'isRemoteEnabled', true );
+                    if ( isset( $tpl_data['dpi'] ) ) {
+                        $dompdf->set_option( 'dpi', (int) $tpl_data['dpi'] );
+                    }
+                    $dompdf->loadHtml( $html );
+                    $dompdf->render();
+                    $pdf_output = $dompdf->output();
+                    file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
+                }
+                return $return_file ? urlencode( $pdf_file_name ) : true;
+            }
+        }
+
         if ( $certificate_settings['never_expiry'] == 1 ) {
             $exp_date = "";
         } else {

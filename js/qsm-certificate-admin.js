@@ -13,29 +13,6 @@ jQuery(document).ready(function($) {
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-save-template-button"></span>${save_template}</button>`);
     }
 
-    function qsm_toggle_certificate_rows(){
-        const $checked = jQuery('input[name="enableCertificates"]:checked');
-        if (!$checked.length) return;
-        const disabled = $checked.val() === '1';
-        const $form = $checked.closest('form');
-        const $body = $form.find('table.form-table:first tr').show().slice(1);
-
-        $body
-            .css('opacity', disabled ? 0.5 : 1)
-            .find('input,select,textarea,button')
-            .prop('readonly', disabled);
-
-        // Ensure submit is never readonly
-        $form.find('button[type="submit"],input[type="submit"]').prop('readonly', false);
-
-        const ed = window.tinymce && tinymce.get('certificate_template');
-        if (ed) { try { ed.setMode(disabled ? 'readonly' : 'design'); } catch(e){} }
-    }
-
-    jQuery(document).on('change','input[name="enableCertificates"]',qsm_toggle_certificate_rows);
-
-    qsm_toggle_certificate_rows();
-
     if ($.fn.DataTable) {
         var table = $('#qsm-certificate-table').DataTable();
         if (table) {
@@ -170,6 +147,24 @@ jQuery(document).ready(function($) {
         }
     }
     qsm_certificate_update_expiry_fields();
+    
+    function qsm_toggle_certificate_rows() {
+        var $c = jQuery('input[name="enableCertificates"]:checked');
+        if (!$c.length) return;
+        var d = $c.val() === '1', $f = $c.closest('form');
+        $f.find('table.form-table:first tr').show().slice(1)
+          .css('opacity', d ? 0.5 : 1)
+          .find('input,select,textarea,button').prop('readonly', d);
+        $f.find('button[type="submit"],input[type="submit"]').prop('readonly', false);
+        var ed = window.tinymce && tinymce.get('certificate_template');
+        if (ed) { try { ed.setMode(d ? 'readonly' : 'design'); } catch(e){}
+        }
+        if (typeof qsm_certificate_update_expiry_fields === 'function') qsm_certificate_update_expiry_fields();
+    }
+
+    jQuery(document).on('change', 'input[name="enableCertificates"]', qsm_toggle_certificate_rows);
+
+    qsm_toggle_certificate_rows();
 
     jQuery(document).on('change', '.qsm-certificate-background', function (e) {
         e.preventDefault();

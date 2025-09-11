@@ -15,31 +15,11 @@
 #validation_message .qsm-certificate-error span::before{
     line-height: 29px;
 }
-.qsm-certificate-expiry-shortcode-notloop {
-    min-width: 120px;
-    text-align: center;
-    margin-left: 8px;
-    margin-top: -6px;
-}
-.qsm-certificate-expiry-shortcode-notloop span {
-    cursor: pointer;
-}
-.certificate-copy-success {
-    color: rgb(45, 158, 45);
-    display: none;
-}
-.qsm-certificate-expiry-shortcode-notloop:not(:hover) .qsm-certificate-expiry-shortcode-info {
-    display: none;
-}
-.qsm-certificate-expiry-shortcode-notloop:hover .qsm-certificate-expiry-shortcode-print {
-    display: none;
-}
 .qsm-certificate-expiry-shortcode-notloop.button-secondary:hover {
     background: #DDEFFE;
     border: 1px dashed;
 }
 .qsm-certificate-result{
-    font-family: system-ui; 
     width: fit-content; 
     margin: 0 auto; 
     border: 1px solid #e0e0e0; 

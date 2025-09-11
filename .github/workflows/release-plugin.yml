@@ -107,8 +107,16 @@ jobs:
       - name: Create plugin zip
         if: env.RELEASE_EXISTS != 'true'
         run: |
-          # Create zip from current directory contents, not a nested directory
-          zip -r qsm-certificate-${{ env.PLUGIN_VERSION }}.zip . -x "*.git*" "*.github*" "*.DS_Store*"
+          # Create a temporary directory with proper plugin folder name
+          mkdir -p /tmp/qsm-certificate
+          # Copy all files to the temporary directory
+          rsync -a --exclude=".git*" --exclude=".github*" --exclude=".DS_Store*" . /tmp/qsm-certificate/
+          # Navigate to temp parent directory
+          cd /tmp
+          # Create zip from the proper directory structure
+          zip -r $GITHUB_WORKSPACE/qsm-certificate-${{ env.PLUGIN_VERSION }}.zip qsm-certificate
+          # Return to original directory
+          cd $GITHUB_WORKSPACE
 
       # Create a GitHub release (only if release doesn't exist)
       - name: Create GitHub Release

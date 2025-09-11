@@ -346,10 +346,10 @@ function migrate_old_certificates( $certificates_dirname ) {
 function qsm_addon_certificate_expiry_check() {
 	global $mlwQuizMasterNext, $wpdb;
 
-	if ( ! isset( $_POST['certificate_id'] ) ) {
+	if( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'qsm_certificate_expiry_check' ) ) {
 		wp_send_json_error(
 			array(
-				'message' => '<div class="qsm-certificate-error"><span class="dashicons dashicons-no-alt"></span> ' . esc_html__( 'Missing certificate ID', 'qsm-certificate' ) . '</div>',
+				'message' => '<div class="qsm-certificate-error"><span class="dashicons dashicons-no-alt"></span> ' . esc_html__( 'Invalid nonce', 'qsm-certificate' ) . '</div>',
 			)
 		);
 	}

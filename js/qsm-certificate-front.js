@@ -1,20 +1,27 @@
 jQuery(document).ready(function() {
     jQuery(document).on('click', '.qsm-certificate-expiry-check-button', function (event) {
         event.preventDefault();
-
-        let certificate_id = jQuery(document).find('#certificate_id').val();
+        let certificate_id = jQuery(document).find('#qsm-certificate-id').val();
+        let nonce = jQuery(document).find('#qsm_certificate_expiry_check_nonce').val();
+        if (!certificate_id) {
+            jQuery(document).find('#qsm-certificate-validation-message').html(qsm_certificate_ajax_object.enter_certificate_id);
+            return;
+        }
+        let $this = jQuery(this);
+        $this.attr('disabled', true);
         var data = {
             action: 'qsm_addon_certificate_expiry_check',
             certificate_id: certificate_id,
+            nonce: nonce
         };
-
         jQuery.post(qsm_certificate_ajax_object.ajaxurl, data, function(response) {
+            $this.attr('disabled', false);
             if (response.success) {
-                jQuery(document).find('#validation_message').html('');
+                jQuery(document).find('#qsm-certificate-validation-message').html('');
                 const modalHTML = `
-                    <div class="qsm-popup-overlay">
+                    <div class="qsm-certificate-popup-overlay">
                         <div class="qsm-certificate-result">
-                            <div class="qsm-popup-close">&times;</div>
+                            <div class="qsm-certificate-popup-close">&times;</div>
                                 <div class="qsm-certificate-details">
                                     <span class="qsm-certificate-detail-row">
                                         <span class="dashicons ${response.data.status_icon}"
@@ -52,10 +59,10 @@ jQuery(document).ready(function() {
 
                 jQuery('body').append(modalHTML);
 
-                jQuery('.qsm-popup-overlay').css('display', 'flex').hide().fadeIn();
+                jQuery('.qsm-certificate-popup-overlay').css('display', 'flex').hide().fadeIn();
 
-                jQuery('.qsm-popup-close, .qsm-popup-overlay').on('click', function() {
-                    jQuery('.qsm-popup-overlay').fadeOut(function() {
+                jQuery('.qsm-certificate-popup-close, .qsm-certificate-popup-overlay').on('click', function() {
+                    jQuery('.qsm-certificate-popup-overlay').fadeOut(function() {
                         jQuery(this).remove();
                     });
                 });
@@ -64,7 +71,7 @@ jQuery(document).ready(function() {
                     e.stopPropagation();
                 });
             } else {
-                jQuery(document).find('#validation_message').html(response.data.message);
+                jQuery(document).find('#qsm-certificate-validation-message').html(response.data.message);
             }
         });
     });

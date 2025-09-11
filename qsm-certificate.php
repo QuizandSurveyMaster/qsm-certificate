@@ -118,8 +118,6 @@ class QSM_Certificate {
 		add_action( 'admin_init', array( $this, 'qsm_certificate_template_create_table' ) );
 		add_action( 'wp_ajax_qsm_addon_certificate_save_template', 'qsm_addon_certificate_save_template' );
 		add_action( 'wp_ajax_nopriv_qsm_addon_certificate_save_template', 'qsm_addon_certificate_save_template' );
-		add_action( 'wp_ajax_qsm_certificate_validate_license', 'qsm_certificate_validate_license' );
-		add_action( 'wp_ajax_nopriv_qsm_certificate_validate_license', 'qsm_certificate_validate_license' );
 	}
 
 	public function qsm_certificate_template_create_table() {

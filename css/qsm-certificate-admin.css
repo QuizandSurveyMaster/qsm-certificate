@@ -64,24 +64,6 @@
 #wp-certificate_template-wrap .qsm-certificate-template-preview-btn {
     margin-top: 10px;
 }
-.qsm-certificate-result{
-    font-family: system-ui; 
-    width: fit-content; 
-    margin: 0 auto; 
-    border: 1px solid #e0e0e0; 
-    border-radius:20px; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 60px 70px 50px;
-    font-size: 15px;
-    font-weight: 500;
-    text-align: center;
-    background: #fff;
-    position: relative;
-}
-
-.qsm-certificate-error{
-    color: red;
-}
 #qsm-certificate-show-popup .qsm-popup__container{
     max-width: 100%;
 }
@@ -301,135 +283,6 @@ h2#qsm-certificate-preview-page-templates-title {
 #qsm-certificate-show-changes{
     margin-top: 30px;
 }
-.qsm-certificate-result .qsm-certificate-details .qsm-certificate-detail-row .dashicons{
-    display: flex;
-    justify-content: center;
-    justify-self: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    font-size: 25px;
-    line-height: 40px;
-    position: relative; 
-    top: -10px;
-    left: 10px;
-}
-.qsm-certificate-result .qsm-certificate-details .qsm-certificate-detail-row span{
-    display: flex;
-    justify-content: center;
-}
-.qsm-certificate-result .qsm-certificate-details .qsm-certificate-detail-row .qsm-certificate-value{
-    font-size: 22px;
-}
-.qsm-certificate-result .qsm-certificate-details .qsm-certificate-table-show{
-    min-width: 300px;
-    margin: 30px 0;
-}
-.qsm-certificate-result .qsm-certificate-pdf-preview{
-    display: flex;
-    justify-content: center;
-    justify-self: center;
-    background: rgb(45, 45, 45);
-    width: fit-content;
-    padding: 5px 15px;
-    border-radius: 10px;
-}
-.qsm-certificate-result .qsm-certificate-pdf-preview a{
-    color: #fff;
-    text-decoration: none;
-}
-.qsm-certificate-result .qsm-certificate-expiry-result-close span{
-    float: right;
-    position: relative;
-    top: -53px;
-    left: 60px;
-    cursor: pointer;
-}
-.qsm-certificate-result .qsm-certificate-table-show .qsm-certificate-value{
-    font-weight: 400;
-    border-right: none;
-}
-.qsm-certificate-result .qsm-certificate-table-show .qsm-certificate-label{
-    border-right: none;
-    border-left: none;
-}
-.qsm-certificate-result .qsm-certificate-table-show{
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-}
-.qsm-certificate-table-show tr:last-child td.qsm-certificate-value,
-.qsm-certificate-table-show tr:last-child td.qsm-certificate-label {
-    border-bottom: none ;
-}
-.qsm-certificate-table-show .qsm-certificate-value,
-.qsm-certificate-table-show .qsm-certificate-label {
-    padding: 20px 10px;
-}
-/* Popup Styles */
-.qsm-popup-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-}
-
-.qsm-popup-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #555;
-}
-
-.qsm-popup-close:hover {
-    color: #000;
-}
-.qsm-logic-expired-date{
-    color: red;
-}
-#qsm-certificate-expiry-check-form label{
-    display: block;
-    margin: 10px 0;
-}
-#qsm-certificate-expiry-check-form input[type="text"]{
-    max-width: 1000px;
-}
-#qsm-certificate-expiry-check-form input[type="submit"]{
-    margin-left: 10px;
-}
-#validation_message .qsm-certificate-error span::before{
-    line-height: 29px;
-}
-.qsm-certificate-expiry-shortcode-notloop {
-    min-width: 120px;
-    text-align: center;
-    margin-left: 8px;
-    margin-top: -6px;
-}
-.qsm-certificate-expiry-shortcode-notloop span {
-    cursor: pointer;
-}
-.certificate-copy-success {
-    color: rgb(45, 158, 45);
-    display: none;
-}
-.qsm-certificate-expiry-shortcode-notloop:not(:hover) .qsm-certificate-expiry-shortcode-info {
-    display: none;
-}
-.qsm-certificate-expiry-shortcode-notloop:hover .qsm-certificate-expiry-shortcode-print {
-    display: none;
-}
-.qsm-certificate-expiry-shortcode-notloop.button-secondary:hover {
-    background: #DDEFFE;
-    border: 1px dashed;
-}
 #qsm-certificate-page-templates-content .qsm-certificate-my-template-container{
     margin: 0 20px;
 }
@@ -457,4 +310,8 @@ h2#qsm-certificate-preview-page-templates-title {
 
 #qsm-template-name-update-form td input[type="radio"] {
     margin: 0;
+}
+.qsm-certificate-validate-parent,
+.qsm-license-content {
+    padding: 10px 15px;
 }

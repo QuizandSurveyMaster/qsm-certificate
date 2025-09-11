@@ -22,8 +22,8 @@ function qsm_addon_certificate_register_quiz_settings_tabs() {
  */
 function qsm_addon_certificate_quiz_settings_tabs_content() {
 	// Enqueue your scripts and styles
-	wp_enqueue_script( 'qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_style( 'qsm_certificate_admin_style', plugins_url( '../css/qsm-certificate-admin.css' , __FILE__ ) );
+	wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+	wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_CSS_URL . '/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
 
 	global $wpdb;
 	global $mlwQuizMasterNext;
@@ -331,7 +331,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
  */
 function qsm_certificate_popups_for_templates( $certificate_template_from_script, $type ) {
     global $wpdb;
-    wp_enqueue_script( 'qsm_certificate_js', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+    wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
     $quiz_id = isset( $_GET['quiz_id'] ) ? (int) $_GET['quiz_id'] : 0;
     $certificate_templates = $wpdb->get_results(
         $wpdb->prepare(
@@ -352,7 +352,7 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
         $certificate_data_by_id[ $tpl_id ] = $tpl_data;
     }
     wp_localize_script(
-        'qsm_certificate_js',
+        'qsm_certificate_admin_script',
         'qsm_certificate_template_obj',
         array(
             'certificate_data_by_id' => $certificate_data_by_id,

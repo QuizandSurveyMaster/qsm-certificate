@@ -102,10 +102,10 @@ function qsm_addon_certificate_details_tabs_content() {
     }
     WP_Filesystem();
 
-    wp_enqueue_script( 'certificate-datatable-js', QSM_CERTIFICATE_URL . 'js/datatables.min.js', array( 'jquery' ), '2.1.8', true );
-    wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
-    wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
-    wp_enqueue_style( 'certificate-datatable-css', QSM_CERTIFICATE_URL . 'css/datatables.min.css', array(), '2.1.8' );
+    wp_enqueue_script( 'certificate-datatable-js', QSM_CERTIFICATE_JS_URL . '/datatables.min.js', array( 'jquery' ), '2.1.8', true );
+    wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+    wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_CSS_URL . '/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
+    wp_enqueue_style( 'certificate-datatable-css', QSM_CERTIFICATE_CSS_URL . '/datatables.min.css', array(), '2.1.8' );
 
     wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_obj', array(
         'delete_confirm'          => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),

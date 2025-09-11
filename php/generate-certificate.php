@@ -401,14 +401,14 @@ function qsm_certificate_template_content() {
     $certificate_template_from_script = ! is_wp_error($remote_response) ? json_decode(wp_remote_retrieve_body($remote_response), true) : $local_templates;
     $certificate_template_from_script = empty($certificate_template_from_script) ? $local_templates : $certificate_template_from_script;
 
-    wp_enqueue_script('qsm_advance_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
+    wp_enqueue_script('qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
 
     $js_data = array(
         'quizID'          => $quiz_id,
         'script_tmpl'     => $certificate_template_from_script,
         'qsm_tmpl_bg_url' => QSM_CERTIFICATE_URL . 'assets/'
     );
-    wp_localize_script('qsm_advance_certificate_admin_script', 'qsmCertificateObject', $js_data);
+    wp_localize_script('qsm_certificate_admin_script', 'qsmCertificateObject', $js_data);
 
     if ( function_exists('qsm_certificate_popups_for_templates') ) {
         qsm_certificate_popups_for_templates( $certificate_template_from_script, 'certificate' );

@@ -458,3 +458,7 @@ h2#qsm-certificate-preview-page-templates-title {
 #qsm-template-name-update-form td input[type="radio"] {
     margin: 0;
 }
+.qsm-certificate-validate-parent,
+.qsm-license-content {
+    padding: 10px 15px;
+}

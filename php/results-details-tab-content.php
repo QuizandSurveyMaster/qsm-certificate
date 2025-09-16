@@ -24,10 +24,11 @@ function qsm_addon_certificate_results_details_tabs_content() {
     global $wpdb;
     global $mlwQuizMasterNext;
 
+    // Get result ID from URL
+    $result_id = isset( $_GET['result_id'] ) ? intval( $_GET['result_id'] ) : 0;
+    
     // If is set and correct, save certificate settings
     if ( isset( $_POST['certificate_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['certificate_nonce'] ) ), 'certificate' ) ) {
-        // Retrieve results
-        $result_id = isset( $_GET['result_id'] ) ? intval( $_GET['result_id'] ) : 0;
         if ( $result_id > 0 ) {
             $results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id=%d", $result_id ) );
 
@@ -38,30 +39,33 @@ function qsm_addon_certificate_results_details_tabs_content() {
                 $results = array( 0, '', '' );
             }
 
-            // Prepare result array
+            // Prepare result array with null checks
             $quiz_results = array(
-                'quiz_id'                => $results_data->quiz_id,
-                'quiz_name'              => $results_data->quiz_name,
-                'quiz_system'            => $results_data->quiz_system,
-                'user_name'              => $results_data->name,
-                'user_business'          => $results_data->business,
-                'user_email'             => $results_data->email,
-                'user_phone'             => $results_data->phone,
-                'user_id'                => $results_data->user,
-                'timer'                  => $results[0],
-                'time_taken'             => $results_data->time_taken,
-                'total_points'           => $results_data->point_score,
-                'total_score'            => $results_data->correct_score,
-                'total_correct'          => $results_data->correct,
-                'total_questions'        => $results_data->total,
-                'comments'               => $results[2],
-                'question_answers_array' => $results[1],
+                'quiz_id'                => $results_data->quiz_id ?? 0,
+                'quiz_name'              => $results_data->quiz_name ?? '',
+                'quiz_system'            => $results_data->quiz_system ?? 0,
+                'user_name'              => $results_data->name ?? '',
+                'user_business'          => $results_data->business ?? '',
+                'user_email'             => $results_data->email ?? '',
+                'user_phone'             => $results_data->phone ?? '',
+                'user_id'                => $results_data->user ?? 0,
+                'timer'                  => $results[0] ?? 0,
+                'time_taken'             => $results_data->time_taken ?? '',
+                'total_points'           => $results_data->point_score ?? 0,
+                'total_score'            => $results_data->correct_score ?? 0,
+                'total_correct'          => $results_data->correct ?? 0,
+                'total_questions'        => $results_data->total ?? 0,
+                'comments'               => $results[2] ?? '',
+                'question_answers_array' => $results[1] ?? array(),
+                'result_id'              => $result_id,
             );
 
-            $mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
+            if ( $results_data->quiz_id ) {
+                $mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
+            }
 
             // Generate certificate
-            $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, true );
+            $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, 0, true );
 
             // Display link to certificate
             if ( ! empty( $certificate_file ) && false !== $certificate_file ) {

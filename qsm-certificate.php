@@ -87,8 +87,6 @@ class QSM_Certificate {
 		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
 		add_action( 'wp_ajax_qsm_addon_certificate_expiry_check', 'qsm_addon_certificate_expiry_check' );
 		add_action('wp_ajax_nopriv_qsm_addon_certificate_expiry_check', 'qsm_addon_certificate_expiry_check');
-		add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10, 2 );
-		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
 		add_action( 'wp_ajax_qsm_certificate_validate_license', 'qsm_certificate_validate_license' );
 		
 
@@ -487,11 +485,12 @@ function qsm_addon_certificate_save_template() {
         $ok = $wpdb->update(
             $table,
             array(
+                'template_name'    => $template_name,
                 'certificate_data' => $certificate_data,
                 'Creation_date'    => $creation_date,
             ),
             array( 'id' => $template_id ),
-            array( '%s', '%s' ),
+            array( '%s', '%s', '%s' ),
             array( '%d' )
         );
         if ( false === $ok ) {

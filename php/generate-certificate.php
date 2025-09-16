@@ -25,7 +25,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     if ( ! is_array( $certificate_settings ) ) {
 		$quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $quiz_results["quiz_id"] ) );
 		// Loads the certificate options vVariables.
-		if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
+		if ( $quiz_options && is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
 			$certificate = @unserialize( $quiz_options->certificate_template );
 			$certificate_settings    = array(
 				'enabled'    => $certificate[4],
@@ -51,14 +51,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
     if ( 0 == $certificate_settings["enabled"] ) {
-        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d";
-        $params = array( (int) $quiz_results['quiz_id'] );
+        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template";
         // Only load a specific template when template_id > 0.
         // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.
         if ( (int) $template_id > 0 ) {
-            $query  .= ' AND id = %d';
-            $params[] = (int) $template_id;
-            $templates = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
+            $query  .= ' WHERE id = %d';
+            $templates = $wpdb->get_results( $wpdb->prepare( $query, (int) $template_id ), ARRAY_A );
         } else {
             $templates = array();
         }
@@ -87,7 +85,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                     $exp_date = str_replace('-', '', $expire_time);
                 }
                 $encoded_time_taken = md5( $quiz_results['time_taken'] );
-                $filename           = "{$quiz_results['quiz_id']}-{$tpl_id}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
                 $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
                 $wp_upload      = wp_upload_dir();
                 $pdf_file_name = $filename;

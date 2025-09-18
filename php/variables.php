@@ -15,15 +15,13 @@ function qsm_addon_certificate_variable( $content, $quiz_array ) {
     global $mlwQuizMasterNext, $wpdb;
 
     $templates = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT id, certificate_data FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
-            (int) $quiz_array['quiz_id']
-        )
+        "SELECT id, certificate_data FROM {$wpdb->prefix}mlw_certificate_template",
+        ARRAY_A
     );
 
     foreach ( $templates as $template ) {
-        $template_data  = maybe_unserialize( $template->certificate_data );
-        $certificate_id = (int) $template->id;
+        $template_data  = maybe_unserialize( $template['certificate_data'] );
+        $certificate_id = (int) $template['id'];
         $variable_name  = '%CERTIFICATE_TEMPLATE_' . $certificate_id . '%';
 
         if ( empty( $template_data ) || strpos( $content, $variable_name ) === false ) {

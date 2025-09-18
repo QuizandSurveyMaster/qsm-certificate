@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: https://quizandsurveymaster.com
- * Version: 2.1.0
+ * Version: 2.2.0
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '2.1.0';
+	public $version = '2.2.0';
 
 	/**
 	 * Main Construct Function
@@ -47,6 +47,7 @@ class QSM_Certificate {
 		$this->load_dependencies();
 		$this->add_hooks();
 		$this->check_license();
+		define( 'QSM_CERTIFICATE_ITEM', 8241 );
 		define( 'QSM_CERTIFICATE_VERSION', $this->version );
 		define( 'QSM_CERTIFICATE_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'QSM_CERTIFICATE_URL', plugin_dir_url( __FILE__ ) );
@@ -86,9 +87,8 @@ class QSM_Certificate {
 		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
 		add_action( 'wp_ajax_qsm_addon_certificate_expiry_check', 'qsm_addon_certificate_expiry_check' );
 		add_action('wp_ajax_nopriv_qsm_addon_certificate_expiry_check', 'qsm_addon_certificate_expiry_check');
-		add_filter( 'mlw_qmn_template_variable_results_page', 'qsm_addon_certificate_variable', 10, 2 );
-		add_filter( 'qmn_email_template_variable_results', 'qsm_addon_certificate_variable', 10, 2 );
-
+		add_action( 'wp_ajax_qsm_certificate_validate_license', 'qsm_certificate_validate_license' );
+		
 
 		// Needed until the new variable system is finished.
 		add_filter( 'qsm_addon_certificate_content_filter', 'mlw_qmn_variable_point_score', 10, 2 );
@@ -273,7 +273,7 @@ add_action( 'plugins_loaded', 'qsm_addon_qsm_certificate_load' );
  * @return void
  */
 function qsm_addon_qsm_certificate_missing_qsm() {
-	echo '<div class="error"><p>QSM - Certificate requires Quiz And Survey Master. Please install and activate the Quiz And Survey Master plugin.</p></div>';
+	echo '<div class="error"><p>'.__( 'QSM - Certificate requires Quiz And Survey Master. Please install and activate the Quiz And Survey Master plugin.', 'qsm-certificate' ).'</p></div>';
 }
 
 /**
@@ -344,10 +344,10 @@ function migrate_old_certificates( $certificates_dirname ) {
 function qsm_addon_certificate_expiry_check() {
 	global $mlwQuizMasterNext, $wpdb;
 
-	if ( ! isset( $_POST['certificate_id'] ) ) {
+	if( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'qsm_certificate_expiry_check' ) ) {
 		wp_send_json_error(
 			array(
-				'message' => '<div class="qsm-certificate-error"><span class="dashicons dashicons-no-alt"></span> ' . esc_html__( 'Missing certificate ID', 'qsm-certificate' ) . '</div>',
+				'message' => '<div class="qsm-certificate-error"><span class="dashicons dashicons-no-alt"></span> ' . esc_html__( 'Invalid nonce', 'qsm-certificate' ) . '</div>',
 			)
 		);
 	}
@@ -485,11 +485,12 @@ function qsm_addon_certificate_save_template() {
         $ok = $wpdb->update(
             $table,
             array(
+                'template_name'    => $template_name,
                 'certificate_data' => $certificate_data,
                 'Creation_date'    => $creation_date,
             ),
             array( 'id' => $template_id ),
-            array( '%s', '%s' ),
+            array( '%s', '%s', '%s' ),
             array( '%d' )
         );
         if ( false === $ok ) {
@@ -551,3 +552,60 @@ function qsm_addon_certificate_delete_template() {
     wp_send_json_success( array( 'message' => 'Certificate template deleted' ) );
 }
 add_action( 'wp_ajax_qsm_addon_certificate_delete_template', 'qsm_addon_certificate_delete_template' );
+
+function qsm_certificate_validate_license() {
+	global $mlwQuizMasterNext;
+	$post_license   = isset( $_POST['input'] ) ? sanitize_text_field( wp_unslash( $_POST['input'] ) ) : '';
+	$update_status  = isset( $_POST['update_status'] ) ? sanitize_text_field( wp_unslash( $_POST['update_status'] ) ) : '';
+	if ( "" != $post_license ) {
+
+		$settings    = get_option( 'qsm_addon_certificate_settings', array() );
+		$license     = isset( $settings['license_key'] ) ? trim( $settings['license_key'] ) : '';
+
+		if ( class_exists ( 'QSM_Check_License' ) ) {
+			$activation = $mlwQuizMasterNext->check_license->activate( $post_license, 'Certificate' );
+		}else {
+			$activation = QSM_license::activate( $post_license, 'Certificate' );
+		}
+
+		if ( ! empty($activation) && ( ( __( 'Attempting to activate a bundle\'s parent license', 'qsm-certificate' ) == $activation['message'] || __( 'License key revoked', 'qsm-certificate' ) == $activation['message'] || __( 'No activations left', 'qsm-certificate' ) == $activation['message'] || __( 'License has expired', 'qsm-certificate' ) == $activation['message'] ) || 'success' == $activation['status'] ) ) {
+			$item_url = 'https://quizandsurveymaster.com/checkout/?edd_license_key='.$license.'&download_id='.QSM_CERTIFICATE_ITEM;
+			$settings['license_key'] = $post_license;
+			$settings['license_status'] = 'valid';
+			$settings['last_validate'] = gmdate("d-m-Y", time());
+			$settings['expiry_date'] = isset($activation['expiry_date']) ? $activation['expiry_date'] : "";
+			if ( 'success' == $activation['status'] ) {
+				$validate = 1;
+				$message = __( 'License validated Successfully', 'qsm-certificate' );
+			}elseif ( __( 'License has expired', 'qsm-certificate' ) == $activation['message'] ) {
+				$validate = 2;
+				$message = __('License Key Expired. ', 'qsm-certificate');
+			}else {
+				$validate = 0;
+				$message = $activation['message'];
+			}
+		} else {
+			$validate = 0;
+			$settings['license_key'] = '';
+			$settings['license_status'] = '';
+			$settings['last_validate'] = 'invalid';
+			$settings['expiry_date'] = '';
+			$message = $activation['message'];
+		}
+		// If same license key was entered.
+		if ( $license != $post_license ) {
+			$deactivation = QSM_license::deactivate( $license, 'Certificate' );
+		}
+		if ( ! empty( $update_status ) && 'yes' === $update_status ) {
+			$keys_to_exclude    = [ 'license_key', 'license_status', 'last_validate', 'expiry_date' ];
+			$prev_settings      = array_diff_key($settings, array_flip($keys_to_exclude));
+			$settings           = array_merge( $settings, $prev_settings );
+		}
+		update_option( 'qsm_addon_certificate_settings', $settings );
+		echo wp_json_encode(array(
+			'validate' => $validate,
+			'message'  => $message,
+		));
+		wp_die();
+	}
+}

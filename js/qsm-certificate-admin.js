@@ -27,7 +27,7 @@ jQuery(document).ready(function($) {
                 info: qsm_certificate_obj.info,
                 search: qsm_certificate_obj.search
             },
-            order: [[2, "asc"]],
+            order: [[2, "desc"]],
             columnDefs: [
                 { targets: [2, 3], orderable: true, type: 'date-eu' },
                 { targets: [0, 1, 4], orderable: false }
@@ -515,5 +515,67 @@ jQuery(document).ready(function() {
                 }
             })
             .fail(function () { alert(qsm_certificate_pro_obj.server_error_msg); $btn.prop('disabled', false); });
+    });
+    jQuery('.qsm-certificate-validate-parent').on( 'click', '.qsm-certificate-validate-license-button', function ( event ) {
+        event.preventDefault();
+        var license_message = jQuery('.qsm-certificate-validate-license-message');
+        jQuery("#qsm-certificate-license-message").show();
+        if( jQuery('.qsm-certificate-validate-license-input').val() != "") {
+          license_message.html(qsm_certificate_obj.please_wait);
+          var data = {
+            action: 'qsm_certificate_validate_license',
+            input: jQuery('.qsm-certificate-validate-license-input').val(),
+          };
+          jQuery.post( ajaxurl, data, function ( response ) {
+            response = jQuery.parseJSON(response);
+            license_message.html(response.message);
+            if(response.validate == 1 || response.validate == 2) {
+              response.validate == 1 ? jQuery("#qsm-certificate-license-message").css({'color': '#00a32a'}) : "";
+              setTimeout(function() {
+                location.reload();
+              }, 2000);
+            } else {
+              license_message.html(qsm_certificate_obj.invalid);
+            }
+          });
+        }else{
+          license_message.html(qsm_certificate_obj.license_msg);
+          jQuery('.qsm-certificate-validate-license-input').focus();
+        }
+    });
+    jQuery('.qsm-certificate-licence-toggle').on("click", function( event ) {
+      event.preventDefault();
+      if ( parseInt(jQuery(this).attr('data-toggle')) === 0 ) {
+        jQuery(document).find('#qsm-certificate-license-entry').show();
+        jQuery(document).find('.qsm-license-content .qsm-license-info').hide();
+      } else {
+        jQuery(document).find('.qsm-license-content .qsm-license-info').show();
+        jQuery(document).find('#qsm-certificate-license-entry').hide();
+      }
+    });
+    jQuery(document).on( 'click', '#qsm-certificate-validate-btn', function ( event ) {
+      event.preventDefault();
+      var license_message = jQuery('#qsm-certificate-license-entry .qsm-validate-msg');
+      license_message.html(qsm_license_validate_obj.hold);
+      if( jQuery('#qsm-certificate-license-entry input[name="license_key"]').val() != "") {
+        var data = {
+          action: 'qsm_certificate_validate_license',
+          input: jQuery('#qsm-certificate-license-entry input[name="license_key"]').val(),
+          update_status: 'yes',
+        };
+        jQuery.post( ajaxurl, data, function ( response ) {
+          response = jQuery.parseJSON(response);
+          if(response.validate == 1 || response.validate == 2) {
+            setTimeout(function() {
+              location.reload();
+            }, 2000);
+          } else {
+            license_message.html(qsm_license_validate_obj.invalid);
+          }
+        });
+      } else {
+        license_message.html(qsm_license_validate_obj.empty);
+        jQuery('#qsm-certificate-license-entry input[name="license_key"]').focus();
+      }
     });
 });

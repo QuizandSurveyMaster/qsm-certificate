@@ -22,8 +22,8 @@ function qsm_addon_certificate_register_quiz_settings_tabs() {
  */
 function qsm_addon_certificate_quiz_settings_tabs_content() {
 	// Enqueue your scripts and styles
-	wp_enqueue_script( 'qsm_certificate_admin_script', plugins_url( '../js/qsm-certificate-admin.js' , __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_style( 'qsm_certificate_admin_style', plugins_url( '../css/qsm-certificate-admin.css' , __FILE__ ) );
+	wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+	wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_CSS_URL . '/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
 
 	global $wpdb;
 	global $mlwQuizMasterNext;
@@ -78,8 +78,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 		'certificate_id'                   => $certificate_id,
 		'enable_expiry'                    => isset($_POST["enable_expiry"]) ? $_POST["enable_expiry"] : "",
 		'never_expiry'                     => (isset($_POST["enable_expiry"]) && $_POST["enable_expiry"] == 2) ? true : false,
-		'certificate_id_err_msg_wrong_txt' => (isset($_POST["certificate_id_err_msg_wrong_txt"]) && ! empty($_POST["certificate_id_err_msg_wrong_txt"])) ? $_POST["certificate_id_err_msg_wrong_txt"] : __('Certificate ID is not Valid!', 'qsm-certificate'),
-		'certificate_id_err_msg_blank_txt' => (isset($_POST["certificate_id_err_msg_blank_txt"]) && ! empty($_POST["certificate_id_err_msg_blank_txt"])) ? $_POST["certificate_id_err_msg_blank_txt"] : __('Please enter a valid Certificate ID.', 'qsm-certificate'),
 	);
     // Saves array as QSM setting and alerts the user
 	$mlwQuizMasterNext->pluginHelper->update_quiz_setting( "certificate_settings", $certificate_settings );
@@ -284,40 +282,6 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td><input type="text" id="prefix" name="prefix" value="<?php echo isset($certificate_settings["prefix"]) ? esc_attr($certificate_settings["prefix"]) : ""; ?>">
 				</td>
 			</tr>
-			<tr>
-				<td width="30%">
-					<strong><?php esc_html_e('Add form with shortcode to check expiry', 'qsm-certificate'); ?></strong>
-				</td>
-				<td>
-					<div class="qsm-certificate-expiry-shortcode-notloop button-secondary">
-						<span class="qsm-certificate-expiry-shortcode-print" style="cursor: pointer;">
-							[quiz_expiry_check]
-						</span>
-						<span class="qsm-certificate-expiry-shortcode-info">
-							<span class="certificate-copy-msg">
-								<?php esc_html_e( 'Click to Copy', 'qsm-certificate' ); ?>
-							</span>
-							<span class="certificate-copy-success" style="display: none;">
-								<?php esc_html_e( 'Copied!', 'qsm-certificate' ); ?>
-							</span>
-						</span>
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td width="30%">
-					<strong><?php esc_html_e('Error Message: Certificate ID is Blank', 'qsm-certificate'); ?></strong>
-				</td>
-				<td><input type="text" id="certificate_id_err_msg_blank_txt" name="certificate_id_err_msg_blank_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_blank_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_blank_txt"]) : __("Please enter a valid Certificate ID.", 'qsm-certificate'); ?>">
-				</td>
-			</tr>
-			<tr>
-				<td width="30%">
-					<strong><?php esc_html_e('Error Message: Invalid Certificate ID', 'qsm-certificate'); ?></strong>
-				</td>
-				<td><input type="text" id="certificate_id_err_msg_wrong_txt" name="certificate_id_err_msg_wrong_txt" value="<?php echo isset($certificate_settings["certificate_id_err_msg_wrong_txt"]) ? esc_attr($certificate_settings["certificate_id_err_msg_wrong_txt"]) : __("Certificate ID is not Valid", 'qsm-certificate'); ?>">
-				</td>
-			</tr>
 		</table>
 	<?php wp_nonce_field('certificate','certificate_nonce'); ?>
 		<button class="button-primary"><?php esc_html_e('Save Settings', 'qsm-certificate'); ?></button>
@@ -331,13 +295,10 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
  */
 function qsm_certificate_popups_for_templates( $certificate_template_from_script, $type ) {
     global $wpdb;
-    wp_enqueue_script( 'qsm_certificate_js', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+    wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
     $quiz_id = isset( $_GET['quiz_id'] ) ? (int) $_GET['quiz_id'] : 0;
     $certificate_templates = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT id, certificate_data, template_name, Creation_date FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
-            $quiz_id
-        ),
+        "SELECT id, certificate_data, template_name, Creation_date FROM {$wpdb->prefix}mlw_certificate_template",
         ARRAY_A
     );
     $certificate_data_by_id = array();
@@ -352,7 +313,7 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
         $certificate_data_by_id[ $tpl_id ] = $tpl_data;
     }
     wp_localize_script(
-        'qsm_certificate_js',
+        'qsm_certificate_admin_script',
         'qsm_certificate_template_obj',
         array(
             'certificate_data_by_id' => $certificate_data_by_id,
@@ -532,11 +493,9 @@ function qsm_certificate_popups_for_templates( $certificate_template_from_script
 										<option value=""><?php esc_html_e('Select Template', 'qsm-certificate'); ?></option>
 										<?php
 										// Populate dropdown with all template names for this quiz
-										$quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
-										$template_names = $wpdb->get_results( $wpdb->prepare(
-											"SELECT id, template_name FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d",
-											$quiz_id
-										) );
+										$template_names = $wpdb->get_results( 
+											"SELECT id, template_name FROM {$wpdb->prefix}mlw_certificate_template"
+										);
 										foreach ($template_names as $template) {
 											echo '<option value="' . esc_attr($template->id) . '">' . esc_html($template->template_name) . '</option>';
 										}

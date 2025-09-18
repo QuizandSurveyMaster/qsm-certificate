@@ -25,7 +25,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     if ( ! is_array( $certificate_settings ) ) {
 		$quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $quiz_results["quiz_id"] ) );
 		// Loads the certificate options vVariables.
-		if ( is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
+		if ( $quiz_options && is_serialized( $quiz_options->certificate_template ) && is_array( @unserialize( $quiz_options->certificate_template ) ) ) {
 			$certificate = @unserialize( $quiz_options->certificate_template );
 			$certificate_settings    = array(
 				'enabled'    => $certificate[4],
@@ -51,14 +51,12 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
     if ( 0 == $certificate_settings["enabled"] ) {
-        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template WHERE quiz_id = %d";
-        $params = array( (int) $quiz_results['quiz_id'] );
+        $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template";
         // Only load a specific template when template_id > 0.
         // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.
         if ( (int) $template_id > 0 ) {
-            $query  .= ' AND id = %d';
-            $params[] = (int) $template_id;
-            $templates = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
+            $query  .= ' WHERE id = %d';
+            $templates = $wpdb->get_results( $wpdb->prepare( $query, (int) $template_id ), ARRAY_A );
         } else {
             $templates = array();
         }
@@ -87,8 +85,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                     $exp_date = str_replace('-', '', $expire_time);
                 }
                 $encoded_time_taken = md5( $quiz_results['time_taken'] );
-                $filename           = "{$quiz_results['quiz_id']}-{$tpl_id}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
+                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
                 $wp_upload      = wp_upload_dir();
                 $pdf_file_name = $filename;
                 $pdf_folder    = trailingslashit( $wp_upload['basedir'] ) . 'qsm-certificates/';
@@ -125,8 +123,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
             $exp_date = str_replace('-', '', $expire_time);
         }
         $encoded_time_taken = md5( $quiz_results['time_taken'] );
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};
@@ -309,34 +307,12 @@ function qsm_certificate_id_variable( $content, $mlw_quiz_array ) {
 	return $content;
 }
 
-function qsm_certificate_scripts_load() {
-    wp_enqueue_script(
-        'qsm_certificate_js',
-        QSM_CERTIFICATE_JS_URL . '/qsm-certificate-front.js',
-        array( 'jquery' ),
-        QSM_CERTIFICATE_VERSION,
-        true
-    );
-    wp_enqueue_style('qsm_certificate_admin_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION ); 
-
-    wp_localize_script(
-        'qsm_certificate_js',
-        'qsm_certificate_ajax_object',
-        array(
-            'site_url' => site_url(),
-            'ajaxurl'  => admin_url( 'admin-ajax.php' ),
-        )
-    );
-}
-
-add_action( 'wp_enqueue_scripts', 'qsm_certificate_scripts_load' );
-
 function qsm_certificate_localize_script_load() {
     global $wpdb;
     if ( isset($_GET['page']) && $_GET['page'] === 'mlw_quiz_options' && isset($_GET['tab']) && $_GET['tab'] === 'certificate' ) {
         $quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
         wp_enqueue_script( 
-            'qsm_certificate_js', 
+            'qsm_certificate_admin_script', 
             QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', 
             array('jquery'), 
             QSM_CERTIFICATE_VERSION, 
@@ -344,7 +320,7 @@ function qsm_certificate_localize_script_load() {
         );
 
         wp_localize_script(
-            'qsm_certificate_js',
+            'qsm_certificate_admin_script',
             'qsm_certificate_pro_obj',
             array(
                 'preview'         => esc_html__('Preview', 'qsm-certificate'),
@@ -364,13 +340,34 @@ add_action( 'admin_enqueue_scripts', 'qsm_certificate_localize_script_load' );
 
 function qsm_certificate_expiry_check_form( $settings, $cert_id ) {
     ob_start();
+    wp_enqueue_style('qsm_certificate_front_style', QSM_CERTIFICATE_URL . 'css/qsm-certificate-front.css', array(), QSM_CERTIFICATE_VERSION ); 
+    wp_enqueue_script( 'qsm_certificate_front_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-front.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
+    $certificate_settings = get_option( 'certificate_settings', array() );
+	$error_msgs           = wp_parse_args(
+		$certificate_settings,
+		array(
+			'certificate_id_err_msg_blank_txt' => __( 'Please enter a certificate ID.', 'qsm-certificate' ),
+		)
+	);
+    wp_localize_script(
+        'qsm_certificate_front_script',
+        'qsm_certificate_ajax_object',
+        array(
+            'site_url' => site_url(),
+            'enter_certificate_id' => $error_msgs['certificate_id_err_msg_blank_txt'],
+            'ajaxurl'  => admin_url( 'admin-ajax.php' ),
+        )
+    );
     ?>
     <form action="" method="post" id="qsm-certificate-expiry-check-form">
-        <label for="certificate_id"><?php esc_html_e( 'Certificate ID*', 'qsm-certificate' ); ?></label>
-        <input type="text" id="certificate_id" name="certificate_id">
-        <input type="submit" value="Check Expiry" class="qsm-certificate-expiry-check-button qmn_btn">
+        <label for="qsm-certificate-id"><?php esc_html_e( 'Certificate ID*', 'qsm-certificate' ); ?></label>
+        <?php wp_nonce_field('qsm_certificate_expiry_check', 'qsm_certificate_expiry_check_nonce'); ?>
+        <input type="text" id="qsm-certificate-id" name="qsm_certificate_id">
+        <button type="submit" class="qsm-certificate-expiry-check-button qmn_btn">
+            <?php esc_html_e( 'Check Expiry', 'qsm-certificate' ); ?>
+        </button>
     </form>
-    <span id="validation_message"></span>
+    <span id="qsm-certificate-validation-message"></span>
     <?php
     return ob_get_clean();
 }
@@ -401,14 +398,14 @@ function qsm_certificate_template_content() {
     $certificate_template_from_script = ! is_wp_error($remote_response) ? json_decode(wp_remote_retrieve_body($remote_response), true) : $local_templates;
     $certificate_template_from_script = empty($certificate_template_from_script) ? $local_templates : $certificate_template_from_script;
 
-    wp_enqueue_script('qsm_advance_certificate_admin_script', QSM_CERTIFICATE_URL . 'js/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
+    wp_enqueue_script('qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true);
 
     $js_data = array(
         'quizID'          => $quiz_id,
         'script_tmpl'     => $certificate_template_from_script,
         'qsm_tmpl_bg_url' => QSM_CERTIFICATE_URL . 'assets/'
     );
-    wp_localize_script('qsm_advance_certificate_admin_script', 'qsmCertificateObject', $js_data);
+    wp_localize_script('qsm_certificate_admin_script', 'qsmCertificateObject', $js_data);
 
     if ( function_exists('qsm_certificate_popups_for_templates') ) {
         qsm_certificate_popups_for_templates( $certificate_template_from_script, 'certificate' );

@@ -27,7 +27,7 @@ jQuery(document).ready(function($) {
                 info: qsm_certificate_obj.info,
                 search: qsm_certificate_obj.search
             },
-            order: [[2, "asc"]],
+            order: [[2, "desc"]],
             columnDefs: [
                 { targets: [2, 3], orderable: true, type: 'date-eu' },
                 { targets: [0, 1, 4], orderable: false }

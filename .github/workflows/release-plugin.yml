@@ -19,53 +19,54 @@ jobs:
         run: |
           VERSION=$(grep -E "^\s*\*\s+Version:\s*[0-9]+\.[0-9]+\.[0-9]+" qsm-certificate.php | sed -E 's/^\s*\*\s+Version:\s*//')
           echo "PLUGIN_VERSION=$VERSION" >> $GITHUB_ENV
+      
+      # Get full changelog from changelog.txt
+      - name: Get full changelog
+        run: |
+          # Read the complete changelog.txt file which is already in HTML format
+          # Ensure we get the entire file with all version histories
+          echo "Reading complete changelog from changelog.txt"
+          CHANGELOG=$(cat changelog.txt)
           
-          - name: Get full changelog
-          run: |
-            # Read the complete changelog.txt file which is already in HTML format
-            # Ensure we get the entire file with all version histories
-            echo "Reading complete changelog from changelog.txt"
-            CHANGELOG=$(cat changelog.txt)
+          # Verify we have content
+          if [[ -z "$CHANGELOG" ]]; then
+            echo "WARNING: Changelog appears to be empty!"
+            CHANGELOG="<h3>${PLUGIN_VERSION} ($(date '+%d %b %Y'))</h3><ul><li>Release</li></ul>"
+            CURRENT_CHANGELOG="$CHANGELOG"
+          else
+            echo "Changelog successfully read with $(echo "$CHANGELOG" | wc -l) lines"
             
-            # Verify we have content
-            if [[ -z "$CHANGELOG" ]]; then
-              echo "WARNING: Changelog appears to be empty!"
-              CHANGELOG="<h3>${PLUGIN_VERSION} ($(date '+%d %b %Y'))</h3><ul><li>Release</li></ul>"
-              CURRENT_CHANGELOG="$CHANGELOG"
+            # Extract only the current version's changelog
+            # This looks for the h3 header with the current version and captures it plus the following ul block
+            echo "Extracting changelog for version ${PLUGIN_VERSION}"
+            CURRENT_CHANGELOG=$(awk -v version="<h3>${PLUGIN_VERSION} " '
+              BEGIN { in_version=0; output="" }
+              # Found the target version header
+              $0 ~ version { in_version=1; output=output $0 "\n"; next }
+              # Found next version header - stop capturing
+              /^<h3>[0-9]+\.[0-9]+\.[0-9]+/ { if (in_version) in_version=0 }
+              # Capture content while in target version
+              in_version { output=output $0 "\n" }
+              END { print output }
+            ' changelog.txt)
+            
+            # If current version changelog wasn't found, create a default one
+            if [[ -z "$CURRENT_CHANGELOG" ]]; then
+              echo "WARNING: Couldn't find changelog for version ${PLUGIN_VERSION}!"
+              CURRENT_CHANGELOG="<h3>${PLUGIN_VERSION} ($(date '+%d %b %Y'))</h3><ul><li>Release</li></ul>"
             else
-              echo "Changelog successfully read with $(echo "$CHANGELOG" | wc -l) lines"
-              
-              # Extract only the current version's changelog
-              # This looks for the h3 header with the current version and captures it plus the following ul block
-              echo "Extracting changelog for version ${PLUGIN_VERSION}"
-              CURRENT_CHANGELOG=$(awk -v version="<h3>${PLUGIN_VERSION} " '
-                BEGIN { in_version=0; output="" }
-                # Found the target version header
-                $0 ~ version { in_version=1; output=output $0 "\n"; next }
-                # Found next version header - stop capturing
-                /^<h3>[0-9]+\.[0-9]+\.[0-9]+/ { if (in_version) in_version=0 }
-                # Capture content while in target version
-                in_version { output=output $0 "\n" }
-                END { print output }
-              ' changelog.txt)
-              
-              # If current version changelog wasn't found, create a default one
-              if [[ -z "$CURRENT_CHANGELOG" ]]; then
-                echo "WARNING: Couldn't find changelog for version ${PLUGIN_VERSION}!"
-                CURRENT_CHANGELOG="<h3>${PLUGIN_VERSION} ($(date '+%d %b %Y'))</h3><ul><li>Release</li></ul>"
-              else
-                echo "Successfully extracted changelog for version ${PLUGIN_VERSION}"
-              fi
+              echo "Successfully extracted changelog for version ${PLUGIN_VERSION}"
             fi
-            
-            # Save both full changelog and current version changelog as environment variables
-            echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-            echo "$CHANGELOG" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
-            
-            echo "CURRENT_CHANGELOG<<EOF" >> $GITHUB_ENV
-            echo "$CURRENT_CHANGELOG" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+          fi
+          
+          # Save both full changelog and current version changelog as environment variables
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "CURRENT_CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CURRENT_CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       # Check if GitHub release already exists
       - name: Check if GitHub release exists

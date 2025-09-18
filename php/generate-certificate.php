@@ -85,8 +85,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                     $exp_date = str_replace('-', '', $expire_time);
                 }
                 $encoded_time_taken = md5( $quiz_results['time_taken'] );
-                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
+                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
                 $wp_upload      = wp_upload_dir();
                 $pdf_file_name = $filename;
                 $pdf_folder    = trailingslashit( $wp_upload['basedir'] ) . 'qsm-certificates/';
@@ -123,8 +123,8 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
             $exp_date = str_replace('-', '', $expire_time);
         }
         $encoded_time_taken = md5( $quiz_results['time_taken'] );
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
-        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['timer'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+        $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
 	};

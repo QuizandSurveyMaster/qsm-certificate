@@ -21,125 +21,143 @@ function qsm_addon_certificate_register_results_details_tabs() {
  * @since 0.1.0
  */
 function qsm_addon_certificate_results_details_tabs_content() {
-    global $wpdb;
-    global $mlwQuizMasterNext;
+    global $wpdb, $mlwQuizMasterNext;
 
-    // Get result ID from URL
-    $result_id = isset( $_GET['result_id'] ) ? intval( $_GET['result_id'] ) : 0;
-    
-    // Handle certificate generation request
-    if ( isset( $_POST['certificate_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['certificate_nonce'] ) ), 'certificate' ) ) {
-        if ( $result_id > 0 ) {
-            $results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id=%d", $result_id ) );
+    $result_id = isset( $_GET['result_id'] ) ? absint( $_GET['result_id'] ) : 0;
 
-            if ( $results_data && $results_data->quiz_id ) {
-                $mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
-                
-                // Check if certificates are enabled
-                $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
-                if ( ! is_array( $certificate_settings ) ) {
-                    $quiz_options = $wpdb->get_row( $wpdb->prepare( "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id=%d LIMIT 1", $results_data->quiz_id ) );
-                    if ( $quiz_options && is_serialized( $quiz_options->certificate_template ) ) {
-                        $certificate = @unserialize( $quiz_options->certificate_template );
-                        $certificate_settings = array( 'enabled' => $certificate[4] ?? 1 );
-                    }
-                }
-                
-                // Check if certificates are disabled (1 = disabled, 0 = enabled)
-                if ( ! is_array( $certificate_settings ) || ( isset( $certificate_settings['enabled'] ) && 1 === (int) $certificate_settings['enabled'] ) ) {
-                    ?>
-                    <div id="message" class="updated below-h2" style="margin-top: 20px;">
-                        <p><?php esc_html_e( 'Enable setting to generate certificate', 'qsm-certificate' ); ?> 
-                        <a href="<?php echo admin_url( 'admin.php?page=mlw_quiz_options&quiz_id='.$results_data->quiz_id.'&tab=certificate' ); ?>" target="_blank">
-                            <?php esc_html_e( 'Enable Settings', 'qsm-certificate' ); ?>
-                        </a></p>
-                    </div>
-                    <?php
-                    return;
-                }
+    $results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $result_id ) );
 
-                // Prepare result data
-                if ( is_serialized( $results_data->quiz_results ) && is_array( maybe_unserialize( $results_data->quiz_results ) ) ) {
-                    $results = maybe_unserialize( $results_data->quiz_results );
-                } else {
-                    $results = array( 0, '', '' );
-                }
+    $mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
+    $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
 
-                $quiz_results = array(
-                    'quiz_id'                => $results_data->quiz_id,
-                    'quiz_name'              => $results_data->quiz_name ?? '',
-                    'quiz_system'            => $results_data->quiz_system ?? 0,
-                    'user_name'              => $results_data->name ?? '',
-                    'user_business'          => $results_data->business ?? '',
-                    'user_email'             => $results_data->email ?? '',
-                    'user_phone'             => $results_data->phone ?? '',
-                    'user_id'                => $results_data->user ?? 0,
-                    'timer'                  => $results[0] ?? 0,
-                    'time_taken'             => $results_data->time_taken ?? '',
-                    'total_points'           => $results_data->point_score ?? 0,
-                    'total_score'            => $results_data->correct_score ?? 0,
-                    'total_correct'          => $results_data->correct ?? 0,
-                    'total_questions'        => $results_data->total ?? 0,
-                    'comments'               => $results[2] ?? '',
-                    'question_answers_array' => $results[1] ?? array(),
-                    'result_id'              => $result_id,
-                );
-
-                // Check if certificate already exists
-                $encoded_time_taken = md5( $quiz_results['time_taken'] );
-                $upload = wp_upload_dir();
-                $certificate_dir = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/';
-                $pattern = "{$quiz_results['quiz_id']}-{$quiz_results['timer']}-$encoded_time_taken-*.pdf";
-                $existing_files = glob( $certificate_dir . $pattern );
-
-                if ( ! empty( $existing_files ) ) {
-                    // Certificate already exists, show existing certificate link
-                    $existing_filename = basename( $existing_files[0] );
-                    $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $existing_filename );
-                    ?>
-                    <div id="message" class="updated below-h2" style="margin-top: 20px;">
-                        <p>
-                            <strong><?php esc_html_e( 'Certificate Already Generated!', 'qsm-certificate' ); ?> </strong>
-                            <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
-                                <?php esc_html_e( 'View Your Certificate', 'qsm-certificate' ); ?>
-                            </a>
-                        </p>
-                    </div>
-                    <?php
-                } else {
-                    // Generate new certificate
-                    $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, 0, true );
-
-                    if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
-                        $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $certificate_file );
-                        ?>
-                        <div id="message" class="updated below-h2" style="margin-top: 20px;">
-                            <p>
-                                <strong><?php esc_html_e( 'Success!', 'qsm-certificate' ); ?> </strong>
-                                <?php esc_html_e( 'Your certificate has been created.', 'qsm-certificate' ); ?> 
-                                <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
-                                    <?php esc_html_e( 'Download Certificate', 'qsm-certificate' ); ?>
-                                </a>
-                            </p>
-                        </div>
-                        <?php
-                    } else {
-                        ?>
-                        <div id="message" class="updated below-h2" style="margin-top: 20px;">
-                            <p><?php esc_html_e( 'Failed to generate certificate. Please try again.', 'qsm-certificate' ); ?></p>
-                        </div>
-                        <?php
-                    }
-                }
+    if ( ! is_array( $certificate_settings ) ) {
+        $quiz_options = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id = %d LIMIT 1",
+                $results_data->quiz_id
+            )
+        );
+        if ( $quiz_options && isset( $quiz_options->certificate_template ) ) {
+            $certificate = maybe_unserialize( $quiz_options->certificate_template );
+            if ( is_array( $certificate ) ) {
+                $certificate_settings = array( 'enabled' => isset( $certificate[4] ) ? (int) $certificate[4] : 1 );
             }
         }
     }
-    ?>
-    <form style="padding: 50px 0;" action="" method="post">
-        <?php wp_nonce_field( 'certificate', 'certificate_nonce' ); ?>
-        <button class="button-primary"><?php esc_html_e( 'Generate Certificate', 'qsm-certificate' ); ?></button>
-    </form>
-    <?php
+
+    if ( ! is_array( $certificate_settings ) || ( isset( $certificate_settings['enabled'] ) && 1 === (int) $certificate_settings['enabled'] ) ) {
+        ?>
+        <div id="message" class="updated below-h2 danger" style="margin-top: 20px; border-left-color: #dc3232;">
+            <p><?php esc_html_e( 'Enable setting to generate certificate', 'qsm-certificate' ); ?> 
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=mlw_quiz_options&quiz_id=' . $results_data->quiz_id . '&tab=certificate' ) ); ?>" target="_blank">
+                <?php esc_html_e( 'Enable Settings', 'qsm-certificate' ); ?>
+            </a></p>
+        </div>
+        <?php
+        return;
+    }
+
+    $results = maybe_unserialize( $results_data->quiz_results );
+    if ( ! is_array( $results ) ) {
+        $results = array( 0, '', '' );
+    }
+
+    $quiz_results = array(
+        'quiz_id'                => $results_data->quiz_id,
+        'quiz_name'              => $results_data->quiz_name ?? '',
+        'quiz_system'            => $results_data->quiz_system ?? 0,
+        'user_name'              => $results_data->name ?? '',
+        'user_business'          => $results_data->business ?? '',
+        'user_email'             => $results_data->email ?? '',
+        'user_phone'             => $results_data->phone ?? '',
+        'user_id'                => $results_data->user ?? 0,
+        'timer'                  => $results[0] ?? 0,
+        'time_taken'             => $results_data->time_taken ?? '',
+        'total_points'           => $results_data->point_score ?? 0,
+        'total_score'            => $results_data->correct_score ?? 0,
+        'total_correct'          => $results_data->correct ?? 0,
+        'total_questions'        => $results_data->total ?? 0,
+        'comments'               => $results[2] ?? '',
+        'question_answers_array' => $results[1] ?? array(),
+        'result_id'              => $result_id,
+    );
+
+    $encoded_time_taken = md5( $quiz_results['time_taken'] );
+    $upload = wp_upload_dir();
+    $certificate_dir = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/';
+    $pattern = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-*.pdf";
+    $existing_files = glob( $certificate_dir . $pattern );
+    $certificate_exists = ! empty( $existing_files );
+    
+    $form_submitted = isset( $_POST['certificate_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['certificate_nonce'] ) ), 'certificate' );
+    
+    if ( $certificate_exists ) {
+        $existing_filename = basename( $existing_files[0] );
+        $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $existing_filename );
+        ?>
+        <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #0073aa;">
+            <p>
+                <strong><?php esc_html_e( 'Certificate Already Generated!', 'qsm-certificate' ); ?> </strong>
+                <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
+                    <?php esc_html_e( 'View Your Certificate', 'qsm-certificate' ); ?>
+                </a>
+            </p>
+        </div>
+        <?php
+    } elseif ( ! $form_submitted ) {
+        ?>
+        <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #ffb900;">
+            <p><?php esc_html_e( 'No certificate found. Click the button below to generate one.', 'qsm-certificate' ); ?></p>
+        </div>
+        <?php
+    }
+
+    $show_form = true;
+    $button_text = $certificate_exists ? __('Regenerate Certificate', 'qsm-certificate') : __('Generate Certificate', 'qsm-certificate');
+
+    if ( $form_submitted ) {
+        if ( $certificate_exists && ! empty( $existing_files ) ) {
+            foreach ( $existing_files as $file ) {
+                if ( is_file( $file ) ) {
+                    unlink( $file );
+                }
+            }
+        }
+
+        $certificate_file = qsm_addon_certificate_generate_certificate( $quiz_results, 0, true );
+
+        if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
+            $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $certificate_file );
+            ?>
+            <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #46b450;">
+                <p>
+                    <strong><?php esc_html_e( 'Success!', 'qsm-certificate' ); ?> </strong>
+                    <?php esc_html_e( 'Your certificate has been created.', 'qsm-certificate' ); ?> 
+                    <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
+                        <?php esc_html_e( 'Download Certificate', 'qsm-certificate' ); ?>
+                    </a>
+                </p>
+            </div>
+            <?php
+            $show_form   = true;
+            $button_text = __( 'Regenerate Certificate', 'qsm-certificate' );
+        } else {
+            ?>
+            <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #ffb900;">
+                <p><?php esc_html_e( 'Failed to generate certificate. Please try again.', 'qsm-certificate' ); ?></p>
+            </div>
+            <?php
+        }
+    }
+
+    if ( $show_form ) {
+        ?>
+        <form style="padding: 50px 0;" action="" method="post">
+            <?php wp_nonce_field( 'certificate', 'certificate_nonce' ); ?>
+            <button class="button-primary"><?php echo esc_html( $button_text ); ?></button>
+        </form>
+        <?php
+    }
 }
 
 /**
@@ -211,36 +229,25 @@ function qsm_addon_certificate_details_tabs_content() {
         $file_name     = basename( $file );
         $file_url      = esc_url( trailingslashit( $upload_dir['baseurl'] ) . 'qsm-certificates/' . $file_name );
         $generated_date = gmdate( 'd-m-Y H:i:s', filemtime( $file ) );
-        
         $expiration_date = null;
+
+        $parts = explode('-', $file_name);
+        $result_id = $parts[1]; 
+            
+        $latest_result = $wpdb->get_row( 
+            $wpdb->prepare( "SELECT result_id, quiz_results FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $result_id 
+            ), 
+            ARRAY_A 
+        );
+        
         $certificate_id = '-';
-        
-        // Extract components from filename and match with result
-        $parts = explode('-', str_replace('.pdf', '', $file_name));
-        
-        if (count($parts) >= 4) {
-            $quiz_id = intval($parts[0]);
-            $encoded_time_taken = $parts[2];
-            $total_points = $parts[3];
-            
-            $results = $wpdb->get_results( $wpdb->prepare(
-                "SELECT quiz_results, point_score, time_taken FROM {$wpdb->prefix}mlw_results WHERE quiz_id = %d",
-                $quiz_id
-            ) );
-            
-            foreach ( $results as $result ) {
-                if ( md5( $result->time_taken ) === $encoded_time_taken || 
-                     intval( $result->point_score ) === intval( $total_points ) ) {
-                    
-                    $quiz_results = maybe_unserialize( $result->quiz_results );
-                    if ( is_array( $quiz_results ) && isset( $quiz_results['certificate_id'] ) ) {
-                        $certificate_id = $quiz_results['certificate_id'];
-                        break;
-                    }
-                }
+        if ( $latest_result ) {
+            $result_each = maybe_unserialize( $latest_result['quiz_results'] );
+            if ( isset( $result_each['certificate_id'] ) ) {
+                $certificate_id = $result_each['certificate_id'];
             }
         }
-        
+
         if ( strlen( $file_name ) >= 53 ) {
             $last_part = substr( $file_name, -12, 10 );
             $day       = substr( $last_part, 0, 2 );
@@ -364,7 +371,7 @@ function qsm_addon_certificate_get_certificate_ids( $results_array, $qmn_array_f
         ) );
 
         $certificate_prefix = isset( $certificate_settings['certificate_id'] ) ? 
-            $certificate_settings['certificate_id'] : 'CERT-';
+            $certificate_settings['certificate_id'] : '-';
             
         $certificate_id = $certificate_prefix . $unique_id->unique_id;
         

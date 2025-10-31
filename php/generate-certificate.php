@@ -461,6 +461,24 @@ function qsm_certificate_attach_certificate_file( $content, $quiz_array ) {
 
     return $content;
 }
+function qsm_certificate_contact_x_variable($content, $results_array){
+	preg_match_all( '~%CONTACT_(.*?)%~i', $content, $matches );
+	for ( $i = 0; $i < count( $matches[0] ); $i++ ) {
+		$contact_key = $matches[1][ $i ];
+		if ( is_numeric( $contact_key ) && intval( $contact_key ) > 0 ) {
+			$contact_index = intval( $contact_key ) - 1;
+
+			if ( isset( $results_array['contact'][ $contact_index ]['value'] ) ) {
+				$content = str_replace( '%CONTACT_' . $contact_key . '%', $results_array['contact'][ $contact_index ]['value'], $content );
+			} else {
+				$content = str_replace( '%CONTACT_' . $contact_key . '%', '', $content );
+			}
+		} else {
+			$content = str_replace( '%CONTACT_' . $contact_key . '%', '', $content );
+		}
+	}
+	return $content;
+}
 
 function qsm_handle_certificate_attachment( $content, $quiz_array ) {
     $generic_placeholder = '%CERTIFICATE_ATTACHMENT_PDF%';

@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: https://quizandsurveymaster.com
- * Version: 2.2.0
+ * Version: 2.3.0
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '2.2.0';
+	public $version = '2.3.0';
 
 	/**
 	 * Main Construct Function
@@ -110,6 +110,7 @@ class QSM_Certificate {
 		add_action('admin_footer', 'qsm_preview_popup_function');
 		add_action('admin_footer', 'qsm_certificate_template_content');
 		add_filter('qsm_addon_certificate_content_filter', 'qsm_certificate_attach_certificate_file', 10, 2);
+		add_filter('qsm_addon_certificate_content_filter', 'qsm_certificate_contact_x_variable', 10, 2);
         add_filter( 'qmn_email_template_variable_results', 'qsm_certificate_attach_certificate_file', 10, 2 );
 		add_filter( 'qsm_text_variable_list_email', array( $this, 'qsm_certificate_show_variable' ), 10, 1 );
 		add_filter( 'qsm_text_variable_list_result', array( $this, 'qsm_certificate_link_variable' ), 10, 1 );

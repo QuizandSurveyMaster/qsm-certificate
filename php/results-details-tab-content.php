@@ -22,6 +22,9 @@ function qsm_addon_certificate_register_results_details_tabs() {
  */
 function qsm_addon_certificate_results_details_tabs_content() {
     global $wpdb, $mlwQuizMasterNext;
+    if ( ! empty( $_GET['tab'] ) && 'certificate-addon' === $_GET['tab'] ) {
+        wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_CSS_URL . '/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
+    }
 
     $result_id = isset( $_GET['result_id'] ) ? absint( $_GET['result_id'] ) : 0;
 
@@ -47,7 +50,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
 
     if ( ! is_array( $certificate_settings ) || ( isset( $certificate_settings['enabled'] ) && 1 === (int) $certificate_settings['enabled'] ) ) {
         ?>
-        <div id="message" class="updated below-h2 danger" style="margin-top: 20px; border-left-color: #dc3232;">
+        <div id="qsm-certificate-message-update" class="qsm-certificate-message">
             <p><?php esc_html_e( 'Enable setting to generate certificate', 'qsm-certificate' ); ?> 
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=mlw_quiz_options&quiz_id=' . $results_data->quiz_id . '&tab=certificate' ) ); ?>" target="_blank">
                 <?php esc_html_e( 'Enable Settings', 'qsm-certificate' ); ?>
@@ -95,7 +98,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
         $existing_filename = basename( $existing_files[0] );
         $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $existing_filename );
         ?>
-        <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #0073aa;">
+        <div id="qsm-certificate-already-generated" class="qsm-certificate-message">
             <p>
                 <strong><?php esc_html_e( 'Certificate Already Generated!', 'qsm-certificate' ); ?> </strong>
                 <a target="_blank" href="<?php echo esc_url( $certificate_url ); ?>" style="color: blue;">
@@ -106,7 +109,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
         <?php
     } elseif ( ! $form_submitted ) {
         ?>
-        <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #ffb900;">
+        <div id="qsm-certificate-not-found" class="qsm-certificate-message">
             <p><?php esc_html_e( 'No certificate found. Click the button below to generate one.', 'qsm-certificate' ); ?></p>
         </div>
         <?php
@@ -129,7 +132,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
         if ( ! empty( $certificate_file ) && false !== $certificate_file ) {
             $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $certificate_file );
             ?>
-            <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #46b450;">
+            <div id="qsm-certificate-created" class="qsm-certificate-message">
                 <p>
                     <strong><?php esc_html_e( 'Success!', 'qsm-certificate' ); ?> </strong>
                     <?php esc_html_e( 'Your certificate has been created.', 'qsm-certificate' ); ?> 
@@ -143,7 +146,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
             $button_text = __( 'Regenerate Certificate', 'qsm-certificate' );
         } else {
             ?>
-            <div id="message" class="updated below-h2" style="margin-top: 20px; border-left-color: #ffb900;">
+            <div id="qsm-certificate-failed" class="qsm-certificate-message">
                 <p><?php esc_html_e( 'Failed to generate certificate. Please try again.', 'qsm-certificate' ); ?></p>
             </div>
             <?php

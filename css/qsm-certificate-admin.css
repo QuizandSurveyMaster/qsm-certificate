@@ -338,3 +338,28 @@ h2#qsm-certificate-preview-page-templates-title {
 .qsm-certificate-expiry-shortcode-notloop {
     min-width: 150px;
 }
+.qsm-certificate-message{
+    border:1px solid #c3c4c7;
+    background: #f6f7f7;
+    padding-left: 15px;
+}
+#qsm-certificate-already-generated{
+    margin-top: 20px;
+    border-left: 5px solid #0073aa;
+}
+#qsm-certificate-message-update{
+    margin-top: 20px;
+    border-left: 5px solid #dc3232;
+}
+#qsm-certificate-not-found{
+    margin-top: 20px;
+    border-left: 5px solid #ffb900;
+}
+#qsm-certificate-created{
+    margin-top: 20px;
+    border-left: 5px solid #46b450;
+}
+#qsm-certificate-failed{
+    margin-top: 20px;
+    border-left: 5px solid #ffb900;
+}

@@ -1,3 +1,7 @@
+<h3>2.3.1 (November 27, 2025)</h3>
+<ul>
+  <li>Enhancement: Streamlined certificate generation workflow for admin</li>
+</ul>
 <h3>2.3.0 (November 03, 2025)</h3>
 <ul>
   <li>Feature: Added CONTACT_X variable to display contact information in certificate</li>

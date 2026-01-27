@@ -16,9 +16,7 @@ use Dompdf\Options;
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
 function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id = 0, $return_file = false ) {
-    if ( ! class_exists( 'Dompdf\Autoloader' ) ) {
-        require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
-    }
+    require_once(plugin_dir_path(__FILE__) . '../dompdf/vendor/autoload.php');
 	global $wpdb;
 	global $mlwQuizMasterNext;
     $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
@@ -39,6 +37,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_defaults = array(
         'enabled'          => 1,
         'certificate_size' => 'Landscape',
+        'paper_size'       => 'A4',
         'certificate_font' => '',
         'title'            => __('Enter your title', 'qsm-certificate'),
         'content'          => __('Enter your content', 'qsm-certificate'),
@@ -95,20 +94,27 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                         wp_mkdir_p( $pdf_folder );
                     }
                     $html          = qsm_pdf_html_post_process_certificate( '', $tpl_data, $quiz_results );
-                    $dompdf        = new Dompdf();
-                    $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
-                    $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
-                    $dompdf->setPaper( 'A4', $orientation );
-                    $dompdf->set_option( 'isHtml5ParserEnabled', true );
-                    $dompdf->set_option( 'isFontSubsettingEnabled', true );
-                    $dompdf->set_option( 'isRemoteEnabled', true );
-                    if ( isset( $tpl_data['dpi'] ) ) {
-                        $dompdf->set_option( 'dpi', (int) $tpl_data['dpi'] );
+                    try {
+                        $options = new Options();
+                        $options->set('isHtml5ParserEnabled', true);
+                        $options->set('isFontSubsettingEnabled', true);
+                        $options->set('isRemoteEnabled', true);
+                        if ( isset( $tpl_data['dpi'] ) ) {
+                            $options->set('dpi', (int) $tpl_data['dpi']);
+                        }
+                        $dompdf = new Dompdf($options);
+                        $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
+                        $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
+                        $paper_size    = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
+                        $dompdf->setPaper( $paper_size, $orientation );
+                        $dompdf->loadHtml( $html );
+                        $dompdf->render();
+                        $pdf_output = $dompdf->output();
+                        file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
+                    } catch (Exception $e) {
+                        error_log('QSM Certificate: Dompdf rendering failed for template: ' . $e->getMessage());
+                        return false;
                     }
-                    $dompdf->loadHtml( $html );
-                    $dompdf->render();
-                    $pdf_output = $dompdf->output();
-                    file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
                 }
                 return $return_file ? urlencode( $pdf_file_name ) : true;
             }
@@ -142,28 +148,37 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
         //generate result page html
         $html = qsm_pdf_html_post_process_certificate( $html = "", $certificate_settings, $quiz_results );
         //initialize dompdf
-        $dompdf = new Dompdf();
-        $certificate_size = "Landscape";
-        if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
-            $certificate_size = "Portrait";
-        } else {
+        try {
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isFontSubsettingEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            if ( isset( $certificate_settings['dpi'] ) ) {
+                $options->set('dpi', $certificate_settings['dpi']);
+            }
+            $dompdf = new Dompdf($options);
             $certificate_size = "Landscape";
+            if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
+                $certificate_size = "Portrait";
+            } else {
+                $certificate_size = "Landscape";
+            }
+            $paper_size = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
+            $dompdf->setPaper( $paper_size, $certificate_size );
+            $dompdf->loadHtml( $html );
+            $dompdf->render();
+            $pdf_output = $dompdf->output();
+            file_put_contents( $pdf_folder.$pdf_file_name, $pdf_output );
+            $file_nonce = wp_create_nonce( 'pdf_file' );
+            $response = array(
+                'file' => $pdf_file_name,
+            );
+        } catch (Exception $e) {
+            error_log('QSM Certificate: Dompdf rendering failed for default: ' . $e->getMessage());
+            $response = array(
+                'status' => false,
+            );
         }
-        $dompdf->setPaper( 'A4',$certificate_size );
-        $dompdf->set_option( 'isHtml5ParserEnabled', true );
-        $dompdf->set_option( 'isFontSubsettingEnabled', true );
-        $dompdf->set_option( 'isRemoteEnabled', true );
-        if ( isset( $certificate_settings['dpi'] ) ) {
-            $dompdf->set_option( 'dpi', $certificate_settings['dpi'] );
-        }
-        $dompdf->loadHtml( $html );
-        $dompdf->render();
-        $pdf_output = $dompdf->output();
-        file_put_contents( $pdf_folder.$pdf_file_name, $pdf_output );
-        $file_nonce = wp_create_nonce( 'pdf_file' );
-        $response = array(
-            'file' => $pdf_file_name,
-        );
     } else {
         $response = array(
 			'status' => false,

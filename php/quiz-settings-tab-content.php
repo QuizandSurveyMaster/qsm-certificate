@@ -51,6 +51,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     $certificate_settings = array(
 		'enabled'                          => intval( $_POST["enableCertificates"] ),
 		'certificate_size'                 => isset($_POST["certificateSize"]) ? $_POST['certificateSize'] : "Landscape",
+		'paper_size'                       => isset($_POST["paperSize"]) ? sanitize_text_field($_POST['paperSize']) : "A4",
 		'certificate_font'                 => htmlspecialchars( preg_replace( '#<script(.*?)>(.*?)</script>#is', '', sanitize_textarea_field( wp_unslash( $_POST['certificate_font'] ) ) ), ENT_QUOTES ),
 		'title'                            => sanitize_text_field( $_POST["certificate_title"] ),
 		//'content' => wp_kses_post( $_POST["certificate_template"] ),
@@ -107,6 +108,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
     }
 	$certificate_defaults = array(
 		'certificate_size' => 'Landscape',
+		'paper_size'       => 'A4',
 		'enabled'          => 1,
 		'certificate_font' => $font_family,
 		'title'            => 'Enter your title',
@@ -141,6 +143,15 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 				<td>
 				    <input type="radio" id="radio32" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Portrait' ); ?> value='Portrait' /><label for="radio32"><?php _e('Portrait', 'qsm-certificate'); ?></label><br>
 				    <input type="radio" id="radio33" name="certificateSize" <?php checked( $certificate_settings["certificate_size"], 'Landscape','Landscape' ); ?> value='Landscape' /><label for="radio33"><?php _e('Landscape', 'qsm-certificate'); ?></label><br>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td>
+					<strong><?php esc_html_e('Paper Size', 'qsm-certificate'); ?></strong>
+				</td>
+				<td>
+				    <input type="radio" id="radio34" name="paperSize" <?php checked( $certificate_settings["paper_size"], 'A4' ); ?> value='A4' /><label for="radio34"><?php _e('A4 (210 × 297 mm)', 'qsm-certificate'); ?></label><br>
+				    <input type="radio" id="radio35" name="paperSize" <?php checked( $certificate_settings["paper_size"], 'Letter' ); ?> value='Letter' /><label for="radio35"><?php _e('Letter (216 × 279 mm)', 'qsm-certificate'); ?></label><br>
 				</td>
 			</tr>
 			<tr valign="top">

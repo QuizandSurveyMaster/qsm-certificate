@@ -7,6 +7,169 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 // reference the Dompdf namespace
 
+function qsm_get_dpi_tier_config() {
+	return array(
+		'tiers' => array(
+			array(
+				'dpi'          => 100,
+				'memory'       => '128M',
+				'time_limit'   => 30,
+				'description'  => 'Screen quality',
+				'safe'         => true,
+			),
+			array(
+				'dpi'          => 200,
+				'memory'       => '256M',
+				'time_limit'   => 60,
+				'description'  => 'Standard print quality',
+				'safe'         => true,
+			),
+			array(
+				'dpi'          => 300,
+				'memory'       => '384M',
+				'time_limit'   => 90,
+				'description'  => 'High print quality',
+				'safe'         => true,
+			),
+			array(
+				'dpi'          => 400,
+				'memory'       => '512M',
+				'time_limit'   => 120,
+				'description'  => 'Very high quality (risky)',
+				'safe'         => false,
+			),
+			array(
+				'dpi'          => 600,
+				'memory'       => '768M',
+				'time_limit'   => 180,
+				'description'  => 'Maximum quality (extremely risky)',
+				'safe'         => false,
+			),
+			array(
+				'dpi'          => 720,
+				'memory'       => '1024M',
+				'time_limit'   => 240,
+				'description'  => 'Extreme quality (not recommended)',
+				'safe'         => false,
+			),
+		),
+	);
+}
+
+function qsm_check_dpi_feasibility( $requested_dpi ) {
+	$requested_dpi = (int) $requested_dpi;
+	$config        = qsm_get_dpi_tier_config();
+
+	$requested_tier = null;
+	foreach ( $config['tiers'] as $tier ) {
+		if ( $tier['dpi'] === $requested_dpi ) {
+			$requested_tier = $tier;
+			break;
+		}
+		if ( $tier['dpi'] > $requested_dpi ) {
+			$requested_tier = $tier;
+			break;
+		}
+	}
+
+	if ( null === $requested_tier ) {
+		$requested_tier = end( $config['tiers'] );
+	}
+
+	$result = array(
+		'requested_dpi'     => $requested_dpi,
+		'approved_dpi'      => $requested_tier['dpi'],
+		'memory_required'   => $requested_tier['memory'],
+		'time_limit'        => $requested_tier['time_limit'],
+		'tier_description'  => $requested_tier['description'],
+		'is_safe'           => $requested_tier['safe'],
+		'warnings'          => array(),
+		'errors'            => array(),
+		'fallback_applied'  => false,
+	);
+
+	$current_memory = (int) wp_convert_hr_to_bytes( ini_get( 'memory_limit' ) );
+	$required_memory = (int) wp_convert_hr_to_bytes( $requested_tier['memory'] );
+
+	if ( -1 !== $current_memory && $current_memory < $required_memory ) {
+		$result['warnings'][] = sprintf(
+			'Low memory: Current %s, need %s for DPI %d',
+			ini_get( 'memory_limit' ),
+			$requested_tier['memory'],
+			$requested_tier['dpi']
+		);
+
+		foreach ( array_reverse( $config['tiers'] ) as $tier ) {
+			$tier_memory = (int) wp_convert_hr_to_bytes( $tier['memory'] );
+			if ( $tier_memory <= $current_memory || -1 === $current_memory ) {
+				$result['approved_dpi']     = $tier['dpi'];
+				$result['memory_required']  = $tier['memory'];
+				$result['time_limit']       = $tier['time_limit'];
+				$result['tier_description'] = $tier['description'];
+				$result['is_safe']          = $tier['safe'];
+				$result['fallback_applied'] = true;
+				$result['warnings'][] = sprintf(
+					'DPI reduced from %d to %d due to memory constraints',
+					$requested_dpi,
+					$tier['dpi']
+				);
+				break;
+			}
+		}
+	}
+
+	if ( ! $requested_tier['safe'] ) {
+		$result['warnings'][] = sprintf(
+			'DPI %d is in high-risk category. Generation might be slow or fail.',
+			$requested_tier['dpi']
+		);
+	}
+
+	$max_execution = (int) ini_get( 'max_execution_time' );
+	if ( $max_execution > 0 && $max_execution < $requested_tier['time_limit'] ) {
+		$result['warnings'][] = sprintf(
+			'PHP max_execution_time (%ds) might be insufficient for DPI %d (needs ~%ds)',
+			$max_execution,
+			$requested_tier['dpi'],
+			$requested_tier['time_limit']
+		);
+	}
+
+ 	return $result;
+}
+
+function qsm_certificate_prepare_rendering_resources( $dpi ) {
+	global $mlwQuizMasterNext;
+	$dpi = (int) $dpi;
+
+	$dpi_check = qsm_check_dpi_feasibility( $dpi );
+
+	$final_dpi = (int) $dpi_check['approved_dpi'];
+
+	$result = array(
+		'success'               => true,
+		'requested_dpi'         => $dpi,
+		'final_dpi'             => $final_dpi,
+		'fallback_applied'      => $dpi_check['fallback_applied'],
+		'warnings'              => $dpi_check['warnings'],
+		'tier_description'      => $dpi_check['tier_description'],
+	);
+
+	if ( $dpi_check['fallback_applied'] || ! empty( $dpi_check['warnings'] ) ) {
+		$log_title = 'QSM Certificate DPI Check';
+		$log_message = sprintf(
+			'Requested DPI: %1$d | Using: %2$d | Details: %3$s',
+			$dpi,
+			$final_dpi,
+			empty( $dpi_check['warnings'] ) ? 'None' : implode( ' | ', $dpi_check['warnings'] )
+		);
+
+		$mlwQuizMasterNext->log_manager->add( $log_title, $log_message, 0, 'warning' );
+	}
+
+	return $result;
+}
+
 /**
  * Generates the certificate
  *
@@ -16,9 +179,7 @@ use Dompdf\Options;
  * @return bool|string Returns false if file fails to generate. If $return_file is false, then the function will return true if pdf generation is success. If $return_file is set to true, the function will return the file's path
  */
 function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id = 0, $return_file = false ) {
-    if ( ! class_exists( 'Dompdf\Autoloader' ) ) {
-        require_once(plugin_dir_path(__FILE__) . '../dompdf/autoload.inc.php');
-    }
+    require_once(plugin_dir_path(__FILE__) . '../dompdf/vendor/autoload.php');
 	global $wpdb;
 	global $mlwQuizMasterNext;
     $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( "certificate_settings" );
@@ -39,6 +200,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_defaults = array(
         'enabled'          => 1,
         'certificate_size' => 'Landscape',
+        'paper_size'       => 'A4',
         'certificate_font' => '',
         'title'            => __('Enter your title', 'qsm-certificate'),
         'content'          => __('Enter your content', 'qsm-certificate'),
@@ -95,20 +257,36 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                         wp_mkdir_p( $pdf_folder );
                     }
                     $html          = qsm_pdf_html_post_process_certificate( '', $tpl_data, $quiz_results );
-                    $dompdf        = new Dompdf();
-                    $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
-                    $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
-                    $dompdf->setPaper( 'A4', $orientation );
-                    $dompdf->set_option( 'isHtml5ParserEnabled', true );
-                    $dompdf->set_option( 'isFontSubsettingEnabled', true );
-                    $dompdf->set_option( 'isRemoteEnabled', true );
-                    if ( isset( $tpl_data['dpi'] ) ) {
-                        $dompdf->set_option( 'dpi', (int) $tpl_data['dpi'] );
+                    $tpl_dpi = isset( $tpl_data['dpi'] ) ? (int) $tpl_data['dpi'] : 100;
+                    $resource_result = qsm_certificate_prepare_rendering_resources( $tpl_dpi );
+                    $dpi_to_use = $resource_result['final_dpi'];
+                    
+                    // Log if fallback was applied.
+                    if ( $resource_result['fallback_applied'] ) {
+                        error_log(
+                            sprintf('QSM Certificate Template: DPI reduced from %s to %s due to server constraints.', $tpl_dpi, $dpi_to_use)
+                        );
                     }
-                    $dompdf->loadHtml( $html );
-                    $dompdf->render();
-                    $pdf_output = $dompdf->output();
-                    file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
+                    
+                    try {
+                        $options = new Options();
+                        $options->set('isHtml5ParserEnabled', true);
+                        $options->set('isFontSubsettingEnabled', true);
+                        $options->set('isRemoteEnabled', true);
+                        $options->set('dpi', $dpi_to_use);
+                        $dompdf = new Dompdf($options);
+                        $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
+                        $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
+                        $paper_size    = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
+                        $dompdf->setPaper( $paper_size, $orientation );
+                        $dompdf->loadHtml( $html );
+                        $dompdf->render();
+                        $pdf_output = $dompdf->output();
+                        file_put_contents( $pdf_folder . $pdf_file_name, $pdf_output );
+                    } catch (Exception $e) {
+                        error_log('QSM Certificate: Dompdf rendering failed for template: ' . $e->getMessage());
+                        return false;
+                    }
                 }
                 return $return_file ? urlencode( $pdf_file_name ) : true;
             }
@@ -141,29 +319,48 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
 
         //generate result page html
         $html = qsm_pdf_html_post_process_certificate( $html = "", $certificate_settings, $quiz_results );
+        $cert_dpi = isset( $certificate_settings['dpi'] ) ? (int) $certificate_settings['dpi'] : 100;
+        $resource_result = qsm_certificate_prepare_rendering_resources( $cert_dpi );
+        $dpi_to_use = $resource_result['final_dpi'];
+        
+        // Log if fallback was applied.
+        if ( $resource_result['fallback_applied'] ) {
+            error_log(
+                'QSM Certificate Default: DPI reduced from ' . $cert_dpi . ' to ' . $dpi_to_use .
+                ' due to server constraints.'
+            );
+        }
+        
         //initialize dompdf
-        $dompdf = new Dompdf();
-        $certificate_size = "Landscape";
-        if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
-            $certificate_size = "Portrait";
-        } else {
+        try {
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isFontSubsettingEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('dpi', $dpi_to_use);
+            $dompdf = new Dompdf($options);
             $certificate_size = "Landscape";
+            if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
+                $certificate_size = "Portrait";
+            } else {
+                $certificate_size = "Landscape";
+            }
+            $paper_size = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
+            $dompdf->setPaper( $paper_size, $certificate_size );
+            $dompdf->loadHtml( $html );
+            $dompdf->render();
+            $pdf_output = $dompdf->output();
+            file_put_contents( $pdf_folder.$pdf_file_name, $pdf_output );
+            $file_nonce = wp_create_nonce( 'pdf_file' );
+            $response = array(
+                'file' => $pdf_file_name,
+            );
+        } catch (Exception $e) {
+            error_log('QSM Certificate: Dompdf rendering failed for default: ' . $e->getMessage());
+            $response = array(
+                'status' => false,
+            );
         }
-        $dompdf->setPaper( 'A4',$certificate_size );
-        $dompdf->set_option( 'isHtml5ParserEnabled', true );
-        $dompdf->set_option( 'isFontSubsettingEnabled', true );
-        $dompdf->set_option( 'isRemoteEnabled', true );
-        if ( isset( $certificate_settings['dpi'] ) ) {
-            $dompdf->set_option( 'dpi', $certificate_settings['dpi'] );
-        }
-        $dompdf->loadHtml( $html );
-        $dompdf->render();
-        $pdf_output = $dompdf->output();
-        file_put_contents( $pdf_folder.$pdf_file_name, $pdf_output );
-        $file_nonce = wp_create_nonce( 'pdf_file' );
-        $response = array(
-            'file' => $pdf_file_name,
-        );
     } else {
         $response = array(
 			'status' => false,
@@ -204,13 +401,13 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
 	$html_top        = '<html style = "margin:0;padding:0;"><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
     if ( empty( $settings['certificate_font'] ) || 'dejavusans' == $settings['certificate_font'] ) {
-        $html_top   .= 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left;}img{min-width:200px !important;margin-top:30px;}';
+        $html_top   .= 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left; font-size:12pt;}img{min-width:150pt !important;margin-top:22pt;}';
     } else {
         $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
     }
-	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:20px; ">';
+	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:15pt; ">';
 	$html_bottom = '<div style="' . $logo_style . '"> ' . $logo
-    . ( ! empty($certificate_title) ? '<h1 style="text-align:center;margin-top:80px;font-weight:700;">' . $certificate_title . '</h1>' : '')
+    . ( ! empty($certificate_title) ? '<h1 style="text-align:center;margin-top:60pt;font-weight:700;">' . $certificate_title . '</h1>' : '')
     . '<div style="text-align:center;vertical-align:middle;justify-content: center;">' . $content
     . '</div></body></html>';
     $html            = $html_top . $html . $html_bottom;

@@ -264,8 +264,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                     // Log if fallback was applied.
                     if ( $resource_result['fallback_applied'] ) {
                         error_log(
-                            'QSM Certificate Template: DPI reduced from ' . $tpl_dpi . ' to ' . $dpi_to_use .
-                            ' due to server constraints.'
+                            sprintf('QSM Certificate Template: DPI reduced from %s to %s due to server constraints.', $tpl_dpi, $dpi_to_use)
                         );
                     }
                     

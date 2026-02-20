@@ -404,9 +404,29 @@ function qsm_addon_certificate_expiry_check() {
 		);
 	}
 
-	$results = maybe_unserialize( $result_data->quiz_results );
+	if (
+		empty( $result_data->quiz_results ) &&
+		isset( $mlwQuizMasterNext->pluginHelper ) &&
+		method_exists( $mlwQuizMasterNext->pluginHelper, 'get_formated_result_data' )
+	) {
+		$results = $mlwQuizMasterNext->pluginHelper->get_formated_result_data( $result_data->result_id );
+	} elseif ( empty( $result_data->quiz_results ) ) {
+		$results = array(
+			0,
+			array(),
+			'',
+			'contact' => array(),
+		);
+	} else {
+		$results = maybe_unserialize( $result_data->quiz_results );
+	}
 	if ( ! is_array( $results ) ) {
-		$results = array( 0, '', '' );
+		$results = array(
+			0,
+			array(),
+			'',
+			'contact' => array(),
+		);
 	}
 
 	$mlwQuizMasterNext->quizCreator->set_id( $result_data->quiz_id );

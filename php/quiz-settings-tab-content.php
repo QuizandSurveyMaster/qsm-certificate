@@ -184,7 +184,7 @@ function qsm_addon_certificate_quiz_settings_tabs_content() {
 						<option value="600" <?php selected($certificate_settings["dpi"], 600); ?>><?php esc_html_e('600 DPI (High Resolution)', 'qsm-certificate'); ?></option>
 						<option value="720" <?php selected($certificate_settings["dpi"], 720); ?>><?php esc_html_e('720 DPI (Ultra High Resolution)', 'qsm-certificate'); ?></option>
 					</select>
-					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/?cadsad#4_PDF_Resolution" target="_blank"><?php esc_html_e('Click here', 'qsm-certificate') ?></a> <?php esc_html_e('to learn about PDF resolution settings.', 'qsm-certificate'); ?></p>
+					<p><a href="https://quizandsurveymaster.com/docs/add-ons/certificate/?cadsad#4_PDF_Resolution" target="_blank"><?php esc_html_e('Click here', 'qsm-certificate') ?></a> <?php esc_html_e('to learn about PDF resolution.', 'qsm-certificate'); ?></p>
 				</td>
 			</tr>
 			<tr>

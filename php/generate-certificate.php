@@ -424,7 +424,6 @@ function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $qui
     $html_top .= '</style></head><body style="margin:0;padding:0;">';
     $html_top .= $background_img_tag;
 
-    // Content wrapper with padding sits on top of the background
     $html_bottom = '<div style="position:relative;padding:15pt;">'
         . '<div class="qsm-cert-logo" style="' . esc_attr( $logo_style ) . '">' . $logo . '</div>'
         . ( ! empty( $certificate_title )

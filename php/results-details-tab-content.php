@@ -60,9 +60,29 @@ function qsm_addon_certificate_results_details_tabs_content() {
         return;
     }
 
-    $results = maybe_unserialize( $results_data->quiz_results );
+    if (
+        empty( $results_data->quiz_results ) &&
+        isset( $mlwQuizMasterNext->pluginHelper ) &&
+        method_exists( $mlwQuizMasterNext->pluginHelper, 'get_formated_result_data' )
+    ) {
+        $results = $mlwQuizMasterNext->pluginHelper->get_formated_result_data( $results_data->result_id );
+    } elseif ( empty( $results_data->quiz_results ) ) {
+        $results = array(
+            0,
+            array(),
+            '',
+            'contact' => array(),
+        );
+    } else {
+        $results = maybe_unserialize( $results_data->quiz_results );
+    }
     if ( ! is_array( $results ) ) {
-        $results = array( 0, '', '' );
+        $results = array(
+            0,
+            array(),
+            '',
+            'contact' => array(),
+        );
     }
 
     $quiz_results = array(
@@ -169,7 +189,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
  * @since 0.1.0
  */
 function qsm_addon_certificate_details_tabs_content() {
-    global $wp_filesystem, $wpdb;
+    global $wp_filesystem, $wpdb, $mlwQuizMasterNext;
 
     if ( ! function_exists( 'WP_Filesystem' ) ) {
         require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -245,8 +265,21 @@ function qsm_addon_certificate_details_tabs_content() {
         
         $certificate_id = '-';
         if ( $latest_result ) {
-            $result_each = maybe_unserialize( $latest_result['quiz_results'] );
-            if ( isset( $result_each['certificate_id'] ) ) {
+            if (
+                empty( $latest_result['quiz_results'] ) &&
+                isset( $mlwQuizMasterNext->pluginHelper ) &&
+                method_exists( $mlwQuizMasterNext->pluginHelper, 'get_formated_result_data' )
+            ) {
+                $result_each = $mlwQuizMasterNext->pluginHelper->get_formated_result_data( $latest_result['result_id'] );
+            } elseif ( empty( $latest_result['quiz_results'] ) ) {
+                $result_each = array(
+                    'certificate_id' => '-',
+                );
+            } else {
+                $result_each = maybe_unserialize( $latest_result['quiz_results'] );
+            }
+
+            if ( is_array( $result_each ) && isset( $result_each['certificate_id'] ) ) {
                 $certificate_id = $result_each['certificate_id'];
             }
         }

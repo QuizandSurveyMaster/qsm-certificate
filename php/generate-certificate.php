@@ -372,46 +372,94 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
 
 function qsm_pdf_html_post_process_certificate( $html, $settings = array(), $quiz_results = array() ) {
 	global $mlwQuizMasterNext;
-    $upload_dir   = wp_upload_dir();
+    $upload_dir = wp_upload_dir();
+
+    // --- Logo ---
     $logo = "";
     if ( ! empty( $settings['logo'] ) ) {
-        $logo_path = str_replace( $upload_dir['url'], $upload_dir['path'], $settings['logo'] );
-        $logo_url     = base64_encode( file_get_contents( $logo_path ) );
-        $extension    = pathinfo( $settings['logo'], PATHINFO_EXTENSION );
-        $logo         = isset( $settings['logo'] ) ? "<img src='data:image/{$extension};base64,{$logo_url}'><br/>" : "";
+        $logo_path  = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['logo'] );
+        $logo_src   = qsm_certificate_get_image_src_for_pdf( $logo_path, $settings['logo'] );
+        $extension  = pathinfo( $settings['logo'], PATHINFO_EXTENSION );
+        if ( ! empty( $logo_src ) ) {
+            $logo = "<img src='" . esc_attr( $logo_src ) . "'><br/>";
+        }
     }
-	if ( isset( $settings['content'] ) ) {
-		$content = apply_filters( 'qsm_addon_certificate_content_filter', $settings["content"], $quiz_results );
-        $content = htmlspecialchars_decode( $content, ENT_QUOTES ) ;
-	}
-    $certificate_title   = $settings["title"];
-    $certificate_title   = $certificate_title;
-    $certificate_title   = stripslashes( $certificate_title );
-    $background = "";
-    $background_path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['background'] );
-    if ( ! empty($settings['background'] ) ) {
-        if ( file_exists( $background_path ) ) {
-        $background_url = base64_encode( file_get_contents( $background_path ) );
-        $background_extension = pathinfo( $settings["background"], PATHINFO_EXTENSION );
-        $background          = isset( $settings["background"] ) ? "data:image/{$background_extension};base64,{$background_url}" : "";
+
+    // --- Content ---
+    $content = '';
+    if ( isset( $settings['content'] ) ) {
+        $content = apply_filters( 'qsm_addon_certificate_content_filter', $settings['content'], $quiz_results );
+        $content = htmlspecialchars_decode( $content, ENT_QUOTES );
+    }
+
+    // --- Title ---
+    $certificate_title = stripslashes( isset( $settings['title'] ) ? $settings['title'] : '' );
+
+    // --- Background image ---
+    $background_img_tag = '';
+    if ( ! empty( $settings['background'] ) ) {
+        $background_path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $settings['background'] );
+        $bg_src          = qsm_certificate_get_image_src_for_pdf( $background_path, $settings['background'] );
+        if ( ! empty( $bg_src ) ) {
+            $background_img_tag = '<img src="' . esc_attr( $bg_src ) . '" style="position:fixed;top:0;left:0;width:100%;height:100%;" />';
+        }
+    }
+
+    // --- Logo style ---
+    $logo_style = isset( $settings['logo_style'] ) ? $settings['logo_style'] : '';
+
+    // --- Build HTML ---
+    $html_top = '<html style="margin:0;padding:0;"><head>'
+        . '<title>' . esc_html( $certificate_title ) . '</title>'
+        . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+        . '<style>';
+
+    if ( empty( $settings['certificate_font'] ) || 'dejavusans' === $settings['certificate_font'] ) {
+        $html_top .= 'body{font-family:"DejaVu Sans",sans-serif;text-align:left;font-size:12pt;margin:0;padding:0;}'
+            . '.qsm-cert-logo img{min-width:150pt !important;margin-top:22pt;}';
     } else {
-        $background = $background_path;
+        $html_top .= trim( htmlspecialchars_decode( $settings['certificate_font'], ENT_QUOTES ) );
     }
-    }
-    $logo_style = isset( $settings['logo_style'] ) ? $settings["logo_style"] : "";
-	$html_top        = '<html style = "margin:0;padding:0;"><head><title>'.$certificate_title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><style>';
-    if ( empty( $settings['certificate_font'] ) || 'dejavusans' == $settings['certificate_font'] ) {
-        $html_top   .= 'body{ font-family: "DejaVu Sans", sans-serif; text-align:left; font-size:12pt;}img{min-width:150pt !important;margin-top:22pt;}';
-    } else {
-        $html_top   .= trim( htmlspecialchars_decode( $settings["certificate_font"], ENT_QUOTES ) );
-    }
-	$html_top       .= '</style></head><body style="background-image: url('.$background.');background-size:100% 100%;background-repeat:no-repeat;background-position:center center;padding:15pt; ">';
-	$html_bottom = '<div style="' . $logo_style . '"> ' . $logo
-    . ( ! empty($certificate_title) ? '<h1 style="text-align:center;margin-top:60pt;font-weight:700;">' . $certificate_title . '</h1>' : '')
-    . '<div style="text-align:center;vertical-align:middle;justify-content: center;">' . $content
-    . '</div></body></html>';
-    $html            = $html_top . $html . $html_bottom;
+
+    $html_top .= '</style></head><body style="margin:0;padding:0;">';
+    $html_top .= $background_img_tag;
+
+    $html_bottom = '<div style="position:relative;padding:15pt;">'
+        . '<div class="qsm-cert-logo" style="' . esc_attr( $logo_style ) . '">' . $logo . '</div>'
+        . ( ! empty( $certificate_title )
+            ? '<h1 style="text-align:center;margin-top:60pt;font-weight:700;">' . esc_html( $certificate_title ) . '</h1>'
+            : '' )
+        . '<div style="text-align:center;vertical-align:middle;justify-content:center;">'
+        . $content
+        . '</div>'
+        . '</div>'
+        . '</body></html>';
+
+    $html = $html_top . $html . $html_bottom;
     return $html;
+}
+
+/**
+ * Gets an image src suitable for Dompdf PDF generation.
+ * Prefers a local base64 data URI; falls back to the original URL.
+ *
+ * @param string $local_path  Absolute filesystem path to the image.
+ * @param string $fallback_url Original URL to use when the file cannot be read.
+ * @return string data URI or URL, or empty string on failure.
+ */
+function qsm_certificate_get_image_src_for_pdf( $local_path, $fallback_url ) {
+    if ( file_exists( $local_path ) && is_readable( $local_path ) ) {
+        $file_size = @filesize( $local_path );
+        if ( $file_size !== false && $file_size <= 5242880 ) {
+            $image_data = @file_get_contents( $local_path );
+            if ( $image_data !== false ) {
+                $extension = strtolower( pathinfo( $local_path, PATHINFO_EXTENSION ) );
+                $mime      = ( 'svg' === $extension ) ? 'image/svg+xml' : 'image/' . $extension;
+                return 'data:' . $mime . ';base64,' . base64_encode( $image_data );
+            }
+        }
+    }
+    return ! empty( $fallback_url ) ? $fallback_url : '';
 }
 
 // Check If URL is Exists or not

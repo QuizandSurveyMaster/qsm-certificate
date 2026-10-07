@@ -31,24 +31,15 @@ function qsm_addon_certificate_results_details_tabs_content() {
     $results_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $result_id ) );
 
     $mlwQuizMasterNext->quizCreator->set_id( $results_data->quiz_id );
-    $certificate_settings = $mlwQuizMasterNext->pluginHelper->get_quiz_setting( 'certificate_settings' );
+    $quiz_row = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT quiz_settings, certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id = %d LIMIT 1",
+            $results_data->quiz_id
+        )
+    );
 
-    if ( ! is_array( $certificate_settings ) ) {
-        $quiz_options = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT certificate_template FROM {$wpdb->prefix}mlw_quizzes WHERE quiz_id = %d LIMIT 1",
-                $results_data->quiz_id
-            )
-        );
-        if ( $quiz_options && isset( $quiz_options->certificate_template ) ) {
-            $certificate = maybe_unserialize( $quiz_options->certificate_template );
-            if ( is_array( $certificate ) ) {
-                $certificate_settings = array( 'enabled' => isset( $certificate[4] ) ? (int) $certificate[4] : 1 );
-            }
-        }
-    }
-
-    if ( ! is_array( $certificate_settings ) || ( isset( $certificate_settings['enabled'] ) && 1 === (int) $certificate_settings['enabled'] ) ) {
+    // Same check the Certificate Report "Not generated" view uses.
+    if ( ! $quiz_row || ! qsm_certificate_is_enabled( $quiz_row ) ) {
         ?>
         <div id="qsm-certificate-message-update" class="qsm-certificate-message">
             <p><?php esc_html_e( 'Enable setting to generate certificate', 'qsm-certificate' ); ?> 
@@ -60,50 +51,7 @@ function qsm_addon_certificate_results_details_tabs_content() {
         return;
     }
 
-    if (
-        empty( $results_data->quiz_results ) &&
-        isset( $mlwQuizMasterNext->pluginHelper ) &&
-        method_exists( $mlwQuizMasterNext->pluginHelper, 'get_formated_result_data' )
-    ) {
-        $results = $mlwQuizMasterNext->pluginHelper->get_formated_result_data( $results_data->result_id );
-    } elseif ( empty( $results_data->quiz_results ) ) {
-        $results = array(
-            0,
-            array(),
-            '',
-            'contact' => array(),
-        );
-    } else {
-        $results = maybe_unserialize( $results_data->quiz_results );
-    }
-    if ( ! is_array( $results ) ) {
-        $results = array(
-            0,
-            array(),
-            '',
-            'contact' => array(),
-        );
-    }
-
-    $quiz_results = array(
-        'quiz_id'                => $results_data->quiz_id,
-        'quiz_name'              => $results_data->quiz_name ?? '',
-        'quiz_system'            => $results_data->quiz_system ?? 0,
-        'user_name'              => $results_data->name ?? '',
-        'user_business'          => $results_data->business ?? '',
-        'user_email'             => $results_data->email ?? '',
-        'user_phone'             => $results_data->phone ?? '',
-        'user_id'                => $results_data->user ?? 0,
-        'timer'                  => $results[0] ?? 0,
-        'time_taken'             => $results_data->time_taken ?? '',
-        'total_points'           => $results_data->point_score ?? 0,
-        'total_score'            => $results_data->correct_score ?? 0,
-        'total_correct'          => $results_data->correct ?? 0,
-        'total_questions'        => $results_data->total ?? 0,
-        'comments'               => $results[2] ?? '',
-        'question_answers_array' => $results[1] ?? array(),
-        'result_id'              => $result_id,
-    );
+    $quiz_results = qsm_certificate_build_quiz_results( $results_data );
 
     $encoded_time_taken = md5( $quiz_results['time_taken'] );
     $upload = wp_upload_dir();
@@ -209,7 +157,38 @@ function qsm_addon_certificate_details_tabs_content() {
         'search'                  => esc_html__( 'Search Certificates:', 'qsm-certificate' ),
         'lengthMenu'              => esc_html__( 'Show _MENU_ entries', 'qsm-certificate' ),
         'length_menu'             => esc_html__( 'All', 'qsm-certificate' ),
+        'missing_info'            => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ results', 'qsm-certificate' ),
+        'missing_search'          => esc_html__( 'Search Results:', 'qsm-certificate' ),
+        'generate_nonce'          => wp_create_nonce( 'qsm_certificate_generate' ),
+        'gen_none_selected'       => esc_html__( 'Please select the results to generate certificates for.', 'qsm-certificate' ),
+        /* translators: %d: number of certificates */
+        'gen_confirm'             => esc_html__( 'Generate %d certificate(s)? They are created one at a time; keep this page open until it finishes.', 'qsm-certificate' ),
+        /* translators: 1: current item, 2: total */
+        'gen_progress'            => esc_html__( 'Generating certificate %1$d of %2$d...', 'qsm-certificate' ),
+        /* translators: 1: generated count, 2: failed count */
+        'gen_done'                => esc_html__( 'Done: %1$d generated, %2$d failed.', 'qsm-certificate' ),
+        'gen_stopped'             => esc_html__( 'Stopped.', 'qsm-certificate' ),
+        'gen_queued'              => esc_html__( 'Queued', 'qsm-certificate' ),
+        'gen_running'             => esc_html__( 'Generating...', 'qsm-certificate' ),
+        'gen_generated'           => esc_html__( 'Generated', 'qsm-certificate' ),
+        'gen_failed'              => esc_html__( 'Failed', 'qsm-certificate' ),
+        'gen_view'                => esc_html__( 'View', 'qsm-certificate' ),
+        'gen_retry'               => esc_html__( 'Retry', 'qsm-certificate' ),
+        /* translators: %d: number of failed certificates */
+        'gen_retry_all'           => esc_html__( 'Retry all failed (%d)', 'qsm-certificate' ),
+        'gen_leave'               => esc_html__( 'Certificates are still being generated. Leave anyway?', 'qsm-certificate' ),
     ) );
+
+    $enabled_quizzes = qsm_certificate_get_enabled_quizzes();
+    $filters         = qsm_certificate_report_filters( $enabled_quizzes );
+
+    qsm_certificate_report_render_nav( $filters );
+    qsm_certificate_report_render_filters( $enabled_quizzes, $filters );
+
+    if ( 'not-generated' === $filters['view'] ) {
+        qsm_certificate_report_render_missing( $enabled_quizzes, $filters );
+        return;
+    }
 
     $upload_dir      = wp_upload_dir();
     $certificate_dir = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/';
@@ -230,7 +209,6 @@ function qsm_addon_certificate_details_tabs_content() {
     echo '<form method="post" id="qsm-certificate-form">';
     wp_nonce_field( 'bulk_delete_certificates_action', 'bulk_delete_certificates_nonce' );
 
-    echo '<input type="submit" name="bulk_delete" value="' . esc_attr__( 'Bulk Delete', 'qsm-certificate' ) . '" class="button action" style="margin: 20px 0 0;">';
 
     echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
     echo '<thead>
@@ -255,7 +233,16 @@ function qsm_addon_certificate_details_tabs_content() {
         $expiration_date = null;
 
         $parts = explode('-', $file_name);
-        $result_id = $parts[1]; 
+
+        if ( $filters['quiz_id'] && (int) $parts[0] !== $filters['quiz_id'] ) {
+            continue;
+        }
+        $generated_day = gmdate( 'Y-m-d', filemtime( $file ) );
+        if ( ( $filters['date_from'] && $generated_day < $filters['date_from'] ) || ( $filters['date_to'] && $generated_day > $filters['date_to'] ) ) {
+            continue;
+        }
+
+        $result_id = isset( $parts[1] ) ? $parts[1] : 0;
             
         $latest_result = $wpdb->get_row( 
             $wpdb->prepare( "SELECT result_id, quiz_results FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $result_id 

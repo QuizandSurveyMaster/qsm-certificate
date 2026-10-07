@@ -1,3 +1,5 @@
+var qsmCertMissingTable = null;
+
 jQuery(document).ready(function($) {
     // For preview button
     if (!$('#wp-certificate_template-media-buttons .qsm-preview-btn').length) {
@@ -29,10 +31,32 @@ jQuery(document).ready(function($) {
             },
             order: [[2, "desc"]],
             columnDefs: [
-                { targets: [2, 3], orderable: true, type: 'date-eu' },
-                { targets: [0, 1, 4], orderable: false }
-            ]
+                // Columns: 0 checkbox, 1 name, 2 generated date, 3 certificate ID, 4 expiry, 5 action.
+                { targets: [2, 4], orderable: true, type: 'date-eu' },
+                { targets: [0, 1, 5], orderable: false },
+                { targets: 0, width: '40px' }
+            ],
+            autoWidth: false
         });
+
+        if ($('#qsm-certificate-not-generated-table').length) {
+            qsmCertMissingTable = $('#qsm-certificate-not-generated-table').DataTable({
+                paging: true,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, qsm_certificate_obj.length_menu]],
+                language: {
+                    paginate: { previous: "<", next: ">" },
+                    lengthMenu: qsm_certificate_obj.lengthMenu,
+                    info: qsm_certificate_obj.missing_info,
+                    search: qsm_certificate_obj.missing_search
+                },
+                order: [[1, "desc"]],
+                columnDefs: [
+                    { targets: [0, 8], orderable: false },
+                    { targets: 0, width: '40px' }
+                ],
+                autoWidth: false
+            });
+        }
     }
 
     // Handle single file deletion
@@ -77,6 +101,13 @@ jQuery(document).ready(function($) {
     // Select all functionality
     $(document).on('change', '#qsm-select-all-certificate', function () {
         $('input[name="certificates[]"]').prop('checked', this.checked);
+    });
+
+    // Bulk Actions > Delete Certificates: Apply submits #qsm-certificate-form only for "delete".
+    $(document).on('click', '#qsm-cert-bulk-delete-apply', function (e) {
+        if ('delete' !== $('#qsm-cert-bulk-action-generated').val()) {
+            e.preventDefault();
+        }
     });
 
     // Bulk delete with proper event handling
@@ -577,5 +608,177 @@ jQuery(document).ready(function() {
         license_message.html(qsm_license_validate_obj.empty);
         jQuery('#qsm-certificate-license-entry input[name="license_key"]').focus();
       }
+    });
+});
+/**
+ * Certificate Report > Not generated: generate certificates through a queue.
+ *
+ * Each result is a separate AJAX request and the next one is sent only after
+ * the previous finishes, so the server renders one PDF at a time no matter
+ * how many results are selected.
+ */
+jQuery(function ($) {
+    var $table = $('#qsm-certificate-not-generated-table');
+    if (!$table.length || typeof qsm_certificate_obj === 'undefined') {
+        return;
+    }
+    var obj = qsm_certificate_obj;
+    var queue = [];
+    var running = false;
+    var stopRequested = false;
+    var total = 0, done = 0, ok = 0, failed = 0;
+    var failedIds = []; // failed and not yet re-queued, kept across runs
+    var DELAY_MS = 300; // breathing room between PDFs on shared hosting
+    var $box = $('#qsm-cert-queue');
+
+    function fmt(str) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        var i = 0;
+        return str.replace(/%(\d+\$)?d/g, function (m, pos) {
+            return pos ? args[parseInt(pos, 10) - 1] : args[i++];
+        });
+    }
+    function rows() {
+        return qsmCertMissingTable ? $(qsmCertMissingTable.rows().nodes()) : $table.find('tbody tr');
+    }
+    function rowFor(id) {
+        return rows().filter('[data-result-id="' + id + '"]');
+    }
+    function setRow(id, status, actionHtml) {
+        var $row = rowFor(id);
+        $row.find('.qsm-cert-status').text(status);
+        if (actionHtml !== undefined) {
+            $row.find('.qsm-cert-action').html(actionHtml);
+        }
+    }
+    function showProgress(text) {
+        $box.show().find('.qsm-cert-queue-text').text(text);
+    }
+    function finish() {
+        running = false;
+        $box.find('.spinner').removeClass('is-active');
+        $box.find('.qsm-cert-queue-stop').hide();
+        updateRetryButton();
+        $box.removeClass('notice-info').addClass(failed ? 'notice-warning' : 'notice-success');
+        showProgress((stopRequested ? obj.gen_stopped + ' ' : '') + fmt(obj.gen_done, ok, failed));
+        queue.forEach(function (id) { setRow(id, obj.gen_stopped); restoreButton(id); });
+        queue = [];
+        $('#qsm-cert-bulk-apply').prop('disabled', false);
+    }
+    function restoreButton(id) {
+        setRow(id, rowFor(id).find('.qsm-cert-status').text(),
+            $('<button type="button" class="button button-small qsm-cert-generate"></button>')
+                .attr('data-result-id', id).text(obj.gen_retry));
+    }
+    function next() {
+        if (stopRequested || !queue.length) {
+            finish();
+            return;
+        }
+        var id = queue.shift();
+        done++;
+        showProgress(fmt(obj.gen_progress, done, total));
+        setRow(id, obj.gen_running, '');
+        $.post(ajaxurl, { action: 'qsm_certificate_generate_single', nonce: obj.generate_nonce, result_id: id })
+            .done(function (res) {
+                if (res && res.success && res.data && res.data.url) {
+                    ok++;
+                    var $row = rowFor(id);
+                    $row.addClass('qsm-cert-done').find('.qsm-cert-missing-cb').prop({ checked: false, disabled: true });
+                    setRow(id, obj.gen_generated,
+                        $('<a class="button button-small" target="_blank"></a>').attr('href', res.data.url).text(obj.gen_view));
+                } else {
+                    failed++;
+                    failedIds.push(id);
+                    setRow(id, obj.gen_failed + (res && res.data && res.data.message ? ': ' + res.data.message : ''));
+                    restoreButton(id);
+                }
+            })
+            .fail(function (xhr) {
+                failed++;
+                failedIds.push(id);
+                var msg = xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message;
+                setRow(id, obj.gen_failed + (msg ? ': ' + msg : ' (HTTP ' + (xhr ? xhr.status : '?') + ')'));
+                restoreButton(id);
+            })
+            .always(function () {
+                setTimeout(next, DELAY_MS);
+            });
+    }
+    function enqueue(ids) {
+        ids = ids.filter(function (id) { return queue.indexOf(id) === -1; });
+        if (!ids.length) {
+            return;
+        }
+        ids.forEach(function (id) { queue.push(id); setRow(id, obj.gen_queued, ''); });
+        failedIds = failedIds.filter(function (id) { return ids.indexOf(id) === -1; });
+        if (!running) {
+            running = true;
+            stopRequested = false;
+            total = ids.length; done = 0; ok = 0; failed = 0;
+            $box.removeClass('notice-success notice-warning').addClass('notice-info');
+            $box.find('.spinner').addClass('is-active');
+            $box.find('.qsm-cert-queue-stop').show();
+            $('#qsm-cert-bulk-apply').prop('disabled', true);
+            next();
+        } else {
+            total += ids.length;
+        }
+        updateRetryButton();
+    }
+
+    // Single row.
+    $table.on('click', '.qsm-cert-generate', function () {
+        enqueue([String($(this).data('result-id'))]);
+    });
+
+    // Select all = every row matching the current search, across all pages.
+    $('#qsm-cert-select-all-missing').on('change', function () {
+        var checked = this.checked;
+        var nodes = qsmCertMissingTable ? qsmCertMissingTable.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
+        $(nodes).find('.qsm-cert-missing-cb:not(:disabled)').prop('checked', checked);
+    });
+
+    // Bulk.
+    $('#qsm-cert-bulk-apply').on('click', function () {
+        if ('generate' !== $('#qsm-cert-bulk-action').val()) {
+            return;
+        }
+        var ids = rows().find('.qsm-cert-missing-cb:checked:not(:disabled)').map(function () {
+            return String(this.value);
+        }).get();
+        if (!ids.length) {
+            alert(obj.gen_none_selected);
+            return;
+        }
+        if (!confirm(fmt(obj.gen_confirm, ids.length))) {
+            return;
+        }
+        $('#qsm-cert-select-all-missing').prop('checked', false);
+        enqueue(ids);
+    });
+
+    function updateRetryButton() {
+        var $retry = $box.find('.qsm-cert-queue-retry');
+        if (!running && failedIds.length) {
+            $retry.text(fmt(obj.gen_retry_all, failedIds.length)).show();
+        } else {
+            $retry.hide();
+        }
+    }
+
+    // Re-queue every failed certificate (same one-at-a-time queue).
+    $box.on('click', '.qsm-cert-queue-retry', function () {
+        enqueue(failedIds.slice());
+    });
+
+    $box.on('click', '.qsm-cert-queue-stop', function () {
+        stopRequested = true; // the request in flight finishes, nothing new starts
+    });
+
+    $(window).on('beforeunload', function () {
+        if (running) {
+            return obj.gen_leave;
+        }
     });
 });

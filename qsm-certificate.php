@@ -64,6 +64,7 @@ class QSM_Certificate {
 	public function load_dependencies() {
 		include 'php/addon-settings-tab-content.php';
 		include 'php/generate-certificate.php';
+		include 'php/certificate-report-helpers.php';
 		include 'php/results-details-tab-content.php';
 		include 'php/quiz-settings-tab-content.php';
 		include 'php/variables.php';

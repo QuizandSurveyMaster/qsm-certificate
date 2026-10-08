@@ -1,7 +1,23 @@
 .qsm-certificate-table-container .qsm-check-column {
-    width: 40px;  
-    padding: 0;  
+    width: 40px;
+    padding: 8px 0;
     text-align: center;
+    vertical-align: middle;
+}
+.qsm-certificate-table-container .qsm-check-column input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+}
+.qsm-certificate-table-container table.dataTable td,
+.qsm-certificate-table-container table.dataTable th {
+    vertical-align: middle;
+}
+/* DataTables right-aligns numeric columns; keep IDs/dates left like the rest of the table. */
+.qsm-certificate-table-container table.dataTable th.dt-type-numeric,
+.qsm-certificate-table-container table.dataTable td.dt-type-numeric,
+.qsm-certificate-table-container table.dataTable th.dt-type-date,
+.qsm-certificate-table-container table.dataTable td.dt-type-date {
+    text-align: left;
 }
 
 .qsm-certificate-table-container div.dt-container select.dt-input{
@@ -362,4 +378,14 @@ h2#qsm-certificate-preview-page-templates-title {
 #qsm-certificate-failed{
     margin-top: 20px;
     border-left: 5px solid #ffb900;
+}
+
+.qsm-certificate-report-filters .search-box input[type="date"] {
+    vertical-align: middle;
+}
+#qsm-certificate-not-generated-table tr.qsm-cert-done .qsm-cert-status {
+    color: #008a20;
+}
+#qsm-cert-queue .qsm-cert-queue-stop {
+    margin-left: 8px;
 }

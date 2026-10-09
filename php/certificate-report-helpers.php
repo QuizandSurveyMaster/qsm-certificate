@@ -466,8 +466,8 @@ function qsm_certificate_generated_payload( $status, $file_name ) {
 		'status'    => $status,
 		'file'      => $file_name,
 		'url'       => trailingslashit( $upload['baseurl'] ) . 'qsm-certificates/' . rawurlencode( $file_name ),
-		'generated' => gmdate( 'd-m-Y H:i:s', filemtime( $cert_dir . $file_name ) ),
-		'expiry'    => $expiry ? $expiry->format( 'd-m-Y' ) : __( 'Never Expire', 'qsm-certificate' ),
+		'generated' => qsm_certificate_format_datetime( filemtime( $cert_dir . $file_name ) ),
+		'expiry'    => $expiry ? date_i18n( 'M j, Y', $expiry->getTimestamp() ) : __( 'Never expires', 'qsm-certificate' ),
 	);
 }
 
@@ -520,56 +520,113 @@ function qsm_certificate_report_url( $args = array() ) {
 }
 
 /**
- * Renders the bulk actions and the status / quiz / date filters, laid out like
- * the core Quiz Results page (.tablenav.top: bulk actions left, filters right).
+ * Report date formats (site locale; the time part follows the mockup's 12-hour style).
+ *
+ * @param int $timestamp Unix timestamp.
+ * @param bool $local    True when $timestamp already holds site-local wall time.
+ * @return array { date: string, time: string }
+ */
+function qsm_certificate_format_datetime( $timestamp, $local = false ) {
+	if ( $local ) {
+		return array(
+			'date' => date_i18n( 'M j, Y', $timestamp ),
+			'time' => date_i18n( 'g:i A', $timestamp ),
+		);
+	}
+	return array(
+		'date' => wp_date( 'M j, Y', $timestamp ),
+		'time' => wp_date( 'g:i A', $timestamp ),
+	);
+}
+
+/**
+ * Two-line cell: a main value and a muted second line.
+ *
+ * @param string $main      Main text.
+ * @param string $secondary Second line text.
+ * @return string HTML.
+ */
+function qsm_certificate_two_line( $main, $secondary ) {
+	return '<span class="qsm-cert-main">' . esc_html( $main ) . '</span><span class="qsm-cert-sub">' . esc_html( $secondary ) . '</span>';
+}
+
+/**
+ * Bulk action select + Apply (rendered above and below the list).
+ *
+ * @param string $id_suffix '' for the top one (keeps the stable IDs), '-bottom' for the second.
+ */
+function qsm_certificate_report_bulk_actions( $id_suffix = '' ) {
+	?>
+	<div class="qsm-cert-bulk">
+		<label for="qsm-cert-bulk-action<?php echo esc_attr( $id_suffix ); ?>" class="screen-reader-text"><?php esc_html_e( 'Select bulk action', 'qsm-certificate' ); ?></label>
+		<select id="qsm-cert-bulk-action<?php echo esc_attr( $id_suffix ); ?>" class="qsm-cert-bulk-select">
+			<option value=""><?php esc_html_e( 'Bulk actions', 'qsm-certificate' ); ?></option>
+			<option value="generate"><?php esc_html_e( 'Generate certificates', 'qsm-certificate' ); ?></option>
+			<option value="delete"><?php esc_html_e( 'Delete certificates', 'qsm-certificate' ); ?></option>
+		</select>
+		<button type="button" id="qsm-cert-bulk-apply<?php echo esc_attr( $id_suffix ); ?>" class="button qsm-cert-bulk-apply"><?php esc_html_e( 'Apply', 'qsm-certificate' ); ?></button>
+	</div>
+	<?php
+}
+
+/**
+ * Renders the toolbar card: bulk actions, status / quiz / date filters and search.
  *
  * @param array $enabled_quizzes quiz_id => quiz_name.
  * @param array $filters         From qsm_certificate_report_filters().
  */
 function qsm_certificate_report_render_filters( $enabled_quizzes, $filters ) {
 	$statuses = array(
-		'all'           => __( 'All Statuses', 'qsm-certificate' ),
+		'all'           => __( 'All statuses', 'qsm-certificate' ),
 		'generated'     => __( 'Generated', 'qsm-certificate' ),
 		'not-generated' => __( 'Not generated', 'qsm-certificate' ),
 	);
 	?>
-	<div class="tablenav top qsm-certificate-report-filters">
-		<div class="alignleft actions bulkactions">
-			<select id="qsm-cert-bulk-action" class="postform">
-				<option value=""><?php esc_html_e( 'Bulk Actions', 'qsm-certificate' ); ?></option>
-				<option value="generate"><?php esc_html_e( 'Generate Certificates', 'qsm-certificate' ); ?></option>
-				<option value="delete"><?php esc_html_e( 'Delete Certificates', 'qsm-certificate' ); ?></option>
-			</select>
-			<button type="button" id="qsm-cert-bulk-apply" class="button action"><?php esc_html_e( 'Apply', 'qsm-certificate' ); ?></button>
-		</div>
-		<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="get">
+	<div class="qsm-cert-toolbar qsm-certificate-report-filters">
+		<?php qsm_certificate_report_bulk_actions(); ?>
+		<form class="qsm-cert-filter-form" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="get">
 			<input type="hidden" name="page" value="mlw_quiz_results">
 			<input type="hidden" name="tab" value="certificate-report">
-			<p class="search-box" style="margin: 0;">
-				<label for="qsm-cert-status"><?php esc_html_e( 'Status', 'qsm-certificate' ); ?></label>
-				<select id="qsm-cert-status" name="cert_status">
-					<?php foreach ( $statuses as $value => $label ) { ?>
-						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $filters['status'], $value ); ?>><?php echo esc_html( $label ); ?></option>
-					<?php } ?>
-				</select>
-				<label for="qsm-cert-quiz"><?php esc_html_e( 'Quiz', 'qsm-certificate' ); ?></label>
-				<select id="qsm-cert-quiz" name="cert_quiz">
-					<option value="0"><?php esc_html_e( 'All Quizzes', 'qsm-certificate' ); ?></option>
-					<?php foreach ( $enabled_quizzes as $quiz_id => $quiz_name ) { ?>
-						<option value="<?php echo esc_attr( $quiz_id ); ?>" <?php selected( $filters['quiz_id'], $quiz_id ); ?>><?php echo esc_html( $quiz_name ); ?></option>
-					<?php } ?>
-				</select>
-				<label for="qsm-cert-from"><?php esc_html_e( 'From', 'qsm-certificate' ); ?></label>
-				<input type="date" id="qsm-cert-from" name="cert_from" value="<?php echo esc_attr( $filters['date_from'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
-				<label for="qsm-cert-to"><?php esc_html_e( 'To', 'qsm-certificate' ); ?></label>
-				<input type="date" id="qsm-cert-to" name="cert_to" value="<?php echo esc_attr( $filters['date_to'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
-				<button class="button"><?php esc_html_e( 'Filter', 'qsm-certificate' ); ?></button>
-				<a class="button" href="<?php echo esc_url( qsm_certificate_report_url() ); ?>"><?php esc_html_e( 'Reset', 'qsm-certificate' ); ?></a>
-			</p>
+			<label for="qsm-cert-status" class="screen-reader-text"><?php esc_html_e( 'Filter by status', 'qsm-certificate' ); ?></label>
+			<select id="qsm-cert-status" name="cert_status">
+				<?php foreach ( $statuses as $value => $label ) { ?>
+					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $filters['status'], $value ); ?>><?php echo esc_html( $label ); ?></option>
+				<?php } ?>
+			</select>
+			<label for="qsm-cert-quiz" class="screen-reader-text"><?php esc_html_e( 'Filter by quiz', 'qsm-certificate' ); ?></label>
+			<select id="qsm-cert-quiz" name="cert_quiz">
+				<option value="0"><?php esc_html_e( 'All quizzes', 'qsm-certificate' ); ?></option>
+				<?php foreach ( $enabled_quizzes as $quiz_id => $quiz_name ) { ?>
+					<option value="<?php echo esc_attr( $quiz_id ); ?>" <?php selected( $filters['quiz_id'], $quiz_id ); ?>><?php echo esc_html( $quiz_name ); ?></option>
+				<?php } ?>
+			</select>
+			<label for="qsm-cert-from"><?php esc_html_e( 'From', 'qsm-certificate' ); ?></label>
+			<input type="date" id="qsm-cert-from" name="cert_from" value="<?php echo esc_attr( $filters['date_from'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
+			<label for="qsm-cert-to"><?php esc_html_e( 'To', 'qsm-certificate' ); ?></label>
+			<input type="date" id="qsm-cert-to" name="cert_to" value="<?php echo esc_attr( $filters['date_to'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
+			<button class="button"><?php esc_html_e( 'Filter', 'qsm-certificate' ); ?></button>
+			<a class="qsm-cert-reset" href="<?php echo esc_url( qsm_certificate_report_url() ); ?>"><?php esc_html_e( 'Reset', 'qsm-certificate' ); ?></a>
 		</form>
-		<br class="clear">
+		<div class="qsm-cert-search" role="search">
+			<label for="qsm-cert-search" class="screen-reader-text"><?php esc_html_e( 'Search certificates', 'qsm-certificate' ); ?></label>
+			<span class="dashicons dashicons-search" aria-hidden="true"></span>
+			<input type="search" id="qsm-cert-search" placeholder="<?php esc_attr_e( 'Search certificates…', 'qsm-certificate' ); ?>">
+			<button type="button" class="button" id="qsm-cert-search-btn"><?php esc_html_e( 'Search', 'qsm-certificate' ); ?></button>
+		</div>
 	</div>
 	<?php
+}
+
+/**
+ * Status pill.
+ *
+ * @param bool $generated Whether the certificate exists.
+ * @return string HTML.
+ */
+function qsm_certificate_status_pill( $generated ) {
+	return $generated
+		? '<span class="qsm-cert-pill qsm-cert-pill-generated">' . esc_html__( 'Generated', 'qsm-certificate' ) . '</span>'
+		: '<span class="qsm-cert-pill qsm-cert-pill-missing">' . esc_html__( 'Not generated', 'qsm-certificate' ) . '</span>';
 }
 
 /**
@@ -582,16 +639,16 @@ function qsm_certificate_report_action_html( $row ) {
 	if ( '' !== $row->cert_file ) {
 		$upload   = wp_upload_dir();
 		$file_url = trailingslashit( $upload['baseurl'] ) . 'qsm-certificates/' . $row->cert_file;
-		return '<div class="qsm-table-icons">
-			<a href="' . esc_url( $file_url ) . '" target="_blank" class="qsm-view-file" title="' . esc_attr__( 'View', 'qsm-certificate' ) . '">
-				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line.png' ) . '" alt="' . esc_attr__( 'View Icon', 'qsm-certificate' ) . '">
+		return '<div class="qsm-cert-actions">
+			<a href="' . esc_url( $file_url ) . '" target="_blank" class="qsm-cert-icon-btn qsm-cert-view" title="' . esc_attr__( 'View', 'qsm-certificate' ) . '" aria-label="' . esc_attr__( 'View certificate', 'qsm-certificate' ) . '">
+				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line-blue.png' ) . '" alt="">
 			</a>
-			<button type="button" class="qsm-cert-delete" data-filename="' . esc_attr( $row->cert_file ) . '" title="' . esc_attr__( 'Delete', 'qsm-certificate' ) . '">
-				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
+			<button type="button" class="qsm-cert-icon-btn qsm-cert-delete" data-filename="' . esc_attr( $row->cert_file ) . '" title="' . esc_attr__( 'Delete', 'qsm-certificate' ) . '" aria-label="' . esc_attr__( 'Delete certificate', 'qsm-certificate' ) . '">
+				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ) . '" alt="">
 			</button>
 		</div>';
 	}
-	return '<button type="button" class="button button-small qsm-cert-generate" data-result-id="' . esc_attr( $row->result_id ) . '">' . esc_html__( 'Generate', 'qsm-certificate' ) . '</button>';
+	return '<button type="button" class="button qsm-cert-generate" data-result-id="' . esc_attr( $row->result_id ) . '">' . esc_html__( 'Generate', 'qsm-certificate' ) . '</button>';
 }
 
 /**
@@ -624,6 +681,7 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 	$upload   = wp_upload_dir();
 	$cert_dir = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/';
 	$today    = new DateTime( 'today' );
+	$dash     = '<span class="qsm-cert-none">&mdash;</span>';
 
 	$generated_ids = array();
 	foreach ( $report['rows'] as $row ) {
@@ -645,7 +703,7 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 	echo '<div class="qsm-certificate-table-container">';
 	echo '<table id="qsm-certificate-report-table" class="wp-list-table widefat fixed striped">';
 	echo '<thead><tr>
-		<th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-cert-select-all"></th>
+		<th class="qsm-manage-column qsm-check-column"><label for="qsm-cert-select-all" class="screen-reader-text">' . esc_html__( 'Select all', 'qsm-certificate' ) . '</label><input type="checkbox" id="qsm-cert-select-all"></th>
 		<th class="qsm-manage-column">' . esc_html__( 'Result ID', 'qsm-certificate' ) . '</th>
 		<th class="qsm-manage-column">' . esc_html__( 'Quiz', 'qsm-certificate' ) . '</th>
 		<th class="qsm-manage-column">' . esc_html__( 'User', 'qsm-certificate' ) . '</th>
@@ -654,7 +712,7 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 		<th class="qsm-manage-column">' . esc_html__( 'Generated Date', 'qsm-certificate' ) . '</th>
 		<th class="qsm-manage-column">' . esc_html__( 'Expiry Date', 'qsm-certificate' ) . '</th>
 		<th class="qsm-manage-column">' . esc_html__( 'Certificate ID', 'qsm-certificate' ) . '</th>
-		<th class="qsm-manage-column">' . esc_html__( 'Action', 'qsm-certificate' ) . '</th>
+		<th class="qsm-manage-column">' . esc_html__( 'Actions', 'qsm-certificate' ) . '</th>
 	</tr></thead><tbody>';
 
 	foreach ( $report['rows'] as $row ) {
@@ -669,7 +727,7 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 			$attrs .= ' data-filename="' . esc_attr( $row->cert_file ) . '"';
 		}
 		echo '<tr' . $attrs . ( $generated ? ' class="qsm-cert-done"' : '' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
-		echo '<th scope="row" class="qsm-check-column"><input type="checkbox" class="qsm-cert-cb"></th>';
+		echo '<th scope="row" class="qsm-check-column"><input type="checkbox" class="qsm-cert-cb" aria-label="' . esc_attr__( 'Select row', 'qsm-certificate' ) . '"></th>';
 
 		if ( $row->result_id ) {
 			$details_url = add_query_arg(
@@ -680,37 +738,45 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 				admin_url( 'admin.php' )
 			);
 			if ( 1 === (int) $row->quiz_system ) {
-				$score = $row->point_score . ' ' . __( 'points', 'qsm-certificate' );
+				/* translators: %s: points */
+				$score = sprintf( __( 'Score: %s points', 'qsm-certificate' ), $row->point_score );
 			} elseif ( 0 === (int) $row->quiz_system ) {
-				$score = $row->correct_score . '%';
+				/* translators: %s: percentage */
+				$score = sprintf( __( 'Score: %s%%', 'qsm-certificate' ), $row->correct_score );
 			} else {
 				$score = '';
 			}
+			// QSM stores "None" when a contact field was not collected.
+			$name      = ( '' === trim( (string) $row->name ) || 'None' === $row->name ) ? __( 'Guest', 'qsm-certificate' ) : $row->name;
+			$email     = ( '' === trim( (string) $row->email ) || 'None' === $row->email ) ? '—' : $row->email;
+			$submitted = qsm_certificate_format_datetime( strtotime( $row->time_taken_real ), true );
+
 			echo '<td data-order="' . esc_attr( $row->result_id ) . '"><a href="' . esc_url( $details_url ) . '" target="_blank">' . esc_html( $row->result_id ) . '</a></td>';
-			echo '<td>' . esc_html( $quiz_name ) . ( '' !== $score ? '<br><span class="description">' . esc_html( $score ) . '</span>' : '' ) . '</td>';
-			echo '<td>' . esc_html( $row->name ) . '<br><span class="description">' . esc_html( $row->email ) . '</span></td>';
-			echo '<td data-order="' . esc_attr( $row->time_taken_real ) . '">' . esc_html( $row->time_taken_real ) . '</td>';
+			echo '<td>' . qsm_certificate_two_line( $quiz_name, $score ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+			echo '<td>' . qsm_certificate_two_line( $name, $email ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+			echo '<td data-order="' . esc_attr( $row->time_taken_real ) . '">' . qsm_certificate_two_line( $submitted['date'], $submitted['time'] ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
 		} else {
-			echo '<td data-order="0">&mdash;</td>';
+			echo '<td data-order="0">' . $dash . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup.
 			echo '<td>' . esc_html( $quiz_name ) . '</td>';
-			echo '<td><span class="description" title="' . esc_attr( $row->cert_file ) . '">' . esc_html__( 'Not linked to a current result', 'qsm-certificate' ) . '</span></td>';
-			echo '<td data-order="">&mdash;</td>';
+			echo '<td>' . qsm_certificate_two_line( __( 'Not linked to a current result', 'qsm-certificate' ), $row->cert_file ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+			echo '<td data-order="">' . $dash . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup.
 		}
 
-		echo '<td class="qsm-cert-status">' . ( $generated ? esc_html__( 'Generated', 'qsm-certificate' ) : esc_html__( 'Not generated', 'qsm-certificate' ) ) . '</td>';
+		echo '<td class="qsm-cert-status" data-order="' . ( $generated ? '1' : '0' ) . '">' . qsm_certificate_status_pill( $generated ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
 
 		if ( $generated ) {
 			$mtime  = filemtime( $cert_dir . $row->cert_file );
+			$gen    = qsm_certificate_format_datetime( $mtime );
 			$expiry = qsm_certificate_file_expiry( $row->cert_file );
-			echo '<td class="qsm-cert-generated" data-order="' . esc_attr( $mtime ) . '">' . esc_html( gmdate( 'd-m-Y H:i:s', $mtime ) ) . '</td>';
+			echo '<td class="qsm-cert-generated" data-order="' . esc_attr( $mtime ) . '">' . qsm_certificate_two_line( $gen['date'], $gen['time'] ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
 			if ( $expiry ) {
-				echo '<td class="qsm-cert-expiry" data-order="' . esc_attr( $expiry->format( 'Ymd' ) ) . '"' . ( $today >= $expiry ? ' style="color: red;"' : '' ) . '>' . esc_html( $expiry->format( 'd-m-Y' ) ) . '</td>';
+				echo '<td class="qsm-cert-expiry' . ( $today >= $expiry ? ' qsm-cert-expired' : '' ) . '" data-order="' . esc_attr( $expiry->format( 'Ymd' ) ) . '">' . esc_html( date_i18n( 'M j, Y', $expiry->getTimestamp() ) ) . '</td>';
 			} else {
-				echo '<td class="qsm-cert-expiry" data-order="99999999">' . esc_html__( 'Never Expire', 'qsm-certificate' ) . '</td>';
+				echo '<td class="qsm-cert-expiry" data-order="99999999">' . esc_html__( 'Never expires', 'qsm-certificate' ) . '</td>';
 			}
-			echo '<td class="qsm-cert-id">' . ( isset( $certificate_ids[ (int) $row->result_id ] ) ? esc_html( $certificate_ids[ (int) $row->result_id ] ) : '&mdash;' ) . '</td>';
+			echo '<td class="qsm-cert-id">' . ( isset( $certificate_ids[ (int) $row->result_id ] ) ? esc_html( $certificate_ids[ (int) $row->result_id ] ) : $dash ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped / static.
 		} else {
-			echo '<td class="qsm-cert-generated" data-order="0">&mdash;</td><td class="qsm-cert-expiry" data-order="0">&mdash;</td><td class="qsm-cert-id">&mdash;</td>';
+			echo '<td class="qsm-cert-generated" data-order="0">' . $dash . '</td><td class="qsm-cert-expiry" data-order="0">' . $dash . '</td><td class="qsm-cert-id">' . $dash . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup.
 		}
 
 		echo '<td class="qsm-cert-action">' . qsm_certificate_report_action_html( $row ) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
@@ -718,4 +784,9 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 	}
 
 	echo '</tbody></table></div>';
+
+	// Moved by the list script into the table footer, next to the pagination.
+	echo '<div id="qsm-cert-bottom-bulk" class="qsm-cert-bottom-bulk">';
+	qsm_certificate_report_bulk_actions( '-bottom' );
+	echo '</div>';
 }

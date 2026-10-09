@@ -478,25 +478,75 @@ jQuery(function ($) {
     }
     var obj = qsm_certificate_obj;
     var dt = null;
+    var $pager = $('<div class="qsm-cert-pager tablenav-pages"></div>');
+    var $bottomBulk = $('#qsm-cert-bottom-bulk');
+
+    // WP-style pager: « ‹ [page] of N › », redrawn on every table draw.
+    function drawPager() {
+        var info = dt.page.info();
+        var pages = Math.max(info.pages, 1);
+        var current = info.page + 1;
+        function btn(label, target, disabled, cls) {
+            return $('<button type="button" class="button"></button>').addClass(cls).text(label)
+                .prop('disabled', disabled).attr('aria-label', cls.replace('qsm-cert-page-', ''))
+                .on('click', function () { dt.page(target).draw('page'); });
+        }
+        var $input = $('<input type="text" inputmode="numeric" class="qsm-cert-page-input">').attr({ max: pages, 'aria-label': obj.current_page }).val(current)
+            .on('change keydown', function (e) {
+                if (e.type === 'keydown' && e.key !== 'Enter') { return; }
+                var p = Math.min(Math.max(parseInt(this.value, 10) || 1, 1), pages);
+                dt.page(p - 1).draw('page');
+            });
+        $pager.empty().append(
+            $('<span class="displaying-num"></span>').text(fmt(obj.items, info.recordsDisplay)),
+            btn('«', 'first', current === 1, 'qsm-cert-page-first'),
+            btn('‹', 'previous', current === 1, 'qsm-cert-page-prev'),
+            $input,
+            $('<span class="qsm-cert-page-total"></span>').text(fmt(obj.of_pages, pages)),
+            btn('›', 'next', current === pages, 'qsm-cert-page-next'),
+            btn('»', 'last', current === pages, 'qsm-cert-page-last')
+        );
+    }
+
     if ($.fn.DataTable) {
         dt = $table.DataTable({
             paging: true,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, obj.length_menu]],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [obj.per_page_10, obj.per_page_25, obj.per_page_50, obj.per_page_100, obj.per_page_all]],
             language: {
-                paginate: { previous: "<", next: ">" },
-                lengthMenu: obj.lengthMenu,
-                info: obj.info,
-                search: obj.search
+                lengthMenu: '_MENU_',
+                info: obj.items_info,
+                infoEmpty: obj.items_info_empty,
+                infoFiltered: '',
+                zeroRecords: obj.no_matches
+            },
+            // Top: item count + per-page; bottom: bulk actions + count + pager.
+            layout: {
+                topStart: 'info',
+                topEnd: 'pageLength',
+                bottomStart: $bottomBulk.length ? $bottomBulk[0] : null,
+                bottomEnd: $pager[0]
             },
             // Columns: 0 checkbox, 1 result, 2 quiz, 3 user, 4 submitted, 5 status,
             // 6 generated, 7 expiry, 8 certificate ID, 9 action.
             order: [[1, "desc"]],
             columnDefs: [
                 { targets: [0, 9], orderable: false },
-                { targets: 0, width: '40px' }
+                { targets: 0, width: '40px' },
+                { targets: 1, width: '110px' },
+                { targets: 3, width: '22%' },
+                { targets: 9, width: '120px' }
             ],
             autoWidth: false
         });
+        dt.on('draw', drawPager);
+        drawPager();
+
+        // Toolbar search box filters the loaded list.
+        var runSearch = function () { dt.search($('#qsm-cert-search').val()).draw(); };
+        $('#qsm-cert-search-btn').on('click', runSearch);
+        $('#qsm-cert-search').on('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } })
+            .on('search', runSearch); // the native clear (x) button
     }
 
     var queue = [];
@@ -510,7 +560,7 @@ jQuery(function ($) {
     function fmt(str) {
         var args = Array.prototype.slice.call(arguments, 1);
         var i = 0;
-        return str.replace(/%(\d+\$)?d/g, function (m, pos) {
+        return String(str || '').replace(/%(\d+\$)?d/g, function (m, pos) {
             return pos ? args[parseInt(pos, 10) - 1] : args[i++];
         });
     }
@@ -525,30 +575,39 @@ jQuery(function ($) {
             dt.row($row[0]).invalidate('dom');
         }
     }
+    function pill(status) {
+        var kind = status === obj.gen_generated ? 'generated'
+            : status === obj.not_generated ? 'missing'
+            : status.indexOf(obj.gen_failed) === 0 ? 'failed' : 'neutral';
+        return $('<span class="qsm-cert-pill"></span>').addClass('qsm-cert-pill-' + kind).text(status);
+    }
+    function twoLine(main, sub) {
+        return [$('<span class="qsm-cert-main"></span>').text(main), $('<span class="qsm-cert-sub"></span>').text(sub)];
+    }
     function setRow(id, status, actionHtml) {
         var $row = rowFor(id);
-        $row.find('.qsm-cert-status').text(status);
+        $row.find('.qsm-cert-status').empty().append(pill(status));
         if (actionHtml !== undefined) {
             $row.find('.qsm-cert-action').html(actionHtml);
         }
     }
     function actionIcons(url, file) {
-        var $wrap = $('<div class="qsm-table-icons"></div>');
-        $('<a target="_blank" class="qsm-view-file"></a>').attr({ href: url, title: obj.gen_view })
-            .append($('<img class="qsm-common-svg-image-class">').attr({ src: obj.view_icon, alt: obj.gen_view })).appendTo($wrap);
-        $('<button type="button" class="qsm-cert-delete"></button>').attr({ 'data-filename': file, title: 'Delete' })
-            .append($('<img class="qsm-common-svg-image-class">').attr({ src: obj.delete_icon, alt: 'Delete' })).appendTo($wrap);
+        var $wrap = $('<div class="qsm-cert-actions"></div>');
+        $('<a target="_blank" class="qsm-cert-icon-btn qsm-cert-view"></a>').attr({ href: url, title: obj.gen_view, 'aria-label': obj.view_label })
+            .append($('<img class="qsm-common-svg-image-class" alt="">').attr('src', obj.view_icon)).appendTo($wrap);
+        $('<button type="button" class="qsm-cert-icon-btn qsm-cert-delete"></button>').attr({ 'data-filename': file, title: obj.delete_title, 'aria-label': obj.delete_label })
+            .append($('<img class="qsm-common-svg-image-class" alt="">').attr('src', obj.delete_icon)).appendTo($wrap);
         return $wrap;
     }
     function generateButton(id, label) {
-        return $('<button type="button" class="button button-small qsm-cert-generate"></button>')
+        return $('<button type="button" class="button qsm-cert-generate"></button>')
             .attr('data-result-id', id).text(label || obj.generate);
     }
     function markGenerated(id, data) {
         var $row = rowFor(id);
         $row.attr({ 'data-status': 'generated', 'data-filename': data.file }).addClass('qsm-cert-done');
         $row.find('.qsm-cert-cb').prop('checked', false);
-        $row.find('.qsm-cert-generated').text(data.generated);
+        $row.find('.qsm-cert-generated').empty().append(twoLine(data.generated.date, data.generated.time));
         $row.find('.qsm-cert-expiry').text(data.expiry);
         setRow(id, obj.gen_generated, actionIcons(data.url, data.file));
         refresh($row);
@@ -561,7 +620,7 @@ jQuery(function ($) {
             return;
         }
         $row.attr('data-status', 'not-generated').removeAttr('data-filename').removeClass('qsm-cert-done');
-        $row.find('.qsm-cert-generated, .qsm-cert-expiry, .qsm-cert-id').html('&mdash;');
+        $row.find('.qsm-cert-generated, .qsm-cert-expiry, .qsm-cert-id').html('<span class="qsm-cert-none">&mdash;</span>');
         setRow(id, obj.not_generated, generateButton(id));
         refresh($row);
     }
@@ -588,7 +647,7 @@ jQuery(function ($) {
         showProgress((stopRequested ? obj.gen_stopped + ' ' : '') + fmt(obj.gen_done, ok, failed));
         queue.forEach(function (id) { setRow(id, obj.gen_stopped); restoreButton(id); });
         queue = [];
-        $('#qsm-cert-bulk-apply').prop('disabled', false);
+        $('.qsm-cert-bulk-apply').prop('disabled', false);
     }
     function next() {
         if (stopRequested || !queue.length) {
@@ -636,7 +695,7 @@ jQuery(function ($) {
             $box.removeClass('notice-success notice-warning').addClass('notice-info');
             $box.find('.spinner').addClass('is-active');
             $box.find('.qsm-cert-queue-stop').show();
-            $('#qsm-cert-bulk-apply').prop('disabled', true);
+            $('.qsm-cert-bulk-apply').prop('disabled', true);
             next();
         } else {
             total += ids.length;
@@ -688,8 +747,9 @@ jQuery(function ($) {
     });
 
     // Bulk actions.
-    $('#qsm-cert-bulk-apply').on('click', function () {
-        var action = $('#qsm-cert-bulk-action').val();
+    // Top and bottom bulk bars: each Apply reads its own select.
+    $(document).on('click', '.qsm-cert-bulk-apply', function () {
+        var action = $(this).siblings('.qsm-cert-bulk-select').val();
         var $checked = checkedRows();
 
         if ('generate' === action) {

@@ -583,6 +583,7 @@ function qsm_certificate_report_render_filters( $enabled_quizzes, $filters ) {
 	);
 	?>
 	<div class="qsm-cert-toolbar qsm-certificate-report-filters">
+		<div class="qsm-cert-toolbar-main">
 		<?php qsm_certificate_report_bulk_actions(); ?>
 		<form class="qsm-cert-filter-form" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="get">
 			<input type="hidden" name="page" value="mlw_quiz_results">
@@ -600,13 +601,20 @@ function qsm_certificate_report_render_filters( $enabled_quizzes, $filters ) {
 					<option value="<?php echo esc_attr( $quiz_id ); ?>" <?php selected( $filters['quiz_id'], $quiz_id ); ?>><?php echo esc_html( $quiz_name ); ?></option>
 				<?php } ?>
 			</select>
-			<label for="qsm-cert-from"><?php esc_html_e( 'From', 'qsm-certificate' ); ?></label>
-			<input type="date" id="qsm-cert-from" name="cert_from" value="<?php echo esc_attr( $filters['date_from'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
-			<label for="qsm-cert-to"><?php esc_html_e( 'To', 'qsm-certificate' ); ?></label>
-			<input type="date" id="qsm-cert-to" name="cert_to" value="<?php echo esc_attr( $filters['date_to'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
-			<button class="button"><?php esc_html_e( 'Filter', 'qsm-certificate' ); ?></button>
-			<a class="qsm-cert-reset" href="<?php echo esc_url( qsm_certificate_report_url() ); ?>"><?php esc_html_e( 'Reset', 'qsm-certificate' ); ?></a>
+			<span class="qsm-cert-date">
+				<label for="qsm-cert-from"><?php esc_html_e( 'From', 'qsm-certificate' ); ?></label>
+				<input type="date" id="qsm-cert-from" name="cert_from" value="<?php echo esc_attr( $filters['date_from'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
+			</span>
+			<span class="qsm-cert-date">
+				<label for="qsm-cert-to"><?php esc_html_e( 'To', 'qsm-certificate' ); ?></label>
+				<input type="date" id="qsm-cert-to" name="cert_to" value="<?php echo esc_attr( $filters['date_to'] ); ?>" title="<?php esc_attr_e( 'Quiz submission date', 'qsm-certificate' ); ?>">
+			</span>
+			<span class="qsm-cert-filter-actions">
+				<button class="button"><?php esc_html_e( 'Filter', 'qsm-certificate' ); ?></button>
+				<a class="qsm-cert-reset" href="<?php echo esc_url( qsm_certificate_report_url() ); ?>"><?php esc_html_e( 'Reset', 'qsm-certificate' ); ?></a>
+			</span>
 		</form>
+		</div>
 		<div class="qsm-cert-search" role="search">
 			<label for="qsm-cert-search" class="screen-reader-text"><?php esc_html_e( 'Search certificates', 'qsm-certificate' ); ?></label>
 			<span class="dashicons dashicons-search" aria-hidden="true"></span>

@@ -532,15 +532,30 @@ jQuery(function ($) {
             order: [[1, "desc"]],
             columnDefs: [
                 { targets: [0, 9], orderable: false },
-                { targets: 0, width: '40px' },
-                { targets: 1, width: '110px' },
-                { targets: 3, width: '22%' },
-                { targets: 9, width: '120px' }
+                // Fixed layout: these sum to the table's 1150px minimum; extra width is shared out.
+                { targets: 0, width: '36px' },
+                { targets: 1, width: '105px' },
+                { targets: 2, width: '120px' },
+                { targets: 3, width: '175px' },
+                { targets: 4, width: '115px' },
+                { targets: 5, width: '120px' },
+                { targets: 6, width: '140px' },
+                { targets: 7, width: '105px' },
+                { targets: 8, width: '120px' },
+                { targets: 9, width: '114px' }
             ],
             autoWidth: false
         });
         dt.on('draw', drawPager);
         drawPager();
+
+        // Column names on every cell: the small-screen card layout shows them as labels.
+        var labels = $table.find('thead th').map(function () { return $.trim($(this).text()); }).get();
+        $(dt.rows().nodes()).each(function () {
+            $(this).children('td, th').each(function (i) {
+                if (labels[i]) { this.setAttribute('data-label', labels[i]); }
+            });
+        });
 
         // Toolbar search box filters the loaded list.
         var runSearch = function () { dt.search($('#qsm-cert-search').val()).draw(); };

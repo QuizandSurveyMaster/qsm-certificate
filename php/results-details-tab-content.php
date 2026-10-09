@@ -137,13 +137,6 @@ function qsm_addon_certificate_results_details_tabs_content() {
  * @since 0.1.0
  */
 function qsm_addon_certificate_details_tabs_content() {
-    global $wp_filesystem, $wpdb, $mlwQuizMasterNext;
-
-    if ( ! function_exists( 'WP_Filesystem' ) ) {
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-    }
-    WP_Filesystem();
-
     wp_enqueue_script( 'certificate-datatable-js', QSM_CERTIFICATE_JS_URL . '/datatables.min.js', array( 'jquery' ), '2.1.8', true );
     wp_enqueue_script( 'qsm_certificate_admin_script', QSM_CERTIFICATE_JS_URL . '/qsm-certificate-admin.js', array( 'jquery' ), QSM_CERTIFICATE_VERSION, true );
     wp_enqueue_style( 'qsm_certificate_admin_style', QSM_CERTIFICATE_CSS_URL . '/qsm-certificate-admin.css', array(), QSM_CERTIFICATE_VERSION );
@@ -153,14 +146,35 @@ function qsm_addon_certificate_details_tabs_content() {
         'delete_confirm'          => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),
         'bulk_delete_confirm'     => esc_html__( 'Are you sure you want to delete certificates?', 'qsm-certificate' ),
         'no_certificate_selected' => esc_html__( 'Please select the certificates.', 'qsm-certificate' ),
-        'info'                    => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ certificates', 'qsm-certificate' ),
-        'search'                  => esc_html__( 'Search Certificates:', 'qsm-certificate' ),
+        'info'                    => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ entries', 'qsm-certificate' ),
+        'search'                  => esc_html__( 'Search:', 'qsm-certificate' ),
         'lengthMenu'              => esc_html__( 'Show _MENU_ entries', 'qsm-certificate' ),
         'length_menu'             => esc_html__( 'All', 'qsm-certificate' ),
-        'missing_info'            => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ results', 'qsm-certificate' ),
-        'missing_search'          => esc_html__( 'Search Results:', 'qsm-certificate' ),
         'generate_nonce'          => wp_create_nonce( 'qsm_certificate_generate' ),
-        'gen_none_selected'       => esc_html__( 'Please select the results to generate certificates for.', 'qsm-certificate' ),
+        'gen_none_selected'       => esc_html__( 'Please select results without a certificate to generate.', 'qsm-certificate' ),
+        'no_action_selected'      => esc_html__( 'Please choose a bulk action.', 'qsm-certificate' ),
+        'not_generated'           => esc_html__( 'Not generated', 'qsm-certificate' ),
+        'generate'                => esc_html__( 'Generate', 'qsm-certificate' ),
+        'delete_error'            => esc_html__( 'An error occurred during deletion.', 'qsm-certificate' ),
+        'bulk_delete_error'       => esc_html__( 'An error occurred during bulk deletion.', 'qsm-certificate' ),
+        'view_icon'               => esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line-blue.png' ),
+        'view_label'              => esc_html__( 'View certificate', 'qsm-certificate' ),
+        'delete_title'            => esc_html__( 'Delete', 'qsm-certificate' ),
+        'delete_label'            => esc_html__( 'Delete certificate', 'qsm-certificate' ),
+        /* translators: %d: number of items */
+        'items'                   => esc_html__( '%d items', 'qsm-certificate' ),
+        'items_info'              => esc_html__( '_TOTAL_ items', 'qsm-certificate' ),
+        'items_info_empty'        => esc_html__( '0 items', 'qsm-certificate' ),
+        /* translators: %d: total pages */
+        'of_pages'                => esc_html__( 'of %d', 'qsm-certificate' ),
+        'current_page'            => esc_html__( 'Current page', 'qsm-certificate' ),
+        'no_matches'              => esc_html__( 'No matching rows.', 'qsm-certificate' ),
+        'per_page_10'             => esc_html__( '10 items per page', 'qsm-certificate' ),
+        'per_page_25'             => esc_html__( '25 items per page', 'qsm-certificate' ),
+        'per_page_50'             => esc_html__( '50 items per page', 'qsm-certificate' ),
+        'per_page_100'            => esc_html__( '100 items per page', 'qsm-certificate' ),
+        'per_page_all'            => esc_html__( 'All items', 'qsm-certificate' ),
+        'delete_icon'             => esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ),
         /* translators: %d: number of certificates */
         'gen_confirm'             => esc_html__( 'Generate %d certificate(s)? They are created one at a time; keep this page open until it finishes.', 'qsm-certificate' ),
         /* translators: 1: current item, 2: total */
@@ -182,134 +196,8 @@ function qsm_addon_certificate_details_tabs_content() {
     $enabled_quizzes = qsm_certificate_get_enabled_quizzes();
     $filters         = qsm_certificate_report_filters( $enabled_quizzes );
 
-    qsm_certificate_report_render_nav( $filters );
     qsm_certificate_report_render_filters( $enabled_quizzes, $filters );
-
-    if ( 'not-generated' === $filters['view'] ) {
-        qsm_certificate_report_render_missing( $enabled_quizzes, $filters );
-        return;
-    }
-
-    $upload_dir      = wp_upload_dir();
-    $certificate_dir = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/';
-
-    if ( ! $wp_filesystem->is_dir( $certificate_dir ) ) {
-        echo '<div class="notice notice-error"><p>' . esc_html__( 'Certificate folder not found.', 'qsm-certificate' ) . '</p></div>';
-        return;
-    }
-
-    $files = glob( $certificate_dir . '*.pdf' );
-
-    if ( empty( $files ) ) {
-        echo '<div class="notice notice-info"><p>' . esc_html__( 'No PDF certificates found.', 'qsm-certificate' ) . '</p></div>';
-        return;
-    }
-
-    echo '<div class="qsm-certificate-table-container">';
-    echo '<form method="post" id="qsm-certificate-form">';
-    wp_nonce_field( 'bulk_delete_certificates_action', 'bulk_delete_certificates_nonce' );
-
-
-    echo '<table id="qsm-certificate-table" class="wp-list-table widefat fixed striped">';
-    echo '<thead>
-        <tr>
-            <th class="qsm-manage-column qsm-check-column"><input type="checkbox" id="qsm-select-all-certificate"></th>
-            <th class="qsm-manage-column">' . esc_html__( 'Certificate Name', 'qsm-certificate' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Generated Date', 'qsm-certificate' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Certificate ID', 'qsm-certificate' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Expiry Date', 'qsm-certificate' ) . '</th>
-            <th class="qsm-manage-column">' . esc_html__( 'Action', 'qsm-certificate' ) . '</th>
-        </tr>
-      </thead>';
-
-    echo '<tbody id="qsm-certificate-list">';
-
-    $current_date = new DateTime();
-
-    foreach ( $files as $file ) {
-        $file_name     = basename( $file );
-        $file_url      = esc_url( trailingslashit( $upload_dir['baseurl'] ) . 'qsm-certificates/' . $file_name );
-        $generated_date = gmdate( 'd-m-Y H:i:s', filemtime( $file ) );
-        $expiration_date = null;
-
-        $parts = explode('-', $file_name);
-
-        if ( $filters['quiz_id'] && (int) $parts[0] !== $filters['quiz_id'] ) {
-            continue;
-        }
-        $generated_day = gmdate( 'Y-m-d', filemtime( $file ) );
-        if ( ( $filters['date_from'] && $generated_day < $filters['date_from'] ) || ( $filters['date_to'] && $generated_day > $filters['date_to'] ) ) {
-            continue;
-        }
-
-        $result_id = isset( $parts[1] ) ? $parts[1] : 0;
-            
-        $latest_result = $wpdb->get_row( 
-            $wpdb->prepare( "SELECT result_id, quiz_results FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $result_id 
-            ), 
-            ARRAY_A 
-        );
-        
-        $certificate_id = '-';
-        if ( $latest_result ) {
-            if (
-                empty( $latest_result['quiz_results'] ) &&
-                isset( $mlwQuizMasterNext->pluginHelper ) &&
-                method_exists( $mlwQuizMasterNext->pluginHelper, 'get_formated_result_data' )
-            ) {
-                $result_each = $mlwQuizMasterNext->pluginHelper->get_formated_result_data( $latest_result['result_id'] );
-            } elseif ( empty( $latest_result['quiz_results'] ) ) {
-                $result_each = array(
-                    'certificate_id' => '-',
-                );
-            } else {
-                $result_each = maybe_unserialize( $latest_result['quiz_results'] );
-            }
-
-            if ( is_array( $result_each ) && isset( $result_each['certificate_id'] ) ) {
-                $certificate_id = $result_each['certificate_id'];
-            }
-        }
-
-        if ( strlen( $file_name ) >= 53 ) {
-            $last_part = substr( $file_name, -12, 10 );
-            $day       = substr( $last_part, 0, 2 );
-            $month     = substr( $last_part, 2, 2 );
-            $year      = substr( $last_part, 4, 4 );
-
-            $expiration_date = DateTime::createFromFormat( 'd-m-Y', $day . '-' . $month . '-' . $year );
-        } 
-
-        echo '<tr data-filename="' . esc_attr( $file_name ) . '">';
-        echo '<th scope="row" class="qsm-check-column"><input type="checkbox" name="certificates[]" value="' . esc_attr( $file_name ) . '"></th>';
-        echo '<td>' . esc_html( $file_name ) . '</td>';
-        echo '<td>' . esc_html( $generated_date ) . '</td>';
-        echo '<td>' . esc_html( $certificate_id ) . '</td>';
-
-        if ( $expiration_date instanceof DateTime && $current_date >= $expiration_date ) {
-            echo '<td style="color: red;">' . esc_html( $expiration_date->format( 'd-m-Y' ) ) . '</td>';
-        } else {
-            echo '<td>' . esc_html( $expiration_date instanceof DateTime ? $expiration_date->format( 'd-m-Y' ) : esc_html__( 'Never Expire', 'qsm-certificate' ) ) . '</td>';
-        }
-
-        echo '<td>
-            <div class="qsm-table-icons">
-                <a href="' . esc_url( $file_url ) . '" target="_blank" class="qsm-view-file">
-                    <img src="' . esc_url( plugins_url( '../assets/eye-line.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'View Icon', 'qsm-certificate' ) . '">
-                </a> 
-                <button type="button" class="qsm-delete-file" data-filename="' . esc_attr( $file_name ) . '">
-                    <img src="' . esc_url( plugins_url( '../assets/trash.png', __FILE__ ) ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
-                </button>
-            </div>
-        </td>';
-
-        echo '</tr>';
-    }
-
-    echo '</tbody>';
-    echo '</table>';
-    echo '</form>';
-    echo '</div>';
+    qsm_certificate_report_render_list( $enabled_quizzes, $filters );
 }
 
 add_action( 'wp_ajax_delete_certificate', 'qsm_delete_certificate' );

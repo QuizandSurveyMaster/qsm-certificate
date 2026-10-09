@@ -1,5 +1,3 @@
-var qsmCertMissingTable = null;
-
 jQuery(document).ready(function($) {
     // For preview button
     if (!$('#wp-certificate_template-media-buttons .qsm-preview-btn').length) {
@@ -14,151 +12,6 @@ jQuery(document).ready(function($) {
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${import_template}</button>`);
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-save-template-button"></span>${save_template}</button>`);
     }
-
-    if ($.fn.DataTable) {
-        var table = $('#qsm-certificate-table').DataTable();
-        if (table) {
-            table.destroy();
-        }
-        $('#qsm-certificate-table').DataTable({
-            paging: true,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],
-            language: {
-                paginate: { previous: "<", next: ">" },
-                lengthMenu: qsm_certificate_obj.lengthMenu,
-                info: qsm_certificate_obj.info,
-                search: qsm_certificate_obj.search
-            },
-            order: [[2, "desc"]],
-            columnDefs: [
-                // Columns: 0 checkbox, 1 name, 2 generated date, 3 certificate ID, 4 expiry, 5 action.
-                { targets: [2, 4], orderable: true, type: 'date-eu' },
-                { targets: [0, 1, 5], orderable: false },
-                { targets: 0, width: '40px' }
-            ],
-            autoWidth: false
-        });
-
-        if ($('#qsm-certificate-not-generated-table').length) {
-            qsmCertMissingTable = $('#qsm-certificate-not-generated-table').DataTable({
-                paging: true,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, qsm_certificate_obj.length_menu]],
-                language: {
-                    paginate: { previous: "<", next: ">" },
-                    lengthMenu: qsm_certificate_obj.lengthMenu,
-                    info: qsm_certificate_obj.missing_info,
-                    search: qsm_certificate_obj.missing_search
-                },
-                order: [[1, "desc"]],
-                columnDefs: [
-                    { targets: [0, 8], orderable: false },
-                    { targets: 0, width: '40px' }
-                ],
-                autoWidth: false
-            });
-        }
-    }
-
-    // Handle single file deletion
-    $(document).on('click', '.qsm-delete-file', function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        var filename = $(this).data('filename');
-        var row = $(this).closest('tr');
-
-        if (confirm(qsm_certificate_obj.delete_confirm)) {
-            row.addClass('processing');
-
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'delete_certificate',
-                    file_name: filename,
-                    security: $('#bulk_delete_certificates_nonce').val()
-                },
-                dataType: 'json',
-                complete: function () {
-                    row.removeClass('processing');
-                },
-                success: function (response) {
-                    if (response.success) {
-                        row.fadeOut(400, function () {
-                            $(this).remove();
-                        });
-                    } else {
-                        alert(response.data);
-                    }
-                },
-                error: function () {
-                    alert('An error occurred during deletion.');
-                }
-            });
-        }
-    });
-
-    // Select all functionality
-    $(document).on('change', '#qsm-select-all-certificate', function () {
-        $('input[name="certificates[]"]').prop('checked', this.checked);
-    });
-
-    // Bulk Actions > Delete Certificates: Apply submits #qsm-certificate-form only for "delete".
-    $(document).on('click', '#qsm-cert-bulk-delete-apply', function (e) {
-        if ('delete' !== $('#qsm-cert-bulk-action-generated').val()) {
-            e.preventDefault();
-        }
-    });
-
-    // Bulk delete with proper event handling
-    $(document).on('submit', '#qsm-certificate-form', function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        if ($(this).hasClass('processing')) return false;
-        $(this).addClass('processing');
-
-        var certificates = [];
-        $('input[name="certificates[]"]:checked').each(function () {
-            certificates.push($(this).val());
-        });
-
-        if (certificates.length === 0) {
-            alert(qsm_certificate_obj.no_certificate_selected);
-            $(this).removeClass('processing');
-            return false;
-        }
-
-        if (confirm(qsm_certificate_obj.bulk_delete_confirm)) {
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'bulk_delete_certificates',
-                    certificates: certificates,
-                    bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
-                },
-                dataType: 'json',
-                complete: function () {
-                    $('#qsm-certificate-form').removeClass('processing');
-                },
-                success: function (response) {
-                    if (response.success) {
-                        alert(response.data);
-                        location.reload();
-                    } else {
-                        alert(response.data);
-                    }
-                },
-                error: function () {
-                    alert('An error occurred during bulk deletion.');
-                }
-            });
-        } else {
-            $(this).removeClass('processing');
-        }
-    });
-
 
     $('input[name="enable_expiry"]').change(function() {
         qsm_certificate_update_expiry_fields();
@@ -610,19 +463,107 @@ jQuery(document).ready(function() {
       }
     });
 });
+
 /**
- * Certificate Report > Not generated: generate certificates through a queue.
+ * Certificate Report: one list of results with a certificate status.
  *
- * Each result is a separate AJAX request and the next one is sent only after
- * the previous finishes, so the server renders one PDF at a time no matter
- * how many results are selected.
+ * Generate (row or bulk) runs through a queue that sends one AJAX request at a
+ * time, so the server renders one PDF at a time. Delete (row or bulk) uses the
+ * existing delete_certificate / bulk_delete_certificates handlers.
  */
 jQuery(function ($) {
-    var $table = $('#qsm-certificate-not-generated-table');
+    var $table = $('#qsm-certificate-report-table');
     if (!$table.length || typeof qsm_certificate_obj === 'undefined') {
         return;
     }
     var obj = qsm_certificate_obj;
+    var dt = null;
+    var $pager = $('<div class="qsm-cert-pager tablenav-pages"></div>');
+    var $bottomBulk = $('#qsm-cert-bottom-bulk');
+
+    // WP-style pager: « ‹ [page] of N › », redrawn on every table draw.
+    function drawPager() {
+        var info = dt.page.info();
+        var pages = Math.max(info.pages, 1);
+        var current = info.page + 1;
+        function btn(label, target, disabled, cls) {
+            return $('<button type="button" class="button"></button>').addClass(cls).text(label)
+                .prop('disabled', disabled).attr('aria-label', cls.replace('qsm-cert-page-', ''))
+                .on('click', function () { dt.page(target).draw('page'); });
+        }
+        var $input = $('<input type="text" inputmode="numeric" class="qsm-cert-page-input">').attr({ max: pages, 'aria-label': obj.current_page }).val(current)
+            .on('change keydown', function (e) {
+                if (e.type === 'keydown' && e.key !== 'Enter') { return; }
+                var p = Math.min(Math.max(parseInt(this.value, 10) || 1, 1), pages);
+                dt.page(p - 1).draw('page');
+            });
+        $pager.empty().append(
+            $('<span class="displaying-num"></span>').text(fmt(obj.items, info.recordsDisplay)),
+            btn('«', 'first', current === 1, 'qsm-cert-page-first'),
+            btn('‹', 'previous', current === 1, 'qsm-cert-page-prev'),
+            $input,
+            $('<span class="qsm-cert-page-total"></span>').text(fmt(obj.of_pages, pages)),
+            btn('›', 'next', current === pages, 'qsm-cert-page-next'),
+            btn('»', 'last', current === pages, 'qsm-cert-page-last')
+        );
+    }
+
+    if ($.fn.DataTable) {
+        dt = $table.DataTable({
+            paging: true,
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [obj.per_page_10, obj.per_page_25, obj.per_page_50, obj.per_page_100, obj.per_page_all]],
+            language: {
+                lengthMenu: '_MENU_',
+                info: obj.items_info,
+                infoEmpty: obj.items_info_empty,
+                infoFiltered: '',
+                zeroRecords: obj.no_matches
+            },
+            // Top: item count + per-page; bottom: bulk actions + count + pager.
+            layout: {
+                topStart: 'info',
+                topEnd: 'pageLength',
+                bottomStart: $bottomBulk.length ? $bottomBulk[0] : null,
+                bottomEnd: $pager[0]
+            },
+            // Columns: 0 checkbox, 1 result, 2 quiz, 3 user, 4 submitted, 5 status,
+            // 6 generated, 7 expiry, 8 certificate ID, 9 action.
+            order: [[1, "desc"]],
+            columnDefs: [
+                { targets: [0, 9], orderable: false },
+                // Fixed layout: these sum to the table's 1150px minimum; extra width is shared out.
+                { targets: 0, width: '36px' },
+                { targets: 1, width: '105px' },
+                { targets: 2, width: '120px' },
+                { targets: 3, width: '175px' },
+                { targets: 4, width: '115px' },
+                { targets: 5, width: '120px' },
+                { targets: 6, width: '140px' },
+                { targets: 7, width: '105px' },
+                { targets: 8, width: '120px' },
+                { targets: 9, width: '114px' }
+            ],
+            autoWidth: false
+        });
+        dt.on('draw', drawPager);
+        drawPager();
+
+        // Column names on every cell: the small-screen card layout shows them as labels.
+        var labels = $table.find('thead th').map(function () { return $.trim($(this).text()); }).get();
+        $(dt.rows().nodes()).each(function () {
+            $(this).children('td, th').each(function (i) {
+                if (labels[i]) { this.setAttribute('data-label', labels[i]); }
+            });
+        });
+
+        // Toolbar search box filters the loaded list.
+        var runSearch = function () { dt.search($('#qsm-cert-search').val()).draw(); };
+        $('#qsm-cert-search-btn').on('click', runSearch);
+        $('#qsm-cert-search').on('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } })
+            .on('search', runSearch); // the native clear (x) button
+    }
+
     var queue = [];
     var running = false;
     var stopRequested = false;
@@ -634,25 +575,83 @@ jQuery(function ($) {
     function fmt(str) {
         var args = Array.prototype.slice.call(arguments, 1);
         var i = 0;
-        return str.replace(/%(\d+\$)?d/g, function (m, pos) {
+        return String(str || '').replace(/%(\d+\$)?d/g, function (m, pos) {
             return pos ? args[parseInt(pos, 10) - 1] : args[i++];
         });
     }
     function rows() {
-        return qsmCertMissingTable ? $(qsmCertMissingTable.rows().nodes()) : $table.find('tbody tr');
+        return dt ? $(dt.rows().nodes()) : $table.find('tbody tr');
     }
     function rowFor(id) {
         return rows().filter('[data-result-id="' + id + '"]');
     }
+    function refresh($row) {
+        if (dt && $row.length) {
+            dt.row($row[0]).invalidate('dom');
+        }
+    }
+    function pill(status) {
+        var kind = status === obj.gen_generated ? 'generated'
+            : status === obj.not_generated ? 'missing'
+            : status.indexOf(obj.gen_failed) === 0 ? 'failed' : 'neutral';
+        return $('<span class="qsm-cert-pill"></span>').addClass('qsm-cert-pill-' + kind).text(status);
+    }
+    function twoLine(main, sub) {
+        return [$('<span class="qsm-cert-main"></span>').text(main), $('<span class="qsm-cert-sub"></span>').text(sub)];
+    }
     function setRow(id, status, actionHtml) {
         var $row = rowFor(id);
-        $row.find('.qsm-cert-status').text(status);
+        $row.find('.qsm-cert-status').empty().append(pill(status));
         if (actionHtml !== undefined) {
             $row.find('.qsm-cert-action').html(actionHtml);
         }
     }
+    function actionIcons(url, file) {
+        var $wrap = $('<div class="qsm-cert-actions"></div>');
+        $('<a target="_blank" class="qsm-cert-icon-btn qsm-cert-view"></a>').attr({ href: url, title: obj.gen_view, 'aria-label': obj.view_label })
+            .append($('<img class="qsm-common-svg-image-class" alt="">').attr('src', obj.view_icon)).appendTo($wrap);
+        $('<button type="button" class="qsm-cert-icon-btn qsm-cert-delete"></button>').attr({ 'data-filename': file, title: obj.delete_title, 'aria-label': obj.delete_label })
+            .append($('<img class="qsm-common-svg-image-class" alt="">').attr('src', obj.delete_icon)).appendTo($wrap);
+        return $wrap;
+    }
+    function generateButton(id, label) {
+        return $('<button type="button" class="button qsm-cert-generate"></button>')
+            .attr('data-result-id', id).text(label || obj.generate);
+    }
+    function markGenerated(id, data) {
+        var $row = rowFor(id);
+        $row.attr({ 'data-status': 'generated', 'data-filename': data.file }).addClass('qsm-cert-done');
+        $row.find('.qsm-cert-cb').prop('checked', false);
+        $row.find('.qsm-cert-generated').empty().append(twoLine(data.generated.date, data.generated.time));
+        $row.find('.qsm-cert-expiry').text(data.expiry);
+        setRow(id, obj.gen_generated, actionIcons(data.url, data.file));
+        refresh($row);
+    }
+    function markNotGenerated($row) {
+        var id = $row.attr('data-result-id');
+        if (!id) {
+            // A PDF with no current result: nothing left to show.
+            if (dt) { dt.row($row[0]).remove().draw(false); } else { $row.remove(); }
+            return;
+        }
+        $row.attr('data-status', 'not-generated').removeAttr('data-filename').removeClass('qsm-cert-done');
+        $row.find('.qsm-cert-generated, .qsm-cert-expiry, .qsm-cert-id').html('<span class="qsm-cert-none">&mdash;</span>');
+        setRow(id, obj.not_generated, generateButton(id));
+        refresh($row);
+    }
     function showProgress(text) {
         $box.show().find('.qsm-cert-queue-text').text(text);
+    }
+    function updateRetryButton() {
+        var $retry = $box.find('.qsm-cert-queue-retry');
+        if (!running && failedIds.length) {
+            $retry.text(fmt(obj.gen_retry_all, failedIds.length)).show();
+        } else {
+            $retry.hide();
+        }
+    }
+    function restoreButton(id) {
+        setRow(id, rowFor(id).find('.qsm-cert-status').text(), generateButton(id, obj.gen_retry));
     }
     function finish() {
         running = false;
@@ -663,12 +662,7 @@ jQuery(function ($) {
         showProgress((stopRequested ? obj.gen_stopped + ' ' : '') + fmt(obj.gen_done, ok, failed));
         queue.forEach(function (id) { setRow(id, obj.gen_stopped); restoreButton(id); });
         queue = [];
-        $('#qsm-cert-bulk-apply').prop('disabled', false);
-    }
-    function restoreButton(id) {
-        setRow(id, rowFor(id).find('.qsm-cert-status').text(),
-            $('<button type="button" class="button button-small qsm-cert-generate"></button>')
-                .attr('data-result-id', id).text(obj.gen_retry));
+        $('.qsm-cert-bulk-apply').prop('disabled', false);
     }
     function next() {
         if (stopRequested || !queue.length) {
@@ -683,10 +677,7 @@ jQuery(function ($) {
             .done(function (res) {
                 if (res && res.success && res.data && res.data.url) {
                     ok++;
-                    var $row = rowFor(id);
-                    $row.addClass('qsm-cert-done').find('.qsm-cert-missing-cb').prop({ checked: false, disabled: true });
-                    setRow(id, obj.gen_generated,
-                        $('<a class="button button-small" target="_blank"></a>').attr('href', res.data.url).text(obj.gen_view));
+                    markGenerated(id, res.data);
                 } else {
                     failed++;
                     failedIds.push(id);
@@ -719,53 +710,110 @@ jQuery(function ($) {
             $box.removeClass('notice-success notice-warning').addClass('notice-info');
             $box.find('.spinner').addClass('is-active');
             $box.find('.qsm-cert-queue-stop').show();
-            $('#qsm-cert-bulk-apply').prop('disabled', true);
+            $('.qsm-cert-bulk-apply').prop('disabled', true);
             next();
         } else {
             total += ids.length;
         }
         updateRetryButton();
     }
+    function checkedRows() {
+        return rows().filter(function () { return $(this).find('.qsm-cert-cb').prop('checked'); });
+    }
 
-    // Single row.
+    // Row: generate.
     $table.on('click', '.qsm-cert-generate', function () {
         enqueue([String($(this).data('result-id'))]);
     });
 
+    // Row: delete (same AJAX handler and confirm as before).
+    $table.on('click', '.qsm-cert-delete', function (e) {
+        e.preventDefault();
+        var $row = $(this).closest('tr');
+        if (!confirm(obj.delete_confirm)) {
+            return;
+        }
+        $row.addClass('processing');
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'delete_certificate',
+                file_name: $(this).data('filename'),
+                security: $('#bulk_delete_certificates_nonce').val()
+            },
+            dataType: 'json',
+            complete: function () { $row.removeClass('processing'); },
+            success: function (response) {
+                if (response.success) {
+                    markNotGenerated($row);
+                } else {
+                    alert(response.data);
+                }
+            },
+            error: function () { alert(obj.delete_error); }
+        });
+    });
+
     // Select all = every row matching the current search, across all pages.
-    $('#qsm-cert-select-all-missing').on('change', function () {
-        var checked = this.checked;
-        var nodes = qsmCertMissingTable ? qsmCertMissingTable.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
-        $(nodes).find('.qsm-cert-missing-cb:not(:disabled)').prop('checked', checked);
+    $('#qsm-cert-select-all').on('change', function () {
+        var nodes = dt ? dt.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
+        $(nodes).find('.qsm-cert-cb').prop('checked', this.checked);
     });
 
-    // Bulk.
-    $('#qsm-cert-bulk-apply').on('click', function () {
-        if ('generate' !== $('#qsm-cert-bulk-action').val()) {
-            return;
-        }
-        var ids = rows().find('.qsm-cert-missing-cb:checked:not(:disabled)').map(function () {
-            return String(this.value);
-        }).get();
-        if (!ids.length) {
-            alert(obj.gen_none_selected);
-            return;
-        }
-        if (!confirm(fmt(obj.gen_confirm, ids.length))) {
-            return;
-        }
-        $('#qsm-cert-select-all-missing').prop('checked', false);
-        enqueue(ids);
-    });
+    // Bulk actions.
+    // Top and bottom bulk bars: each Apply reads its own select.
+    $(document).on('click', '.qsm-cert-bulk-apply', function () {
+        var action = $(this).siblings('.qsm-cert-bulk-select').val();
+        var $checked = checkedRows();
 
-    function updateRetryButton() {
-        var $retry = $box.find('.qsm-cert-queue-retry');
-        if (!running && failedIds.length) {
-            $retry.text(fmt(obj.gen_retry_all, failedIds.length)).show();
+        if ('generate' === action) {
+            var ids = $checked.filter('[data-status="not-generated"][data-result-id]').map(function () {
+                return String($(this).attr('data-result-id'));
+            }).get();
+            if (!ids.length) {
+                alert(obj.gen_none_selected);
+                return;
+            }
+            if (!confirm(fmt(obj.gen_confirm, ids.length))) {
+                return;
+            }
+            $('#qsm-cert-select-all').prop('checked', false);
+            enqueue(ids);
+        } else if ('delete' === action) {
+            var files = $checked.filter('[data-filename]').map(function () {
+                return $(this).attr('data-filename');
+            }).get();
+            if (!files.length) {
+                alert(obj.no_certificate_selected);
+                return;
+            }
+            if (!confirm(obj.bulk_delete_confirm)) {
+                return;
+            }
+            var $btn = $(this).prop('disabled', true);
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'bulk_delete_certificates',
+                    certificates: files,
+                    bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
+                },
+                dataType: 'json',
+                complete: function () { $btn.prop('disabled', false); },
+                success: function (response) {
+                    alert(response.data);
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function () { alert(obj.bulk_delete_error); }
+            });
         } else {
-            $retry.hide();
+            alert(obj.no_action_selected);
         }
-    }
+    });
 
     // Re-queue every failed certificate (same one-at-a-time queue).
     $box.on('click', '.qsm-cert-queue-retry', function () {

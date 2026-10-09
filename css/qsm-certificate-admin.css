@@ -417,3 +417,7 @@ h2#qsm-certificate-preview-page-templates-title {
     padding: 2px;
     vertical-align: middle;
 }
+#qsm-certificate-report-table tr[data-status="not-eligible"] .qsm-cert-status {
+    color: #646970;
+    font-weight: 400;
+}

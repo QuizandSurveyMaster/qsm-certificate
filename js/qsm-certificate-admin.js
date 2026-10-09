@@ -541,6 +541,10 @@ jQuery(function ($) {
         return $wrap;
     }
     function generateButton(id, label) {
+        if (!label && rowFor(id).attr('data-status') === 'not-eligible') {
+            return $('<button type="button" class="button-link qsm-cert-generate"></button>')
+                .attr('data-result-id', id).text(obj.generate_anyway);
+        }
         return $('<button type="button" class="button button-small qsm-cert-generate"></button>')
             .attr('data-result-id', id).text(label || obj.generate);
     }
@@ -560,9 +564,10 @@ jQuery(function ($) {
             if (dt) { dt.row($row[0]).remove().draw(false); } else { $row.remove(); }
             return;
         }
-        $row.attr('data-status', 'not-generated').removeAttr('data-filename').removeClass('qsm-cert-done');
+        var eligible = $row.attr('data-eligible') !== '0';
+        $row.attr('data-status', eligible ? 'not-generated' : 'not-eligible').removeAttr('data-filename').removeClass('qsm-cert-done');
         $row.find('.qsm-cert-generated, .qsm-cert-expiry, .qsm-cert-id').html('&mdash;');
-        setRow(id, obj.not_generated, generateButton(id));
+        setRow(id, eligible ? obj.not_generated : obj.not_eligible, generateButton(id));
         refresh($row);
     }
     function showProgress(text) {
@@ -649,7 +654,11 @@ jQuery(function ($) {
 
     // Row: generate.
     $table.on('click', '.qsm-cert-generate', function () {
-        enqueue([String($(this).data('result-id'))]);
+        var id = String($(this).data('result-id'));
+        if (rowFor(id).attr('data-status') === 'not-eligible' && !confirm(obj.gen_anyway_confirm)) {
+            return;
+        }
+        enqueue([id]);
     });
 
     // Row: delete (same AJAX handler and confirm as before).
@@ -696,11 +705,12 @@ jQuery(function ($) {
             var ids = $checked.filter('[data-status="not-generated"][data-result-id]').map(function () {
                 return String($(this).attr('data-result-id'));
             }).get();
+            var skipped = $checked.filter('[data-status="not-eligible"]').length;
             if (!ids.length) {
-                alert(obj.gen_none_selected);
+                alert(obj.gen_none_selected + (skipped ? '\n' + fmt(obj.gen_skip_ineligible, skipped) : ''));
                 return;
             }
-            if (!confirm(fmt(obj.gen_confirm, ids.length))) {
+            if (!confirm(fmt(obj.gen_confirm, ids.length) + (skipped ? '\n' + fmt(obj.gen_skip_ineligible, skipped) : ''))) {
                 return;
             }
             $('#qsm-cert-select-all').prop('checked', false);

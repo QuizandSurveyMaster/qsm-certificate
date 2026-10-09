@@ -141,7 +141,7 @@ function qsm_certificate_report_filters( $enabled_quizzes ) {
 		// Links from the former Generated / Not generated sub-tabs.
 		$status = sanitize_key( wp_unslash( $_GET['cert_view'] ) );
 	}
-	if ( ! in_array( $status, array( 'generated', 'not-generated' ), true ) ) {
+	if ( ! in_array( $status, array( 'generated', 'not-generated', 'not-eligible' ), true ) ) {
 		$status = 'all';
 	}
 	$quiz_id   = isset( $_GET['cert_quiz'] ) ? absint( $_GET['cert_quiz'] ) : 0;
@@ -213,6 +213,160 @@ function qsm_certificate_get_certificate_ids( $result_ids ) {
 		}
 	}
 	return $ids;
+}
+
+/**
+ * Whether content carries a placeholder that delivers a certificate.
+ *
+ * @param string $content Results page or email content.
+ * @return bool
+ */
+function qsm_certificate_has_placeholder( $content ) {
+	return is_string( $content ) && 1 === preg_match( '/%CERTIFICATE_(?:LINK|ATTACHMENT_PDF(?:_\d+)?|TEMPLATE_\d+)%/i', $content );
+}
+
+/**
+ * How a quiz delivers certificates: its results pages and emails, which of
+ * them carry a certificate placeholder, and their conditions.
+ *
+ * @param int $quiz_id Quiz ID.
+ * @return array evaluable, mentions, needs_full, pages, emails
+ */
+function qsm_certificate_delivery_plan( $quiz_id ) {
+	static $plans = array();
+	$quiz_id = (int) $quiz_id;
+	if ( isset( $plans[ $quiz_id ] ) ) {
+		return $plans[ $quiz_id ];
+	}
+
+	$plan = array(
+		'evaluable'  => false,
+		'mentions'   => false,
+		'needs_full' => false,
+		'pages'      => array(),
+		'emails'     => array(),
+	);
+
+	// conditions_pass() is the side-effect-free check core uses to pick a results page.
+	if ( class_exists( 'QSM_Results_Pages' ) && method_exists( 'QSM_Results_Pages', 'conditions_pass' ) && class_exists( 'QSM_Emails' ) ) {
+		$plan['evaluable'] = true;
+		$sources           = array(
+			'pages'  => array( QSM_Results_Pages::load_pages( $quiz_id ), 'page' ),
+			'emails' => array( QSM_Emails::load_emails( $quiz_id ), 'content' ),
+		);
+		foreach ( $sources as $type => $source ) {
+			foreach ( (array) $source[0] as $index => $item ) {
+				if ( ! is_array( $item ) ) {
+					continue;
+				}
+				$conditions = ( isset( $item['conditions'] ) && is_array( $item['conditions'] ) ) ? $item['conditions'] : array();
+				$has        = qsm_certificate_has_placeholder( isset( $item[ $source[1] ] ) ? $item[ $source[1] ] : '' );
+				foreach ( $conditions as $condition ) {
+					$category = isset( $condition['category'] ) ? $condition['category'] : '';
+					$criteria = isset( $condition['criteria'] ) ? $condition['criteria'] : '';
+					if ( ! in_array( $category, array( '', 'quiz' ), true ) || ! in_array( $criteria, array( 'score', 'points' ), true ) ) {
+						$plan['needs_full'] = true; // category / custom criteria need the full submission data
+					}
+				}
+				$plan[ $type ][ $index ] = array(
+					'conditions' => $conditions,
+					'has'        => $has,
+					'default'    => ! empty( $conditions ) && isset( $item['default_mark'] ) && (int) $index + 1 === (int) $item['default_mark'],
+				);
+				$plan['mentions'] = $plan['mentions'] || $has;
+			}
+		}
+	}
+
+	$plans[ $quiz_id ] = $plan;
+	return $plan;
+}
+
+/**
+ * Whether QSM would have delivered a certificate for a submission.
+ *
+ * Mirrors core: the results page shown is the last conditional page whose
+ * conditions pass, else the default page; every unconditional email and every
+ * conditional email that passes is sent, else the default email. The result is
+ * eligible if any of those carries a certificate placeholder.
+ *
+ * @param array $plan          From qsm_certificate_delivery_plan().
+ * @param array $response_data Submission data (quiz_id, total_score, total_points, …).
+ * @return bool
+ */
+function qsm_certificate_is_eligible( $plan, $response_data ) {
+	if ( ! $plan['evaluable'] ) {
+		return true; // can't tell on this QSM version: keep the old behaviour
+	}
+	if ( ! $plan['mentions'] ) {
+		return false;
+	}
+
+	$shown       = null;
+	$default_has = false;
+	foreach ( $plan['pages'] as $index => $page ) {
+		if ( ! empty( $page['conditions'] ) ) {
+			if ( QSM_Results_Pages::conditions_pass( $page['conditions'], $index, $response_data ) ) {
+				$shown = $page['has'];
+			}
+			if ( $page['default'] ) {
+				$default_has = $page['has'];
+			}
+		} else {
+			$default_has = $page['has'];
+		}
+	}
+	if ( null === $shown ) {
+		$shown = $default_has;
+	}
+	if ( $shown ) {
+		return true;
+	}
+
+	$sent              = 0;
+	$default_email_has = false;
+	foreach ( $plan['emails'] as $index => $email ) {
+		if ( ! empty( $email['conditions'] ) ) {
+			if ( $email['default'] ) {
+				$default_email_has = $email['has'];
+			}
+			if ( ! QSM_Results_Pages::conditions_pass( $email['conditions'], $index, $response_data ) ) {
+				continue;
+			}
+		}
+		++$sent;
+		if ( $email['has'] ) {
+			return true;
+		}
+	}
+	return 0 === $sent && $default_email_has;
+}
+
+/**
+ * Eligibility of a stored result (see qsm_certificate_is_eligible()).
+ *
+ * @param object $row mlw_results row with quiz_id, result_id, correct_score, point_score.
+ * @return bool
+ */
+function qsm_certificate_result_is_eligible( $row ) {
+	global $wpdb;
+
+	$plan = qsm_certificate_delivery_plan( $row->quiz_id );
+	if ( ! $plan['evaluable'] || ! $plan['mentions'] ) {
+		return qsm_certificate_is_eligible( $plan, array() );
+	}
+	if ( $plan['needs_full'] ) {
+		$full = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mlw_results WHERE result_id = %d", $row->result_id ) );
+		$data = $full ? qsm_certificate_build_quiz_results( $full ) : array();
+	} else {
+		$data = array(
+			'quiz_id'      => (int) $row->quiz_id,
+			'result_id'    => (int) $row->result_id,
+			'total_score'  => $row->correct_score,
+			'total_points' => $row->point_score,
+		);
+	}
+	return qsm_certificate_is_eligible( $plan, $data );
 }
 
 /**
@@ -301,7 +455,13 @@ function qsm_certificate_get_report_rows( $enabled_quizzes, $filters ) {
 			foreach ( (array) $rows as $row ) {
 				$key            = qsm_certificate_result_key( $row->quiz_id, $row->result_id, $row->time_taken );
 				$row->cert_file = isset( $existing[ $key ] ) ? $existing[ $key ] : '';
-				if ( ( 'generated' === $filters['status'] && '' === $row->cert_file ) || ( 'not-generated' === $filters['status'] && '' !== $row->cert_file ) ) {
+				$row->eligible = qsm_certificate_result_is_eligible( $row );
+				if ( '' !== $row->cert_file ) {
+					$row->cert_status = 'generated';
+				} else {
+					$row->cert_status = $row->eligible ? 'not-generated' : 'not-eligible';
+				}
+				if ( 'all' !== $filters['status'] && $filters['status'] !== $row->cert_status ) {
 					continue;
 				}
 				if ( count( $list ) >= QSM_CERTIFICATE_REPORT_ROW_LIMIT ) {
@@ -314,7 +474,7 @@ function qsm_certificate_get_report_rows( $enabled_quizzes, $filters ) {
 		} while ( count( (array) $rows ) === $batch );
 	}
 
-	if ( 'not-generated' !== $filters['status'] && ! $truncated ) {
+	if ( in_array( $filters['status'], array( 'all', 'generated' ), true ) && ! $truncated ) {
 		foreach ( qsm_certificate_unmatched_files( $enabled_quizzes, $existing ) as $name ) {
 			$parts = explode( '-', $name );
 			if ( $filters['quiz_id'] && (int) $parts[0] !== $filters['quiz_id'] ) {
@@ -329,9 +489,10 @@ function qsm_certificate_get_report_rows( $enabled_quizzes, $filters ) {
 				break;
 			}
 			$list[] = (object) array(
-				'result_id' => 0,
-				'quiz_id'   => (int) $parts[0],
-				'cert_file' => $name,
+				'result_id'   => 0,
+				'quiz_id'     => (int) $parts[0],
+				'cert_file'   => $name,
+				'cert_status' => 'generated',
 			);
 		}
 	}
@@ -531,6 +692,7 @@ function qsm_certificate_report_render_filters( $enabled_quizzes, $filters ) {
 		'all'           => __( 'All Statuses', 'qsm-certificate' ),
 		'generated'     => __( 'Generated', 'qsm-certificate' ),
 		'not-generated' => __( 'Not generated', 'qsm-certificate' ),
+		'not-eligible'  => __( 'Not eligible', 'qsm-certificate' ),
 	);
 	?>
 	<div class="tablenav top qsm-certificate-report-filters">
@@ -590,6 +752,9 @@ function qsm_certificate_report_action_html( $row ) {
 				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
 			</button>
 		</div>';
+	}
+	if ( isset( $row->cert_status ) && 'not-eligible' === $row->cert_status ) {
+		return '<button type="button" class="button-link qsm-cert-generate" data-result-id="' . esc_attr( $row->result_id ) . '">' . esc_html__( 'Generate anyway', 'qsm-certificate' ) . '</button>';
 	}
 	return '<button type="button" class="button button-small qsm-cert-generate" data-result-id="' . esc_attr( $row->result_id ) . '">' . esc_html__( 'Generate', 'qsm-certificate' ) . '</button>';
 }
@@ -661,9 +826,9 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 		$generated = '' !== $row->cert_file;
 		$quiz_name = isset( $enabled_quizzes[ (int) $row->quiz_id ] ) ? $enabled_quizzes[ (int) $row->quiz_id ] : ( isset( $row->quiz_name ) ? $row->quiz_name : '#' . (int) $row->quiz_id );
 
-		$attrs = ' data-status="' . ( $generated ? 'generated' : 'not-generated' ) . '"';
+		$attrs = ' data-status="' . esc_attr( $row->cert_status ) . '"';
 		if ( $row->result_id ) {
-			$attrs .= ' data-result-id="' . esc_attr( $row->result_id ) . '"';
+			$attrs .= ' data-result-id="' . esc_attr( $row->result_id ) . '" data-eligible="' . ( $row->eligible ? '1' : '0' ) . '"';
 		}
 		if ( $generated ) {
 			$attrs .= ' data-filename="' . esc_attr( $row->cert_file ) . '"';
@@ -697,7 +862,13 @@ function qsm_certificate_report_render_list( $enabled_quizzes, $filters ) {
 			echo '<td data-order="">&mdash;</td>';
 		}
 
-		echo '<td class="qsm-cert-status">' . ( $generated ? esc_html__( 'Generated', 'qsm-certificate' ) : esc_html__( 'Not generated', 'qsm-certificate' ) ) . '</td>';
+		if ( 'generated' === $row->cert_status ) {
+			echo '<td class="qsm-cert-status">' . esc_html__( 'Generated', 'qsm-certificate' ) . '</td>';
+		} elseif ( 'not-eligible' === $row->cert_status ) {
+			echo '<td class="qsm-cert-status" title="' . esc_attr__( 'No results page or email this result received includes the certificate, so none was expected.', 'qsm-certificate' ) . '">' . esc_html__( 'Not eligible', 'qsm-certificate' ) . '</td>';
+		} else {
+			echo '<td class="qsm-cert-status" title="' . esc_attr__( 'A results page or email this result received includes the certificate, but no PDF exists.', 'qsm-certificate' ) . '">' . esc_html__( 'Not generated', 'qsm-certificate' ) . '</td>';
+		}
 
 		if ( $generated ) {
 			$mtime  = filemtime( $cert_dir . $row->cert_file );

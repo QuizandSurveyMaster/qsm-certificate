@@ -79,6 +79,9 @@ function qsm_addon_certificate_results_details_tabs_content() {
         ?>
         <div id="qsm-certificate-not-found" class="qsm-certificate-message">
             <p><?php esc_html_e( 'No certificate found. Click the button below to generate one.', 'qsm-certificate' ); ?></p>
+            <?php if ( ! qsm_certificate_result_is_eligible( $results_data ) ) { ?>
+                <p><em><?php esc_html_e( 'Note: no results page or email this result received includes the certificate, so none was expected for it.', 'qsm-certificate' ); ?></em></p>
+            <?php } ?>
         </div>
         <?php
     }
@@ -151,7 +154,12 @@ function qsm_addon_certificate_details_tabs_content() {
         'lengthMenu'              => esc_html__( 'Show _MENU_ entries', 'qsm-certificate' ),
         'length_menu'             => esc_html__( 'All', 'qsm-certificate' ),
         'generate_nonce'          => wp_create_nonce( 'qsm_certificate_generate' ),
-        'gen_none_selected'       => esc_html__( 'Please select results without a certificate to generate.', 'qsm-certificate' ),
+        'gen_none_selected'       => esc_html__( 'Please select results with the status "Not generated".', 'qsm-certificate' ),
+        /* translators: %d: number of selected results that are not eligible */
+        'gen_skip_ineligible'     => esc_html__( '%d selected result(s) are not eligible and will be skipped. Use "Generate anyway" on a row to override.', 'qsm-certificate' ),
+        'gen_anyway_confirm'      => esc_html__( 'No results page or email this result received includes the certificate, so none was expected. Generate it anyway?', 'qsm-certificate' ),
+        'not_eligible'            => esc_html__( 'Not eligible', 'qsm-certificate' ),
+        'generate_anyway'         => esc_html__( 'Generate anyway', 'qsm-certificate' ),
         'no_action_selected'      => esc_html__( 'Please choose a bulk action.', 'qsm-certificate' ),
         'not_generated'           => esc_html__( 'Not generated', 'qsm-certificate' ),
         'generate'                => esc_html__( 'Generate', 'qsm-certificate' ),

@@ -397,3 +397,23 @@ h2#qsm-certificate-preview-page-templates-title {
 #qsm-cert-queue .qsm-cert-queue-stop {
     margin-left: 8px;
 }
+
+/* Report action icons: core .qsm-common-svg-image-class sizing (16px), compact buttons. */
+#qsm-certificate-report-table .qsm-table-icons {
+    align-items: stretch;
+}
+#qsm-certificate-report-table .qsm-table-icons .qsm-view-file,
+#qsm-certificate-report-table .qsm-table-icons .qsm-cert-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 4px 6px;
+    line-height: 1;
+}
+#qsm-certificate-report-table .qsm-table-icons img.qsm-common-svg-image-class {
+    width: auto;
+    height: 16px;
+    padding: 2px;
+    vertical-align: middle;
+}

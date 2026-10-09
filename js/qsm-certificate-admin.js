@@ -535,9 +535,9 @@ jQuery(function ($) {
     function actionIcons(url, file) {
         var $wrap = $('<div class="qsm-table-icons"></div>');
         $('<a target="_blank" class="qsm-view-file"></a>').attr({ href: url, title: obj.gen_view })
-            .append($('<img>').attr({ src: obj.view_icon, alt: obj.gen_view })).appendTo($wrap);
+            .append($('<img class="qsm-common-svg-image-class">').attr({ src: obj.view_icon, alt: obj.gen_view })).appendTo($wrap);
         $('<button type="button" class="qsm-cert-delete"></button>').attr({ 'data-filename': file, title: 'Delete' })
-            .append($('<img>').attr({ src: obj.delete_icon, alt: 'Delete' })).appendTo($wrap);
+            .append($('<img class="qsm-common-svg-image-class">').attr({ src: obj.delete_icon, alt: 'Delete' })).appendTo($wrap);
         return $wrap;
     }
     function generateButton(id, label) {

@@ -584,10 +584,10 @@ function qsm_certificate_report_action_html( $row ) {
 		$file_url = trailingslashit( $upload['baseurl'] ) . 'qsm-certificates/' . $row->cert_file;
 		return '<div class="qsm-table-icons">
 			<a href="' . esc_url( $file_url ) . '" target="_blank" class="qsm-view-file" title="' . esc_attr__( 'View', 'qsm-certificate' ) . '">
-				<img src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line.png' ) . '" alt="' . esc_attr__( 'View Icon', 'qsm-certificate' ) . '">
+				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/eye-line.png' ) . '" alt="' . esc_attr__( 'View Icon', 'qsm-certificate' ) . '">
 			</a>
 			<button type="button" class="qsm-cert-delete" data-filename="' . esc_attr( $row->cert_file ) . '" title="' . esc_attr__( 'Delete', 'qsm-certificate' ) . '">
-				<img src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
+				<img class="qsm-common-svg-image-class" src="' . esc_url( QSM_CERTIFICATE_URL . 'assets/trash.png' ) . '" alt="' . esc_attr__( 'Delete Icon', 'qsm-certificate' ) . '">
 			</button>
 		</div>';
 	}

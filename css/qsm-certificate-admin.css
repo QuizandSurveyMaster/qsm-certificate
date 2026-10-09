@@ -44,7 +44,8 @@
     padding-top: 3px;
     padding-bottom: 3px;
 }
-.qsm-delete-file{
+.qsm-delete-file,
+.qsm-cert-delete{
     border: none;
     background: none;
     cursor: pointer;
@@ -383,8 +384,15 @@ h2#qsm-certificate-preview-page-templates-title {
 .qsm-certificate-report-filters .search-box input[type="date"] {
     vertical-align: middle;
 }
-#qsm-certificate-not-generated-table tr.qsm-cert-done .qsm-cert-status {
+#qsm-certificate-report-table .qsm-cert-status {
+    color: #996800;
+    font-weight: 600;
+}
+#qsm-certificate-report-table tr.qsm-cert-done .qsm-cert-status {
     color: #008a20;
+}
+#qsm-certificate-report-table tr.processing {
+    opacity: 0.5;
 }
 #qsm-cert-queue .qsm-cert-queue-stop {
     margin-left: 8px;

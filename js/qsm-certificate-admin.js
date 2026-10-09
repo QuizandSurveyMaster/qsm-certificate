@@ -1,5 +1,3 @@
-var qsmCertMissingTable = null;
-
 jQuery(document).ready(function($) {
     // For preview button
     if (!$('#wp-certificate_template-media-buttons .qsm-preview-btn').length) {
@@ -14,151 +12,6 @@ jQuery(document).ready(function($) {
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-template-btn"></span>${import_template}</button>`);
         jQuery('#wp-certificate_template-wrap').append(`<button class="button qsm-certificate-save-template-button"></span>${save_template}</button>`);
     }
-
-    if ($.fn.DataTable) {
-        var table = $('#qsm-certificate-table').DataTable();
-        if (table) {
-            table.destroy();
-        }
-        $('#qsm-certificate-table').DataTable({
-            paging: true,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, qsm_certificate_obj.length_menu]],
-            language: {
-                paginate: { previous: "<", next: ">" },
-                lengthMenu: qsm_certificate_obj.lengthMenu,
-                info: qsm_certificate_obj.info,
-                search: qsm_certificate_obj.search
-            },
-            order: [[2, "desc"]],
-            columnDefs: [
-                // Columns: 0 checkbox, 1 name, 2 generated date, 3 certificate ID, 4 expiry, 5 action.
-                { targets: [2, 4], orderable: true, type: 'date-eu' },
-                { targets: [0, 1, 5], orderable: false },
-                { targets: 0, width: '40px' }
-            ],
-            autoWidth: false
-        });
-
-        if ($('#qsm-certificate-not-generated-table').length) {
-            qsmCertMissingTable = $('#qsm-certificate-not-generated-table').DataTable({
-                paging: true,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, qsm_certificate_obj.length_menu]],
-                language: {
-                    paginate: { previous: "<", next: ">" },
-                    lengthMenu: qsm_certificate_obj.lengthMenu,
-                    info: qsm_certificate_obj.missing_info,
-                    search: qsm_certificate_obj.missing_search
-                },
-                order: [[1, "desc"]],
-                columnDefs: [
-                    { targets: [0, 8], orderable: false },
-                    { targets: 0, width: '40px' }
-                ],
-                autoWidth: false
-            });
-        }
-    }
-
-    // Handle single file deletion
-    $(document).on('click', '.qsm-delete-file', function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        var filename = $(this).data('filename');
-        var row = $(this).closest('tr');
-
-        if (confirm(qsm_certificate_obj.delete_confirm)) {
-            row.addClass('processing');
-
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'delete_certificate',
-                    file_name: filename,
-                    security: $('#bulk_delete_certificates_nonce').val()
-                },
-                dataType: 'json',
-                complete: function () {
-                    row.removeClass('processing');
-                },
-                success: function (response) {
-                    if (response.success) {
-                        row.fadeOut(400, function () {
-                            $(this).remove();
-                        });
-                    } else {
-                        alert(response.data);
-                    }
-                },
-                error: function () {
-                    alert('An error occurred during deletion.');
-                }
-            });
-        }
-    });
-
-    // Select all functionality
-    $(document).on('change', '#qsm-select-all-certificate', function () {
-        $('input[name="certificates[]"]').prop('checked', this.checked);
-    });
-
-    // Bulk Actions > Delete Certificates: Apply submits #qsm-certificate-form only for "delete".
-    $(document).on('click', '#qsm-cert-bulk-delete-apply', function (e) {
-        if ('delete' !== $('#qsm-cert-bulk-action-generated').val()) {
-            e.preventDefault();
-        }
-    });
-
-    // Bulk delete with proper event handling
-    $(document).on('submit', '#qsm-certificate-form', function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        if ($(this).hasClass('processing')) return false;
-        $(this).addClass('processing');
-
-        var certificates = [];
-        $('input[name="certificates[]"]:checked').each(function () {
-            certificates.push($(this).val());
-        });
-
-        if (certificates.length === 0) {
-            alert(qsm_certificate_obj.no_certificate_selected);
-            $(this).removeClass('processing');
-            return false;
-        }
-
-        if (confirm(qsm_certificate_obj.bulk_delete_confirm)) {
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'bulk_delete_certificates',
-                    certificates: certificates,
-                    bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
-                },
-                dataType: 'json',
-                complete: function () {
-                    $('#qsm-certificate-form').removeClass('processing');
-                },
-                success: function (response) {
-                    if (response.success) {
-                        alert(response.data);
-                        location.reload();
-                    } else {
-                        alert(response.data);
-                    }
-                },
-                error: function () {
-                    alert('An error occurred during bulk deletion.');
-                }
-            });
-        } else {
-            $(this).removeClass('processing');
-        }
-    });
-
 
     $('input[name="enable_expiry"]').change(function() {
         qsm_certificate_update_expiry_fields();
@@ -610,19 +463,42 @@ jQuery(document).ready(function() {
       }
     });
 });
+
 /**
- * Certificate Report > Not generated: generate certificates through a queue.
+ * Certificate Report: one list of results with a certificate status.
  *
- * Each result is a separate AJAX request and the next one is sent only after
- * the previous finishes, so the server renders one PDF at a time no matter
- * how many results are selected.
+ * Generate (row or bulk) runs through a queue that sends one AJAX request at a
+ * time, so the server renders one PDF at a time. Delete (row or bulk) uses the
+ * existing delete_certificate / bulk_delete_certificates handlers.
  */
 jQuery(function ($) {
-    var $table = $('#qsm-certificate-not-generated-table');
+    var $table = $('#qsm-certificate-report-table');
     if (!$table.length || typeof qsm_certificate_obj === 'undefined') {
         return;
     }
     var obj = qsm_certificate_obj;
+    var dt = null;
+    if ($.fn.DataTable) {
+        dt = $table.DataTable({
+            paging: true,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, obj.length_menu]],
+            language: {
+                paginate: { previous: "<", next: ">" },
+                lengthMenu: obj.lengthMenu,
+                info: obj.info,
+                search: obj.search
+            },
+            // Columns: 0 checkbox, 1 result, 2 quiz, 3 user, 4 submitted, 5 status,
+            // 6 generated, 7 expiry, 8 certificate ID, 9 action.
+            order: [[1, "desc"]],
+            columnDefs: [
+                { targets: [0, 9], orderable: false },
+                { targets: 0, width: '40px' }
+            ],
+            autoWidth: false
+        });
+    }
+
     var queue = [];
     var running = false;
     var stopRequested = false;
@@ -639,10 +515,15 @@ jQuery(function ($) {
         });
     }
     function rows() {
-        return qsmCertMissingTable ? $(qsmCertMissingTable.rows().nodes()) : $table.find('tbody tr');
+        return dt ? $(dt.rows().nodes()) : $table.find('tbody tr');
     }
     function rowFor(id) {
         return rows().filter('[data-result-id="' + id + '"]');
+    }
+    function refresh($row) {
+        if (dt && $row.length) {
+            dt.row($row[0]).invalidate('dom');
+        }
     }
     function setRow(id, status, actionHtml) {
         var $row = rowFor(id);
@@ -651,8 +532,52 @@ jQuery(function ($) {
             $row.find('.qsm-cert-action').html(actionHtml);
         }
     }
+    function actionIcons(url, file) {
+        var $wrap = $('<div class="qsm-table-icons"></div>');
+        $('<a target="_blank" class="qsm-view-file"></a>').attr({ href: url, title: obj.gen_view })
+            .append($('<img>').attr({ src: obj.view_icon, alt: obj.gen_view })).appendTo($wrap);
+        $('<button type="button" class="qsm-cert-delete"></button>').attr({ 'data-filename': file, title: 'Delete' })
+            .append($('<img>').attr({ src: obj.delete_icon, alt: 'Delete' })).appendTo($wrap);
+        return $wrap;
+    }
+    function generateButton(id, label) {
+        return $('<button type="button" class="button button-small qsm-cert-generate"></button>')
+            .attr('data-result-id', id).text(label || obj.generate);
+    }
+    function markGenerated(id, data) {
+        var $row = rowFor(id);
+        $row.attr({ 'data-status': 'generated', 'data-filename': data.file }).addClass('qsm-cert-done');
+        $row.find('.qsm-cert-cb').prop('checked', false);
+        $row.find('.qsm-cert-generated').text(data.generated);
+        $row.find('.qsm-cert-expiry').text(data.expiry);
+        setRow(id, obj.gen_generated, actionIcons(data.url, data.file));
+        refresh($row);
+    }
+    function markNotGenerated($row) {
+        var id = $row.attr('data-result-id');
+        if (!id) {
+            // A PDF with no current result: nothing left to show.
+            if (dt) { dt.row($row[0]).remove().draw(false); } else { $row.remove(); }
+            return;
+        }
+        $row.attr('data-status', 'not-generated').removeAttr('data-filename').removeClass('qsm-cert-done');
+        $row.find('.qsm-cert-generated, .qsm-cert-expiry, .qsm-cert-id').html('&mdash;');
+        setRow(id, obj.not_generated, generateButton(id));
+        refresh($row);
+    }
     function showProgress(text) {
         $box.show().find('.qsm-cert-queue-text').text(text);
+    }
+    function updateRetryButton() {
+        var $retry = $box.find('.qsm-cert-queue-retry');
+        if (!running && failedIds.length) {
+            $retry.text(fmt(obj.gen_retry_all, failedIds.length)).show();
+        } else {
+            $retry.hide();
+        }
+    }
+    function restoreButton(id) {
+        setRow(id, rowFor(id).find('.qsm-cert-status').text(), generateButton(id, obj.gen_retry));
     }
     function finish() {
         running = false;
@@ -664,11 +589,6 @@ jQuery(function ($) {
         queue.forEach(function (id) { setRow(id, obj.gen_stopped); restoreButton(id); });
         queue = [];
         $('#qsm-cert-bulk-apply').prop('disabled', false);
-    }
-    function restoreButton(id) {
-        setRow(id, rowFor(id).find('.qsm-cert-status').text(),
-            $('<button type="button" class="button button-small qsm-cert-generate"></button>')
-                .attr('data-result-id', id).text(obj.gen_retry));
     }
     function next() {
         if (stopRequested || !queue.length) {
@@ -683,10 +603,7 @@ jQuery(function ($) {
             .done(function (res) {
                 if (res && res.success && res.data && res.data.url) {
                     ok++;
-                    var $row = rowFor(id);
-                    $row.addClass('qsm-cert-done').find('.qsm-cert-missing-cb').prop({ checked: false, disabled: true });
-                    setRow(id, obj.gen_generated,
-                        $('<a class="button button-small" target="_blank"></a>').attr('href', res.data.url).text(obj.gen_view));
+                    markGenerated(id, res.data);
                 } else {
                     failed++;
                     failedIds.push(id);
@@ -726,46 +643,102 @@ jQuery(function ($) {
         }
         updateRetryButton();
     }
+    function checkedRows() {
+        return rows().filter(function () { return $(this).find('.qsm-cert-cb').prop('checked'); });
+    }
 
-    // Single row.
+    // Row: generate.
     $table.on('click', '.qsm-cert-generate', function () {
         enqueue([String($(this).data('result-id'))]);
     });
 
+    // Row: delete (same AJAX handler and confirm as before).
+    $table.on('click', '.qsm-cert-delete', function (e) {
+        e.preventDefault();
+        var $row = $(this).closest('tr');
+        if (!confirm(obj.delete_confirm)) {
+            return;
+        }
+        $row.addClass('processing');
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'delete_certificate',
+                file_name: $(this).data('filename'),
+                security: $('#bulk_delete_certificates_nonce').val()
+            },
+            dataType: 'json',
+            complete: function () { $row.removeClass('processing'); },
+            success: function (response) {
+                if (response.success) {
+                    markNotGenerated($row);
+                } else {
+                    alert(response.data);
+                }
+            },
+            error: function () { alert(obj.delete_error); }
+        });
+    });
+
     // Select all = every row matching the current search, across all pages.
-    $('#qsm-cert-select-all-missing').on('change', function () {
-        var checked = this.checked;
-        var nodes = qsmCertMissingTable ? qsmCertMissingTable.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
-        $(nodes).find('.qsm-cert-missing-cb:not(:disabled)').prop('checked', checked);
+    $('#qsm-cert-select-all').on('change', function () {
+        var nodes = dt ? dt.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
+        $(nodes).find('.qsm-cert-cb').prop('checked', this.checked);
     });
 
-    // Bulk.
+    // Bulk actions.
     $('#qsm-cert-bulk-apply').on('click', function () {
-        if ('generate' !== $('#qsm-cert-bulk-action').val()) {
-            return;
-        }
-        var ids = rows().find('.qsm-cert-missing-cb:checked:not(:disabled)').map(function () {
-            return String(this.value);
-        }).get();
-        if (!ids.length) {
-            alert(obj.gen_none_selected);
-            return;
-        }
-        if (!confirm(fmt(obj.gen_confirm, ids.length))) {
-            return;
-        }
-        $('#qsm-cert-select-all-missing').prop('checked', false);
-        enqueue(ids);
-    });
+        var action = $('#qsm-cert-bulk-action').val();
+        var $checked = checkedRows();
 
-    function updateRetryButton() {
-        var $retry = $box.find('.qsm-cert-queue-retry');
-        if (!running && failedIds.length) {
-            $retry.text(fmt(obj.gen_retry_all, failedIds.length)).show();
+        if ('generate' === action) {
+            var ids = $checked.filter('[data-status="not-generated"][data-result-id]').map(function () {
+                return String($(this).attr('data-result-id'));
+            }).get();
+            if (!ids.length) {
+                alert(obj.gen_none_selected);
+                return;
+            }
+            if (!confirm(fmt(obj.gen_confirm, ids.length))) {
+                return;
+            }
+            $('#qsm-cert-select-all').prop('checked', false);
+            enqueue(ids);
+        } else if ('delete' === action) {
+            var files = $checked.filter('[data-filename]').map(function () {
+                return $(this).attr('data-filename');
+            }).get();
+            if (!files.length) {
+                alert(obj.no_certificate_selected);
+                return;
+            }
+            if (!confirm(obj.bulk_delete_confirm)) {
+                return;
+            }
+            var $btn = $(this).prop('disabled', true);
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'bulk_delete_certificates',
+                    certificates: files,
+                    bulk_delete_certificates_nonce: $('#bulk_delete_certificates_nonce').val()
+                },
+                dataType: 'json',
+                complete: function () { $btn.prop('disabled', false); },
+                success: function (response) {
+                    alert(response.data);
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function () { alert(obj.bulk_delete_error); }
+            });
         } else {
-            $retry.hide();
+            alert(obj.no_action_selected);
         }
-    }
+    });
 
     // Re-queue every failed certificate (same one-at-a-time queue).
     $box.on('click', '.qsm-cert-queue-retry', function () {

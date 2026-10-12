@@ -591,6 +591,7 @@ jQuery(function ($) {
         }
     }
     function pill(status) {
+        status = String(status || '');
         var kind = status === obj.gen_generated ? 'generated'
             : status === obj.not_generated ? 'missing'
             : status.indexOf(obj.gen_failed) === 0 ? 'failed' : 'neutral';
@@ -717,8 +718,14 @@ jQuery(function ($) {
         }
         updateRetryButton();
     }
+    // Rows on screen right now: the current page within the current search.
+    function visibleRows() {
+        return dt ? $(dt.rows({ page: 'current', search: 'applied' }).nodes()) : $table.find('tbody tr');
+    }
+    // Bulk actions only ever act on ticked rows the admin can see (WordPress list-table
+    // convention), so nothing on another page or hidden by a search is touched.
     function checkedRows() {
-        return rows().filter(function () { return $(this).find('.qsm-cert-cb').prop('checked'); });
+        return visibleRows().filter(function () { return $(this).find('.qsm-cert-cb').prop('checked'); });
     }
 
     // Row: generate.
@@ -756,10 +763,18 @@ jQuery(function ($) {
     });
 
     // Select all = every row matching the current search, across all pages.
+    // Select all = the rows on the current page only.
     $('#qsm-cert-select-all').on('change', function () {
-        var nodes = dt ? dt.rows({ search: 'applied' }).nodes() : $table.find('tbody tr');
-        $(nodes).find('.qsm-cert-cb').prop('checked', this.checked);
+        visibleRows().find('.qsm-cert-cb').prop('checked', this.checked);
     });
+    // Changing page, page size, sort or search clears ticks that are no longer on screen.
+    if (dt) {
+        dt.on('draw', function () {
+            var visible = dt.rows({ page: 'current', search: 'applied' }).nodes().toArray();
+            $(dt.rows().nodes()).not(visible).find('.qsm-cert-cb').prop('checked', false);
+            $('#qsm-cert-select-all').prop('checked', false);
+        });
+    }
 
     // Bulk actions.
     // Top and bottom bulk bars: each Apply reads its own select.
@@ -788,7 +803,7 @@ jQuery(function ($) {
                 alert(obj.no_certificate_selected);
                 return;
             }
-            if (!confirm(obj.bulk_delete_confirm)) {
+            if (!confirm(fmt(obj.bulk_delete_confirm_count, files.length))) {
                 return;
             }
             var $btn = $(this).prop('disabled', true);

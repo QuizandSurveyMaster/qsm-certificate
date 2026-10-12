@@ -145,6 +145,8 @@ function qsm_addon_certificate_details_tabs_content() {
     wp_localize_script( 'qsm_certificate_admin_script', 'qsm_certificate_obj', array(
         'delete_confirm'          => esc_html__( 'Are you sure you want to delete this file?', 'qsm-certificate' ),
         'bulk_delete_confirm'     => esc_html__( 'Are you sure you want to delete certificates?', 'qsm-certificate' ),
+        /* translators: %d: number of certificates to delete */
+        'bulk_delete_confirm_count' => esc_html__( 'Delete %d certificate(s)? This cannot be undone.', 'qsm-certificate' ),
         'no_certificate_selected' => esc_html__( 'Please select the certificates.', 'qsm-certificate' ),
         'info'                    => esc_html__( 'Showing _START_ to _END_ of _TOTAL_ entries', 'qsm-certificate' ),
         'search'                  => esc_html__( 'Search:', 'qsm-certificate' ),

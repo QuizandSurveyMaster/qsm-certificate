@@ -59,11 +59,12 @@ function qsm_addon_certificate_results_details_tabs_content() {
     $pattern = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-*.pdf";
     $existing_files = glob( $certificate_dir . $pattern );
     $certificate_exists = ! empty( $existing_files );
+    $newest_file = qsm_certificate_newest_file( $existing_files );
     
     $form_submitted = isset( $_POST['certificate_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['certificate_nonce'] ) ), 'certificate' );
     
     if ( $certificate_exists ) {
-        $existing_filename = basename( $existing_files[0] );
+        $existing_filename = basename( $newest_file );
         $certificate_url = esc_url( $upload['baseurl'] . '/qsm-certificates/' . $existing_filename );
         ?>
         <div id="qsm-certificate-already-generated" class="qsm-certificate-message">

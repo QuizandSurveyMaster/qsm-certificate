@@ -213,13 +213,11 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
     if ( 0 == $certificate_settings["enabled"] ) {
-        // Reuse this result's certificate if it already exists. The full filename embeds the
-        // expiry date (today + N days) and the score, which drift between calls, so an
-        // exact-name check misses and re-renders a duplicate PDF.
-        $existing_file = qsm_certificate_find_existing_file( $quiz_results );
-        if ( '' !== $existing_file ) {
-            return $return_file ? urlencode( $existing_file ) : true;
-        }
+        // An existing certificate is reused only when it was rendered with the same layout
+        // (template, orientation, paper size). Matching on the result key + layout tag rather
+        // than the full filename, because the expiry date (today + N days) and the score in
+        // the name drift between calls and an exact-name check would re-render a duplicate.
+        $paper_size = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
 
         $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template";
         // Only load a specific template when template_id > 0.
@@ -245,6 +243,14 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                 if ( isset( $tpl_data['logoStyle'] ) ) {
                     $tpl_data['logo_style'] = $tpl_data['logoStyle'];
                 }
+                $size_key    = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : 'Landscape';
+                $orientation = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
+                $layout      = qsm_certificate_layout_tag( $tpl_id, $orientation, $paper_size );
+                // Files from before layout tags are not reused here: they may come from another template.
+                $existing_file = qsm_certificate_find_existing_file( $quiz_results, $layout );
+                if ( '' !== $existing_file ) {
+                    return $return_file ? urlencode( $existing_file ) : true;
+                }
                 $exp_date = '';
                 if ( $certificate_settings['never_expiry'] == 1 ) {
                     $exp_date = "";
@@ -255,7 +261,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                     $exp_date = str_replace('-', '', $expire_time);
                 }
                 $encoded_time_taken = md5( $quiz_results['time_taken'] );
-                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+                $filename           = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-$layout-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
                 $filename           = apply_filters( 'qsm_certificate_template_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date );
                 $wp_upload      = wp_upload_dir();
                 $pdf_file_name = $filename;
@@ -283,9 +289,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
                         $options->set('isRemoteEnabled', true);
                         $options->set('dpi', $dpi_to_use);
                         $dompdf = new Dompdf($options);
-                        $size_key      = isset( $tpl_data['certificate_size'] ) ? $tpl_data['certificate_size'] : ( isset( $tpl_data['size'] ) ? $tpl_data['size'] : 'Landscape' );
-                        $orientation   = strtolower( $size_key ) === 'portrait' ? 'Portrait' : 'Landscape';
-                        $paper_size    = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
                         $dompdf->setPaper( $paper_size, $orientation );
                         $dompdf->loadHtml( $html );
                         $dompdf->render();
@@ -300,6 +303,14 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
             }
         }
 
+        $certificate_size = ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) ? 'Portrait' : 'Landscape';
+        $layout           = qsm_certificate_layout_tag( 0, $certificate_size, $paper_size );
+        // A file from before layout tags is still reused here, so upgrading doesn't re-render every old certificate.
+        $existing_file = qsm_certificate_find_existing_file( $quiz_results, $layout, true );
+        if ( '' !== $existing_file ) {
+            return $return_file ? urlencode( $existing_file ) : true;
+        }
+
         if ( $certificate_settings['never_expiry'] == 1 ) {
             $exp_date = "";
         } else {
@@ -309,7 +320,7 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
             $exp_date = str_replace('-', '', $expire_time);
         }
         $encoded_time_taken = md5( $quiz_results['time_taken'] );
-        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
+        $filename = "{$quiz_results['quiz_id']}-{$quiz_results['result_id']}-$encoded_time_taken-$layout-{$quiz_results['total_points']}-{$quiz_results['total_score']}-{$exp_date}.pdf";
         $filename = apply_filters('qsm_certificate_file_name', $filename, $quiz_results['quiz_id'], $quiz_results['result_id'], $encoded_time_taken, $quiz_results['total_score'], $quiz_results['total_points'], $exp_date);
         $isSVG = function ( $path ) {
         return pathinfo( $path, PATHINFO_EXTENSION ) === 'svg';
@@ -347,13 +358,6 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
             $options->set('isRemoteEnabled', true);
             $options->set('dpi', $dpi_to_use);
             $dompdf = new Dompdf($options);
-            $certificate_size = "Landscape";
-            if ( isset( $certificate_settings['certificate_size'] ) && 'Portrait' == $certificate_settings['certificate_size'] ) {
-                $certificate_size = "Portrait";
-            } else {
-                $certificate_size = "Landscape";
-            }
-            $paper_size = isset( $certificate_settings['paper_size'] ) ? $certificate_settings['paper_size'] : 'A4';
             $dompdf->setPaper( $paper_size, $certificate_size );
             $dompdf->loadHtml( $html );
             $dompdf->render();

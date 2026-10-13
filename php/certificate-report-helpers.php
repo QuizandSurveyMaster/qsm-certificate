@@ -79,19 +79,73 @@ function qsm_certificate_result_key( $quiz_id, $result_id, $time_taken ) {
 }
 
 /**
+ * Tag for the layout a certificate PDF was rendered with: template, orientation and paper size.
+ *
+ * It goes in the filename right after the result key ({key}-{layout}-...pdf), so changing any of
+ * the three renders a new PDF instead of reusing one with the old layout.
+ *
+ * @param int    $template_id Certificate template ID, 0 for the quiz's own certificate settings.
+ * @param string $orientation Portrait|Landscape.
+ * @param string $paper_size  A4|Letter.
+ * @return string e.g. v1a2b3c4d
+ */
+function qsm_certificate_layout_tag( $template_id, $orientation, $paper_size ) {
+	return 'v' . substr( md5( (int) $template_id . '|' . strtolower( (string) $orientation ) . '|' . strtolower( (string) $paper_size ) ), 0, 8 );
+}
+
+/**
+ * Most recently written file of a list of certificate paths.
+ *
+ * @param string[] $files Absolute paths.
+ * @return string Path, or '' for an empty list.
+ */
+function qsm_certificate_newest_file( $files ) {
+	$newest = '';
+	$time   = -1;
+	foreach ( (array) $files as $file ) {
+		$mtime = (int) @filemtime( $file );
+		if ( $mtime > $time ) {
+			$newest = $file;
+			$time   = $mtime;
+		}
+	}
+	return $newest;
+}
+
+/**
  * Existing certificate file (basename) for a result, or '' when there is none.
  *
- * @param array $quiz_results Needs quiz_id, result_id and time_taken.
+ * @param array  $quiz_results Needs quiz_id, result_id and time_taken.
+ * @param string $layout       From qsm_certificate_layout_tag(). '' matches any certificate of the result.
+ * @param bool   $allow_legacy Also match a file named before layout tags existed (2.5.0 and older).
  * @return string
  */
-function qsm_certificate_find_existing_file( $quiz_results ) {
+function qsm_certificate_find_existing_file( $quiz_results, $layout = '', $allow_legacy = false ) {
 	if ( empty( $quiz_results['quiz_id'] ) || empty( $quiz_results['result_id'] ) || ! isset( $quiz_results['time_taken'] ) ) {
 		return '';
 	}
 	$upload_dir = wp_upload_dir();
-	$pattern    = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/' . qsm_certificate_result_key( $quiz_results['quiz_id'], $quiz_results['result_id'], $quiz_results['time_taken'] ) . '-*.pdf';
-	$files      = glob( $pattern );
-	return empty( $files ) ? '' : basename( $files[0] );
+	$key        = qsm_certificate_result_key( $quiz_results['quiz_id'], $quiz_results['result_id'], $quiz_results['time_taken'] );
+	$prefix     = trailingslashit( $upload_dir['basedir'] ) . 'qsm-certificates/' . $key;
+
+	if ( '' === $layout ) {
+		$newest = qsm_certificate_newest_file( glob( $prefix . '-*.pdf' ) );
+		return '' === $newest ? '' : basename( $newest );
+	}
+
+	$files = glob( $prefix . '-' . $layout . '-*.pdf' );
+	if ( ! empty( $files ) ) {
+		return basename( $files[0] );
+	}
+
+	if ( $allow_legacy ) {
+		foreach ( (array) glob( $prefix . '-*.pdf' ) as $file ) {
+			if ( ! preg_match( '/^-v[0-9a-f]{8}-/', substr( basename( $file ), strlen( $key ) ) ) ) {
+				return basename( $file );
+			}
+		}
+	}
+	return '';
 }
 
 /**
@@ -108,7 +162,8 @@ function qsm_certificate_existing_files() {
 		$parts = explode( '-', $name, 4 );
 		if ( 4 === count( $parts ) ) {
 			$key = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
-			if ( ! isset( $keys[ $key ] ) ) {
+			// A result can have several files (one per layout); keep the newest.
+			if ( ! isset( $keys[ $key ] ) || @filemtime( $file ) > @filemtime( dirname( $file ) . '/' . $keys[ $key ] ) ) {
 				$keys[ $key ] = $name;
 			}
 		}
@@ -426,9 +481,9 @@ function qsm_certificate_generate_for_result( $result_id ) {
 	$cert_dir = trailingslashit( $upload['basedir'] ) . 'qsm-certificates/';
 	$pattern  = qsm_certificate_result_key( $results_data->quiz_id, $results_data->result_id, $results_data->time_taken ) . '-*.pdf';
 
-	$existing = glob( $cert_dir . $pattern );
-	if ( ! empty( $existing ) ) {
-		return qsm_certificate_generated_payload( 'exists', basename( $existing[0] ) );
+	$existing = qsm_certificate_newest_file( glob( $cert_dir . $pattern ) );
+	if ( '' !== $existing ) {
+		return qsm_certificate_generated_payload( 'exists', basename( $existing ) );
 	}
 
 	// Load this quiz's settings; the generator reads them via get_quiz_setting().

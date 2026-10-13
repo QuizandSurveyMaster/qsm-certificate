@@ -1,3 +1,18 @@
+<h3>Unreleased</h3>
+<ul>
+  <li>Feature: Certificate Report now lists every result of a certificate-enabled quiz with a Status column (Generated / Not generated)</li>
+  <li>Feature: Added Status, Quiz and date range filters, plus search, to the Certificate Report</li>
+  <li>Feature: Generate missing certificates from the report, one at a time or in bulk, with Stop and Retry all failed</li>
+  <li>Feature: Bulk delete certificates from the filtered list, with the number of certificates shown in the confirmation</li>
+  <li>Enhancement: %CERTIFICATE_LINK% and %CERTIFICATE_TEMPLATE_X% are now listed in the Emails tab variable list</li>
+  <li>Enhancement: Refreshed Certificate Report design with status labels, clearer dates, View/Delete icons and bottom pagination</li>
+  <li>Enhancement: Certificate Report now works on small screens and mobile</li>
+  <li>Enhancement: Certificate PDFs that no longer match a result can still be viewed and deleted from the report</li>
+  <li>Bug: An existing certificate PDF is now reused instead of being created again each time it is requested</li>
+  <li>Bug: Fixed bulk actions selecting rows on other pages of the Certificate Report</li>
+  <li>Bug: Fixed an "Undefined variable" PHP warning in the quiz variable lists</li>
+  <li>Bug: Fixed sorting on Certificate Report columns</li>
+</ul>
 <h3>2.4.1 (March 19, 2026)</h3>
 <ul>
   <li>Bug: Fixed issue with certificate PDF generation for high-resolution backgrounds</li>

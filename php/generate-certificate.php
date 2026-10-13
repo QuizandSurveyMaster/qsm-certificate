@@ -213,6 +213,14 @@ function qsm_addon_certificate_generate_certificate( $quiz_results, $template_id
     $certificate_settings = wp_parse_args( $certificate_settings, $certificate_defaults );
 
     if ( 0 == $certificate_settings["enabled"] ) {
+        // Reuse this result's certificate if it already exists. The full filename embeds the
+        // expiry date (today + N days) and the score, which drift between calls, so an
+        // exact-name check misses and re-renders a duplicate PDF.
+        $existing_file = qsm_certificate_find_existing_file( $quiz_results );
+        if ( '' !== $existing_file ) {
+            return $return_file ? urlencode( $existing_file ) : true;
+        }
+
         $query  = "SELECT * FROM {$wpdb->prefix}mlw_certificate_template";
         // Only load a specific template when template_id > 0.
         // When template_id == 0, we intentionally skip loading templates to allow certificate_settings-based generation.

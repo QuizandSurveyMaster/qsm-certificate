@@ -5,7 +5,7 @@
  * Description: Adds the ability to give certificates to quiz/survey takers
  * Author: QSM Team
  * Author URI: https://quizandsurveymaster.com
- * Version: 2.4.1
+ * Version: 2.5.0
  *
  * @author QSM Team
  * @package QSM
@@ -31,7 +31,7 @@ class QSM_Certificate {
 	 * @var string
 	 * @since 0.1.0
 	 */
-	public $version = '2.4.1';
+	public $version = '2.5.0';
 
 	/**
 	 * Main Construct Function
@@ -64,6 +64,7 @@ class QSM_Certificate {
 	public function load_dependencies() {
 		include 'php/addon-settings-tab-content.php';
 		include 'php/generate-certificate.php';
+		include 'php/certificate-report-helpers.php';
 		include 'php/results-details-tab-content.php';
 		include 'php/quiz-settings-tab-content.php';
 		include 'php/variables.php';
@@ -147,28 +148,29 @@ class QSM_Certificate {
      * @return array
      */
     public function qsm_certificate_show_variable( $variable_list ) {
-        global $mlwQuizMasterNext;
+        $template_array = array();
         if ( ! empty( $_GET['tab'] ) && 'emails' === $_GET['tab'] ) {
+            // %CERTIFICATE_LINK% and %CERTIFICATE_TEMPLATE_X% are replaced in emails too (qmn_email_template_variable_results).
+            $template_array['%CERTIFICATE_LINK%'] = __( 'Adds a link that lets the user download the certificate.', 'qsm-certificate' );
+            $template_array['%CERTIFICATE_TEMPLATE_X%'] = __( 'Adds a download link for the certificate template with ID X.', 'qsm-certificate' );
             $template_array['%CERTIFICATE_ATTACHMENT_PDF%'] = __( 'Send the certificate as a PDF attachment via email.', 'qsm-certificate' );
             $template_array['%CERTIFICATE_ATTACHMENT_PDF_X%'] = __( 'This will allow to user to send the template on email via template id ', 'qsm-certificate' );
         }
-        $analysis = array(
-            'Certificate' => $template_array,
-        );
-        $variable_list = array_merge( $variable_list, $analysis );
+        if ( ! empty( $template_array ) ) {
+            $variable_list = array_merge( $variable_list, array( 'Certificate' => $template_array ) );
+        }
         return $variable_list;
     }
 
     public function qsm_certificate_link_variable( $variable_list ) {
-        global $mlwQuizMasterNext;
+        $template_array = array();
         if ( ! empty( $_GET['tab'] ) && 'results-pages' === $_GET['tab'] ) {
             $template_array['%CERTIFICATE_LINK%'] = __( 'This will create a button that allows users to download the certificate with a single click.', 'qsm-certificate' );
             $template_array['%CERTIFICATE_TEMPLATE_X%'] = __( 'This will allow to user to show template by using template id.', 'qsm-certificate' );
         }
-        $analysis = array(
-            'Certificate' => $template_array,
-        );
-        $variable_list = array_merge( $variable_list, $analysis );
+        if ( ! empty( $template_array ) ) {
+            $variable_list = array_merge( $variable_list, array( 'Certificate' => $template_array ) );
+        }
         return $variable_list;
     }
 

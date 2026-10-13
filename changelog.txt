@@ -1,3 +1,12 @@
+<h3>2.5.0 (October 13, 2026)</h3>
+<ul>
+  <li>Feature: Added status, quiz, date range filters, and search to the Certificate Report</li>
+  <li>Feature: Added single and bulk certificate generation, retry, stop, and bulk delete</li>
+  <li>Enhancement: Improved admin UI and user experience</li>
+  <li>Enhancement: Refreshed Certificate Report design with status labels, clearer dates, action icons, and pagination</li>
+  <li>Bug: Reused existing certificate PDFs to prevent duplicate generation</li>
+  <li>Bug: Fixed bulk actions selecting rows across report pages</li>
+</ul>
 <h3>2.4.1 (March 19, 2026)</h3>
 <ul>
   <li>Bug: Fixed issue with certificate PDF generation for high-resolution backgrounds</li>
